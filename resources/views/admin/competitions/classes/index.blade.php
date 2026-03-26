@@ -44,112 +44,88 @@
         }
     }">
 
+        {{-- ===== HEADER ===== --}}
         <div class="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div class="flex items-center">
+            <div class="flex items-center gap-4">
                 <a href="{{ route('admin.competitions.index') }}"
-                    class="p-3 bg-white dark:bg-[#0f0f0f] border border-gray-100 dark:border-white/5 rounded-xl shadow-sm mr-4 text-gray-500 hover:text-blue-500 transition-colors">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                    </svg>
+                    class="w-12 h-12 bg-white dark:bg-[#1a1a1a] border border-gray-200 dark:border-gray-800 rounded-xl shadow-sm flex items-center justify-center text-gray-500 hover:text-blue-600 dark:hover:text-blue-400 hover:border-blue-300 transition-all shrink-0">
+                    <i class="fas fa-arrow-left text-lg"></i>
                 </a>
                 <div>
-                    <div class="text-[10px] font-semibold text-blue-500 uppercase tracking-widest mb-1">รายการย่อย
-                        (Classes)</div>
-                    <h1 class="text-2xl font-semibold text-gray-900 dark:text-white line-clamp-1">
-                        {{ $competition->name }}</h1>
+                    <div class="text-[10px] font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-widest mb-1 flex items-center gap-1.5">
+                        <i class="fas fa-layer-group"></i> รายการย่อย (Classes)
+                    </div>
+                    <h1 class="text-2xl font-semibold text-gray-900 dark:text-white line-clamp-1 tracking-tight">
+                        {{ $competition->name }}
+                    </h1>
                 </div>
             </div>
 
             <button @click="$dispatch('open-modal', 'add-class')"
-                class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold uppercase tracking-wider rounded-xl transition-all shadow-lg shadow-blue-500/20 flex items-center justify-center">
-                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                </svg>
+                class="group px-6 py-3 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-sm font-semibold rounded-xl transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2">
+                <i class="fas fa-plus-circle text-base transition-transform duration-200 group-hover:rotate-90"></i>
                 เพิ่มรุ่นการแข่งขัน
             </button>
         </div>
 
-        {{-- @if ($errors->any())
-            <div class="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border-l-4 border-red-500 rounded-r-xl">
-                <div class="flex items-center text-red-800 dark:text-red-400 font-semibold mb-2">
-                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                    ระบบปฏิเสธการบันทึกข้อมูล:
-                </div>
-                <ul class="list-disc pl-7 text-sm text-red-600 dark:text-red-400 space-y-1">
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </div>
-        @endif --}}
-
+        {{-- ===== GRID CARDS ===== --}}
         <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
             @forelse($classes as $class)
-                <div
-                    class="bg-white dark:bg-[#0f0f0f] border border-gray-100 dark:border-white/5 rounded-2xl shadow-sm hover:shadow-xl transition-all p-6 flex flex-col">
+                <div class="bg-white dark:bg-[#1a1a1a] border border-gray-200 dark:border-gray-800 rounded-2xl shadow-sm hover:shadow-xl hover:border-blue-300 dark:hover:border-gray-600 transition-all duration-300 p-6 flex flex-col group">
 
-                    <div class="flex justify-between items-start mb-4">
-                        <div>
-                            <span
-                                class="px-2.5 py-1 bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 text-[10px] font-semibold uppercase rounded-lg">
-                                {{ $class->game_type_name }}
+                    {{-- Card Header --}}
+                    <div class="flex justify-between items-start mb-5">
+                        <div class="flex-1 pr-4">
+                            <span class="inline-flex items-center px-3 py-1 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 text-xs font-semibold rounded-lg border border-blue-100 dark:border-blue-800/30 mb-2">
+                                <i class="fas fa-gamepad mr-1.5 opacity-70"></i> {{ $class->game_type_name }}
                             </span>
-                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mt-2">{{ $class->name }}
+                            <h3 class="text-xl font-semibold text-gray-900 dark:text-white leading-snug line-clamp-2" title="{{ $class->name }}">
+                                {{ $class->name }}
                             </h3>
                         </div>
 
-                        <div
-                            class="w-12 h-12 rounded-xl border border-gray-100 dark:border-gray-800 overflow-hidden shrink-0 bg-white">
-                            <img src="{{ route('admin.competitions.classes.picture', [$competition->id, $class->id]) }}"
-                                alt="Robot" class="w-full h-full object-cover">
+                        <div class="w-14 h-14 rounded-xl border-2 border-gray-100 dark:border-gray-700 overflow-hidden shrink-0 bg-gray-50 dark:bg-[#111] flex items-center justify-center shadow-sm">
+                            @if($class->robot_image_url) {{-- สมมติว่ามีฟิลด์นี้ (ใน route admin.competitions.classes.picture) --}}
+                                <img src="{{ route('admin.competitions.classes.picture', [$competition->id, $class->id]) }}"
+                                    alt="Robot" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                            @else
+                                <i class="fas fa-robot text-gray-300 dark:text-gray-600 text-2xl"></i>
+                            @endif
                         </div>
                     </div>
 
-                    <div class="flex flex-wrap gap-2 mb-4">
+                    {{-- Age Categories Badge --}}
+                    <div class="flex flex-wrap gap-2 mb-5">
                         @foreach ($class->allowed_categories as $cat)
-                            <span
-                                class="px-2 py-1 bg-gray-100 dark:bg-white/5 text-gray-600 dark:text-gray-300 rounded-lg text-xs font-semibold">
-                                {{ $cat['name'] }} <span
-                                    class="font-normal">({{ $cat['min_age'] }}-{{ $cat['max_age'] }} ปี)</span>
+                            <span class="px-2.5 py-1.5 bg-gray-50 dark:bg-[#111] border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 rounded-lg text-xs font-medium flex items-center shadow-sm">
+                                <i class="fas fa-user-graduate text-[10px] text-gray-400 mr-1.5"></i>
+                                {{ $cat['name'] }} <span class="text-gray-400 ml-1">({{ $cat['min_age'] }}-{{ $cat['max_age'] }} ปี)</span>
                             </span>
                         @endforeach
                     </div>
 
-                    <div
-                        class="space-y-2.5 text-sm text-gray-500 dark:text-gray-400 mb-6 bg-gray-50 dark:bg-white/5 p-4 rounded-xl font-normal">
+                    {{-- Info Box --}}
+                    <div class="space-y-3 text-sm text-gray-600 dark:text-gray-400 mb-6 bg-gray-50 dark:bg-black/20 p-4 rounded-xl border border-gray-100 dark:border-gray-800 flex-1">
                         <div class="flex justify-between items-center">
                             <div class="flex items-center">
-                                <svg class="w-4 h-4 mr-2 text-gray-400" fill="none" stroke="currentColor"
-                                    viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
-                                </svg>
+                                <i class="fas fa-robot w-5 text-center mr-2 text-gray-400"></i>
                                 <span>หุ่นยนต์:</span>
                             </div>
                             <span class="font-semibold text-gray-900 dark:text-white">{{ $class->robot_name }}</span>
                         </div>
                         <div class="flex justify-between items-center">
                             <div class="flex items-center">
-                                <svg class="w-4 h-4 mr-2 text-gray-400" fill="none" stroke="currentColor"
-                                    viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" />
-                                </svg>
+                                <i class="fas fa-weight-hanging w-5 text-center mr-2 text-gray-400"></i>
                                 <span>น้ำหนัก:</span>
                             </div>
-                            <span
-                                class="font-semibold text-gray-900 dark:text-white">{{ $class->robot_weight ?? '-' }}
-                                Kg.</span>
+                            <span class="font-semibold text-gray-900 dark:text-white">{{ $class->robot_weight ?? '-' }} Kg.</span>
                         </div>
-                        <div
-                            class="flex justify-between items-center border-t border-gray-200 dark:border-gray-700 pt-2 mt-2">
+                        
+                        <div class="border-t border-gray-200 dark:border-gray-700 my-2 pt-2"></div>
+                        
+                        <div class="flex justify-between items-center">
                             <div class="flex items-center">
-                                <svg class="w-4 h-4 mr-2 text-green-500" fill="none" stroke="currentColor"
-                                    viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
+                                <i class="fas fa-coins w-5 text-center mr-2 text-green-500"></i>
                                 <span>ค่าสมัคร:</span>
                             </div>
                             <span class="font-semibold text-green-600 dark:text-green-400">
@@ -158,215 +134,217 @@
                         </div>
                         <div class="flex justify-between items-center">
                             <div class="flex items-center">
-                                <svg class="w-4 h-4 mr-2 text-blue-500" fill="none" stroke="currentColor"
-                                    viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13.732 4c-.76-1.01-1.93-1.42-3.232-1.42s-2.472.41-3.232 1.42" />
-                                </svg>
+                                <i class="fas fa-users w-5 text-center mr-2 text-blue-500"></i>
                                 <span>สมาชิก/ทีม:</span>
                             </div>
-                            <span class="font-semibold text-gray-900 dark:text-white">ไม่เกิน {{ $class->max_members }}
-                                คน</span>
+                            <span class="font-semibold text-gray-900 dark:text-white">ไม่เกิน {{ $class->max_members }} คน</span>
                         </div>
                     </div>
 
-                    <div class="mt-auto grid grid-cols-2 gap-2">
+                    {{-- Footer Actions --}}
+                    <div class="mt-auto flex flex-col gap-3">
                         @if ($class->rules_url)
                             <a href="{{ route('admin.competitions.classes.rule', [$competition->id, $class->id]) }}"
                                 target="_blank"
-                                class="col-span-2 flex justify-center items-center py-2 text-xs font-semibold text-purple-600 bg-purple-50 hover:bg-purple-100 dark:bg-purple-500/10 dark:hover:bg-purple-500/20 rounded-xl transition-colors mb-2">
-                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2zM13 3v5h5M9 13h6m-6 4h6" />
-                                </svg>
+                                class="flex justify-center items-center py-2.5 text-sm font-semibold text-purple-600 dark:text-purple-400 bg-purple-50 hover:bg-purple-100 dark:bg-purple-900/20 dark:hover:bg-purple-900/40 rounded-xl transition-colors border border-transparent hover:border-purple-200 dark:hover:border-purple-800">
+                                <i class="fas fa-file-pdf mr-2 text-lg"></i>
                                 ดูกติกาการแข่งขัน (PDF)
                             </a>
                         @endif
 
-                        <button
-                            @click="editClass = {
-                            id: '{{ $class->id }}', 
-                            name: '{{ addslashes($class->name) }}', 
-                            entry_fee: '{{ $class->entry_fee }}',
-                            max_members: '{{ $class->max_members }}', 
-                            max_teams: '{{ $class->max_teams }}', 
-                            game_type_name: '{{ addslashes($class->game_type_name) }}',
-                            robot_name: '{{ addslashes($class->robot_name) }}', 
-                            
-                            /* 💡 ดึงจาก robot_weight ใน DB มาใส่ให้ */
-                            robot_weight: '{{ $class->robot_weight }}', 
-                            
-                            /* 💡 ดึงหมวดหมู่อายุตัวแรกออกมาเป็น String ให้ Radio Button */
-                            allowed_category: '{{ !empty($class->allowed_categories) ? $class->allowed_categories[0]['name'] : '' }}'
-                            
-                        }; $dispatch('open-modal', 'edit-class')"
-                            class="py-2 text-yellow-500 hover:bg-yellow-50 dark:hover:bg-yellow-500/10 rounded-xl text-xs font-semibold flex justify-center items-center transition-colors">
-                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                            </svg>
-                            แก้ไข
-                        </button>
+                        <div class="grid grid-cols-2 gap-3 pt-4 border-t border-gray-100 dark:border-gray-800">
+                            <button @click="editClass = {
+                                    id: '{{ $class->id }}', 
+                                    name: '{{ addslashes($class->name) }}', 
+                                    entry_fee: '{{ $class->entry_fee }}',
+                                    max_members: '{{ $class->max_members }}', 
+                                    max_teams: '{{ $class->max_teams }}', 
+                                    game_type_name: '{{ addslashes($class->game_type_name) }}',
+                                    robot_name: '{{ addslashes($class->robot_name) }}', 
+                                    robot_weight: '{{ $class->robot_weight }}', 
+                                    allowed_category: '{{ !empty($class->allowed_categories) ? $class->allowed_categories[0]['name'] : '' }}'
+                                }; $dispatch('open-modal', 'edit-class')"
+                                class="py-2.5 text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/20 dark:hover:bg-blue-900/40 rounded-xl text-sm font-semibold flex justify-center items-center transition-colors">
+                                <i class="fas fa-pen mr-2 text-[11px]"></i> แก้ไข
+                            </button>
 
-                        <button
-                            onclick="confirmDelete('{{ route('admin.competitions.classes.destroy', [$competition->id, $class->id]) }}', '{{ addslashes($class->name) }}')"
-                            class="py-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-xl text-xs font-semibold flex justify-center items-center transition-colors">
-                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                            </svg>
-                            ลบ
-                        </button>
+                            <button onclick="confirmDelete('{{ route('admin.competitions.classes.destroy', [$competition->id, $class->id]) }}', '{{ addslashes($class->name) }}')"
+                                class="py-2.5 text-red-500 hover:text-red-600 bg-red-50 hover:bg-red-100 dark:bg-red-900/20 dark:hover:bg-red-900/40 rounded-xl text-sm font-semibold flex justify-center items-center transition-colors">
+                                <i class="fas fa-trash-alt mr-2 text-[11px]"></i> ลบ
+                            </button>
+                        </div>
                     </div>
                 </div>
             @empty
-                <div
-                    class="col-span-full py-20 flex flex-col items-center justify-center border-2 border-dashed border-gray-200 dark:border-gray-800 rounded-2xl">
-                    <svg class="w-12 h-12 text-gray-300 dark:text-gray-600 mb-4" fill="none" stroke="currentColor"
-                        viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                            d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                    </svg>
-                    <p class="text-gray-500 dark:text-gray-400 font-normal">ยังไม่มีรุ่นการแข่งขันในงานนี้</p>
+                <div class="col-span-full py-24 flex flex-col items-center justify-center border-2 border-dashed border-gray-200 dark:border-gray-800 rounded-2xl bg-white/50 dark:bg-[#1a1a1a]/50">
+                    <div class="w-20 h-20 bg-gray-50 dark:bg-[#111] rounded-full flex items-center justify-center mb-5">
+                        <i class="fas fa-layer-group text-4xl text-gray-300 dark:text-gray-600"></i>
+                    </div>
+                    <p class="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-1">ยังไม่มีรุ่นการแข่งขันในงานนี้</p>
+                    <p class="text-sm font-normal text-gray-500 dark:text-gray-400 mb-6">กดปุ่ม "เพิ่มรุ่นการแข่งขัน" เพื่อเริ่มต้น</p>
+                    <button @click="$dispatch('open-modal', 'add-class')"
+                        class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-xl shadow-md transition-colors flex items-center gap-2">
+                        <i class="fas fa-plus"></i> เพิ่มรุ่นการแข่งขัน
+                    </button>
                 </div>
             @endforelse
         </div>
 
         {{-- ========================================== --}}
-        {{-- Modal: เพิ่มรุ่นการแข่งขัน --}}
+        {{-- Modal: เพิ่มรุ่นการแข่งขัน (Structure Fix) --}}
         {{-- ========================================== --}}
         <x-modal name="add-class" focusable maxWidth="3xl">
-            <div class="bg-white dark:bg-[#1a1a1a] flex flex-col max-h-[90vh]">
-                <div class="px-6 py-4 border-b border-gray-100 dark:border-white/5 shrink-0">
-                    <h2 class="text-xl font-semibold text-gray-900 dark:text-white">เพิ่มรุ่นการแข่งขัน</h2>
+            <div class="bg-white dark:bg-[#1a1a1a] flex flex-col h-[90vh] overflow-hidden rounded-2xl">
+                
+                {{-- Header --}}
+                <div class="px-6 py-5 border-b border-gray-200 dark:border-gray-800 shrink-0 flex items-center justify-between bg-white dark:bg-[#1a1a1a] z-20">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-xl flex items-center justify-center">
+                            <i class="fas fa-plus-circle text-lg"></i>
+                        </div>
+                        <h2 class="text-xl font-semibold text-gray-900 dark:text-white">เพิ่มรุ่นการแข่งขันใหม่</h2>
+                    </div>
+                    <button @click="$dispatch('close-modal', 'add-class')" type="button" class="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors focus:outline-none">
+                        <i class="fas fa-times text-lg"></i>
+                    </button>
                 </div>
 
-                <div class="p-6 overflow-y-auto">
-                    <form method="POST" action="{{ route('admin.competitions.classes.store', $competition->id) }}"
-                        enctype="multipart/form-data">
-                        @csrf
+                <form method="POST" action="{{ route('admin.competitions.classes.store', $competition->id) }}" enctype="multipart/form-data" class="flex flex-col flex-1 min-h-0">
+                    @csrf
+                    
+                    {{-- Body Scrollable --}}
+                    <div class="p-6 sm:p-8 overflow-y-auto custom-scrollbar flex-1 space-y-6">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-                            <div class="md:col-span-2">
-                                <label
-                                    class="block text-xs font-semibold uppercase text-gray-400 mb-2">ชื่อรุ่นการแข่งขัน
-                                    *</label>
-                                <input type="text" name="name" 
-                                    placeholder="เช่น Mega Sumo 3Kg - Junior"
-                                    class="w-full border-gray-100 dark:border-white/5 dark:bg-[#0f0f0f] dark:text-white rounded-xl focus:ring-blue-500 font-normal">
+                            {{-- ชื่อรุ่น --}}
+                            <div class="md:col-span-2 space-y-2">
+                                <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300">ชื่อรุ่นการแข่งขัน <span class="text-red-500">*</span></label>
+                                <input type="text" name="name" required placeholder="เช่น Mega Sumo 3Kg - Junior"
+                                    class="w-full px-4 py-3 text-sm border-gray-200 dark:border-gray-700 dark:bg-black/20 dark:text-white rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all outline-none">
                             </div>
 
-                            <div
-                                class="md:col-span-2 p-5 bg-blue-50 dark:bg-blue-900/10 rounded-2xl border border-blue-100 dark:border-blue-500/20">
-                                <div class="flex items-center mb-4 text-blue-600 dark:text-blue-400">
-                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor"
-                                        viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M13 10V3L4 14h7v7l9-11h-7z" />
-                                    </svg>
-                                    <span class="font-semibold">ตั้งค่าหุ่นยนต์</span>
+                            {{-- กล่องตั้งค่าหุ่นยนต์ --}}
+                            <div class="md:col-span-2 p-6 bg-blue-50/50 dark:bg-blue-900/10 rounded-2xl border border-blue-100 dark:border-blue-900/30">
+                                <div class="flex items-center mb-5 border-b border-blue-100 dark:border-blue-900/30 pb-3">
+                                    <i class="fas fa-robot text-blue-500 mr-2 text-lg"></i>
+                                    <h3 class="text-base font-semibold text-blue-700 dark:text-blue-400">ตั้งค่าหุ่นยนต์ที่ใช้แข่ง</h3>
                                 </div>
 
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div>
-                                        <label
-                                            class="block text-xs font-semibold uppercase text-gray-500 mb-2">เลือกแม่แบบหุ่นยนต์
-                                            (เพื่อ Auto-fill)</label>
-                                        <select x-model="newClass.robot_model_id" @change="fillRobotData('new')"
-                                            class="w-full border-gray-200 dark:border-gray-700 dark:bg-[#1a1a1a] dark:text-white rounded-xl focus:ring-blue-500 font-normal">
-                                            <option value="">-- เลือกแม่แบบ --</option>
-                                            @foreach ($robotModels as $model)
-                                                <option value="{{ $model->id }}">{{ $model->name }}
-                                                    ({{ $model->standard_weight }} Kg)</option>
-                                            @endforeach
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <label
-                                            class="block text-xs font-semibold uppercase text-gray-500 mb-2">ประเภทเกมแข่งขัน
-                                            *</label>
-                                        <select name="game_type_name" 
-                                            class="w-full border-gray-200 dark:border-gray-700 dark:bg-[#1a1a1a] dark:text-white rounded-xl focus:ring-blue-500 font-normal">
-                                            <option value="">-- เลือกประเภท --</option>
-                                            @foreach ($gameTypes as $game)
-                                                <option value="{{ $game->name }}">{{ $game->name }}</option>
-                                            @endforeach
-                                        </select>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                    {{-- เลือกแม่แบบ --}}
+                                    <div class="space-y-2">
+                                        <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400">เลือกแม่แบบหุ่นยนต์ (Auto-fill)</label>
+                                        <div x-data="{ open: false }" class="relative" @click.outside="open = false">
+                                            <button @click="open = !open" type="button" class="w-full px-4 py-3 bg-white dark:bg-[#111] border border-blue-200 dark:border-blue-800/50 rounded-xl text-sm text-left flex items-center justify-between focus:ring-2 focus:ring-blue-500/20 outline-none transition-colors">
+                                                <span x-text="robotModels.find(r => r.id == newClass.robot_model_id)?.name || '-- เลือกแม่แบบ --'" class="text-gray-900 dark:text-white"></span>
+                                                <i class="fas fa-chevron-down text-xs text-gray-400" :class="open && 'rotate-180'"></i>
+                                            </button>
+                                            <div x-show="open" style="display:none" class="absolute z-[60] w-full mt-1 bg-white dark:bg-[#222] shadow-xl rounded-xl border border-gray-100 dark:border-gray-700 overflow-hidden max-h-48 overflow-y-auto">
+                                                <div @click="newClass.robot_model_id = ''; fillRobotData('new'); open = false" class="px-4 py-3 text-sm cursor-pointer hover:bg-blue-50 dark:hover:bg-gray-700 text-gray-500 italic">-- เลือกแม่แบบ --</div>
+                                                @foreach ($robotModels as $model)
+                                                    <div @click="newClass.robot_model_id = '{{ $model->id }}'; fillRobotData('new'); open = false" class="px-4 py-3 text-sm cursor-pointer hover:bg-blue-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300">
+                                                        {{ $model->name }} ({{ $model->standard_weight }} Kg)
+                                                    </div>
+                                                @endforeach
+                                            </div>
+                                            <input type="hidden" name="robot_model_id" x-model="newClass.robot_model_id">
+                                        </div>
                                     </div>
 
-                                    <div>
-                                        <label
-                                            class="block text-xs font-semibold uppercase text-gray-500 mb-2">ชื่อหุ่นยนต์ที่จะใช้แข่ง
-                                            *</label>
-                                        <input type="text" name="robot_name" x-model="newClass.robot_name"
-                                            
-                                            class="w-full border-gray-200 dark:border-gray-700 dark:bg-[#1a1a1a] dark:text-white rounded-xl focus:ring-blue-500 font-semibold text-blue-600">
-                                    </div>
-                                    <div>
-                                        <label
-                                            class="block text-xs font-semibold uppercase text-gray-500 mb-2">พิกัดน้ำหนัก
-                                            (Kg.)</label>
-                                        <input type="number" step="0.01" name="robot_weight"
-                                            x-model="newClass.robot_weight"
-                                            class="w-full border-gray-200 dark:border-gray-700 dark:bg-[#1a1a1a] dark:text-white rounded-xl focus:ring-blue-500 font-semibold text-blue-600">
+                                    {{-- ประเภทเกม --}}
+                                    <div class="space-y-2">
+                                        <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400">ประเภทเกมแข่งขัน <span class="text-red-500">*</span></label>
+                                        <div x-data="{ open: false, selected: '' }" class="relative" @click.outside="open = false">
+                                            <button @click="open = !open" type="button" class="w-full px-4 py-3 bg-white dark:bg-[#111] border border-gray-200 dark:border-gray-700 rounded-xl text-sm text-left flex items-center justify-between focus:ring-2 focus:ring-blue-500/20 outline-none">
+                                                <span x-text="selected || '-- เลือกประเภท --'" class="text-gray-900 dark:text-white"></span>
+                                                <i class="fas fa-chevron-down text-xs text-gray-400" :class="open && 'rotate-180'"></i>
+                                            </button>
+                                            <div x-show="open" style="display:none" class="absolute z-[60] w-full mt-1 bg-white dark:bg-[#222] shadow-xl rounded-xl border border-gray-100 dark:border-gray-700 overflow-hidden max-h-48 overflow-y-auto">
+                                                @foreach ($gameTypes as $game)
+                                                    <div @click="selected = '{{ $game->name }}'; open = false" class="px-4 py-3 text-sm cursor-pointer hover:bg-blue-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300">{{ $game->name }}</div>
+                                                @endforeach
+                                            </div>
+                                            <input type="hidden" name="game_type_name" x-model="selected" required>
+                                        </div>
                                     </div>
 
-                                    <div class="md:col-span-2">
-                                        <label
-                                            class="block text-xs font-semibold uppercase text-gray-500 mb-2">อัปโหลดรูปหุ่นยนต์ใหม่
-                                            (ข้ามได้ถ้ารูปเดิมดีแล้ว)</label>
+                                    {{-- ชื่อหุ่น --}}
+                                    <div class="space-y-2">
+                                        <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400">ชื่อหุ่นยนต์ที่จะใช้แข่ง <span class="text-red-500">*</span></label>
+                                        <input type="text" name="robot_name" x-model="newClass.robot_name" required
+                                            class="w-full px-4 py-3 text-sm border-gray-200 dark:border-gray-700 bg-white dark:bg-[#111]  rounded-xl focus:ring-2 focus:ring-blue-500/20 font-semibold text-blue-600 dark:text-blue-400 outline-none transition-colors">
+                                    </div>
+
+                                    {{-- น้ำหนัก --}}
+                                    <div class="space-y-2">
+                                        <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400">พิกัดน้ำหนัก (Kg.)</label>
+                                        <input type="number" step="0.01" name="robot_weight" x-model="newClass.robot_weight"
+                                            class="w-full px-4 py-3 text-sm border-gray-200 dark:border-gray-700 bg-white dark:bg-[#111]  rounded-xl focus:ring-2 focus:ring-blue-500/20 font-semibold text-blue-600 dark:text-blue-400 outline-none transition-colors">
+                                    </div>
+
+                                    {{-- รูปหุ่น --}}
+                                    <div class="md:col-span-2 mt-2">
+                                        <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2">อัปโหลดรูปหุ่นยนต์ (ข้ามได้ถ้ารูปเดิมดีแล้ว)</label>
                                         <input type="file" name="robot_image" accept="image/*"
-                                            class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:bg-white dark:file:bg-gray-800 file:text-blue-500 font-normal">
-                                        <input type="hidden" name="master_robot_image_url"
-                                            x-model="newClass.master_robot_image_url">
+                                            class="w-full text-sm text-gray-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-blue-100 dark:file:bg-blue-900/30 file:text-blue-700 dark:file:text-blue-400 hover:file:bg-blue-200 cursor-pointer transition-colors">
+                                        <input type="hidden" name="master_robot_image_url" x-model="newClass.master_robot_image_url">
                                     </div>
                                 </div>
                             </div>
 
-                            <div>
-                                <label class="block text-xs font-semibold uppercase text-gray-400 mb-2">ค่าสมัคร (บาท)
-                                    *</label>
-                                <input type="number" name="entry_fee"  value="0" min="0"
-                                    class="w-full border-gray-100 dark:border-white/5 dark:bg-[#0f0f0f] dark:text-white rounded-xl focus:ring-blue-500 font-normal">
+                            {{-- กติกา ค่าสมัคร จำนวน --}}
+                            <div class="space-y-2">
+                                <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300">ค่าสมัคร (บาท) <span class="text-red-500">*</span></label>
+                                <div class="relative">
+                                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                        <i class="fas fa-baht-sign text-gray-400"></i>
+                                    </div>
+                                    <input type="number" name="entry_fee" value="0" min="0" required
+                                        class="w-full pl-10 pr-4 py-3 text-sm border-gray-200 dark:border-gray-700 dark:bg-black/20 dark:text-white rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none transition-all">
+                                </div>
                             </div>
-                            <div>
-                                <label class="block text-xs font-semibold uppercase text-gray-400 mb-2">สมาชิกสูงสุด
-                                    (คน/ทีม) *</label>
-                                <input type="number" name="max_members"  value="1" min="1"
-                                    class="w-full border-gray-100 dark:border-white/5 dark:bg-[#0f0f0f] dark:text-white rounded-xl focus:ring-blue-500 font-normal">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-semibold uppercase text-gray-400 mb-2">จำนวนทีมที่รับ
-                                    (เว้นว่าง = ไม่อั้น)</label>
-                                <input type="number" name="max_teams" min="1" placeholder="ไม่จำกัด"
-                                    class="w-full border-gray-100 dark:border-white/5 dark:bg-[#0f0f0f] dark:text-white rounded-xl focus:ring-blue-500 font-normal">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-semibold uppercase text-gray-400 mb-2">ไฟล์กติกา PDF
-                                    (เฉพาะรุ่นนี้)</label>
+
+                            <div class="space-y-2">
+                                <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300">ไฟล์กติกา PDF (เฉพาะรุ่นนี้)</label>
                                 <input type="file" name="rule_pdf" accept="application/pdf"
-                                    class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:bg-purple-50 dark:file:bg-purple-900/20 file:text-purple-500 font-normal">
+                                    class="w-full text-sm text-gray-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-purple-50 dark:file:bg-purple-900/20 file:text-purple-600 dark:file:text-purple-400 hover:file:bg-purple-100 cursor-pointer transition-colors">
                             </div>
 
-                            <div class="md:col-span-2">
-                                <label
-                                    class="block text-xs font-semibold uppercase text-gray-400 mb-3">หมวดหมู่อายุที่ลงแข่งได้
-                                    (เลือก 1 รุ่น) *</label>
-                                <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                            <div class="space-y-2">
+                                <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300">สมาชิกสูงสุด (คน/ทีม) <span class="text-red-500">*</span></label>
+                                <div class="relative">
+                                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                        <i class="fas fa-users text-gray-400"></i>
+                                    </div>
+                                    <input type="number" name="max_members" value="1" min="1" required
+                                        class="w-full pl-10 pr-4 py-3 text-sm border-gray-200 dark:border-gray-700 dark:bg-black/20 dark:text-white rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none transition-all">
+                                </div>
+                            </div>
+
+                            <div class="space-y-2">
+                                <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300">จำนวนทีมที่รับ <span class="text-gray-400 font-normal">(เว้นว่าง = ไม่อั้น)</span></label>
+                                <input type="number" name="max_teams" min="1" placeholder="ไม่จำกัด"
+                                    class="w-full px-4 py-3 text-sm border-gray-200 dark:border-gray-700 dark:bg-black/20 dark:text-white rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none transition-all">
+                            </div>
+
+                            {{-- หมวดหมู่อายุ --}}
+                            <div class="md:col-span-2 space-y-3 mt-2">
+                                <div class="flex items-center gap-2 mb-1 border-b border-gray-100 dark:border-gray-800 pb-2">
+                                    <i class="fas fa-user-graduate text-blue-500"></i>
+                                    <label class="block text-base font-semibold text-gray-800 dark:text-gray-200">หมวดหมู่อายุที่ลงแข่งได้ <span class="text-red-500">*</span></label>
+                                </div>
+                                <div class="grid grid-cols-2 md:grid-cols-3 gap-3" x-data="{ selectedAge: '' }">
                                     @foreach ($categories as $category)
-                                        <label
-                                            class="flex items-center p-3 border border-gray-100 dark:border-white/5 rounded-xl cursor-pointer hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
-
-                                            <input type="radio" name="allowed_category"
-                                                value="{{ $category->name }}"
-                                                class="w-4 h-4 text-blue-600 border-gray-300 rounded-full focus:ring-blue-500 mr-3">
-
+                                        <label class="flex items-center p-3.5 border-2 rounded-xl cursor-pointer transition-all duration-200"
+                                               :class="selectedAge === '{{ $category->name }}' ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 shadow-sm' : 'border-gray-100 dark:border-gray-800 bg-white dark:bg-[#111] hover:border-blue-200 dark:hover:border-gray-600'">
+                                            
+                                            <input type="radio" name="allowed_category" value="{{ $category->name }}" required
+                                                x-model="selectedAge"
+                                                class="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500 mr-3 mt-0.5">
+                                            
                                             <div class="flex flex-col">
-                                                <span
-                                                    class="text-sm font-semibold text-gray-900 dark:text-white">{{ $category->name }}</span>
-                                                <span
-                                                    class="text-[10px] text-gray-500 font-normal">{{ $category->min_age }}
-                                                    - {{ $category->max_age }} ปี</span>
+                                                <span class="text-sm font-semibold text-gray-900 dark:text-white leading-tight mb-0.5">{{ $category->name }}</span>
+                                                <span class="text-[11px] text-gray-500 font-medium bg-gray-100 dark:bg-black/40 px-2 py-0.5 rounded-md w-fit">{{ $category->min_age }} - {{ $category->max_age }} ปี</span>
                                             </div>
                                         </label>
                                     @endforeach
@@ -374,126 +352,174 @@
                             </div>
 
                         </div>
+                    </div>
 
-                        <div class="mt-8 flex justify-end space-x-3 pt-4 border-t border-gray-100 dark:border-white/5">
-                            <button type="button" @click="$dispatch('close')"
-                                class="px-6 py-2.5 bg-gray-100 dark:bg-gray-800 text-gray-500 rounded-xl text-xs font-semibold uppercase tracking-widest transition-all">ยกเลิก</button>
-                            <button type="submit"
-                                class="px-6 py-2.5 bg-blue-600 text-white rounded-xl text-xs font-semibold uppercase tracking-widest shadow-lg shadow-blue-500/20 transition-all">บันทึกข้อมูล</button>
-                        </div>
-                    </form>
-                </div>
+                    {{-- Footer --}}
+                    <div class="px-6 py-4 bg-gray-50 dark:bg-[#111] border-t border-gray-200 dark:border-gray-800 shrink-0 flex justify-end gap-3 z-20">
+                        <button type="button" @click="$dispatch('close-modal', 'add-class')" class="px-6 py-2.5 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-xl text-sm font-semibold transition-colors focus:outline-none shadow-sm">ยกเลิก</button>
+                        <button type="submit" class="px-8 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-semibold shadow-md flex items-center gap-2 transition-all">
+                            <i class="fas fa-save"></i> บันทึกข้อมูล
+                        </button>
+                    </div>
+                </form>
             </div>
         </x-modal>
 
-
-            {{-- ========================================== --}}
-        {{-- Modal: แก้ไขรุ่นการแข่งขัน --}}
+        {{-- ========================================== --}}
+        {{-- Modal: แก้ไขรุ่นการแข่งขัน (Structure Fix) --}}
         {{-- ========================================== --}}
         <x-modal name="edit-class" focusable maxWidth="3xl">
-            <div class="bg-white dark:bg-[#1a1a1a] flex flex-col max-h-[90vh]">
-                <div class="px-6 py-4 border-b border-gray-100 dark:border-white/5 shrink-0 bg-yellow-50 dark:bg-yellow-500/10">
-                    <h2 class="text-xl font-semibold text-yellow-700 dark:text-yellow-500 flex items-center">
-                        <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
-                        แก้ไขรุ่นการแข่งขัน
-                    </h2>
+            <div class="bg-white dark:bg-[#1a1a1a] flex flex-col h-[90vh] overflow-hidden rounded-2xl">
+                
+                {{-- Header --}}
+                <div class="px-6 py-5 border-b border-gray-200 dark:border-gray-800 shrink-0 flex items-center justify-between bg-white dark:bg-[#1a1a1a] z-20">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-xl flex items-center justify-center">
+                            <i class="fas fa-pen text-lg"></i>
+                        </div>
+                        <h2 class="text-xl font-semibold text-gray-900 dark:text-white">แก้ไขรุ่นการแข่งขัน</h2>
+                    </div>
+                    <button @click="$dispatch('close-modal', 'edit-class')" type="button" class="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors focus:outline-none">
+                        <i class="fas fa-times text-lg"></i>
+                    </button>
                 </div>
 
-                <div class="p-6 overflow-y-auto">
-                    <form method="POST" :action="`{{ url('/admin/competitions/' . $competition->id . '/classes') }}/${editClass.id}`" enctype="multipart/form-data">
-                        @csrf
-                        @method('PUT')
+                <form method="POST" :action="`{{ url('/admin/competitions/' . $competition->id . '/classes') }}/${editClass.id}`" enctype="multipart/form-data" class="flex flex-col flex-1 min-h-0">
+                    @csrf @method('PUT')
+                    
+                    {{-- Body Scrollable --}}
+                    <div class="p-6 sm:p-8 overflow-y-auto custom-scrollbar flex-1 space-y-6">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-                            <div class="md:col-span-2">
-                                <label class="block text-xs font-semibold uppercase text-gray-400 mb-2">ชื่อรุ่นการแข่งขัน *</label>
+                            {{-- ชื่อรุ่น --}}
+                            <div class="md:col-span-2 space-y-2">
+                                <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300">ชื่อรุ่นการแข่งขัน <span class="text-red-500">*</span></label>
                                 <input type="text" name="name" x-model="editClass.name" required
-                                    class="w-full border-gray-100 dark:border-white/5 dark:bg-[#0f0f0f] dark:text-white rounded-xl focus:ring-yellow-500 font-normal">
+                                    class="w-full px-4 py-3 text-sm border-gray-200 dark:border-gray-700 dark:bg-black/20 dark:text-white rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all outline-none">
                             </div>
 
-                            <div class="md:col-span-2 p-5 bg-gray-50 dark:bg-[#0f0f0f] rounded-2xl border border-gray-100 dark:border-white/5">
-                                <div class="flex items-center mb-4 text-gray-600 dark:text-gray-400">
-                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                                    <span class="font-semibold">ตั้งค่าหุ่นยนต์</span>
+                            {{-- กล่องตั้งค่าหุ่นยนต์ --}}
+                            <div class="md:col-span-2 p-6 bg-gray-50 dark:bg-[#111] rounded-2xl border border-gray-200 dark:border-gray-800">
+                                <div class="flex items-center mb-5 border-b border-gray-200 dark:border-gray-700 pb-3">
+                                    <i class="fas fa-robot text-gray-500 mr-2 text-lg"></i>
+                                    <h3 class="text-base font-semibold text-gray-800 dark:text-gray-200">ตั้งค่าหุ่นยนต์ที่ใช้แข่ง</h3>
                                 </div>
 
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div>
-                                        <label class="block text-xs font-semibold uppercase text-gray-500 mb-2">ดึงข้อมูลจากแม่แบบใหม่ (ถ้าต้องการเปลี่ยน)</label>
-                                        <select x-model="editClass.robot_model_id" @change="fillRobotData('edit')"
-                                                class="w-full border-gray-200 dark:border-gray-700 dark:bg-[#1a1a1a] dark:text-white rounded-xl focus:ring-yellow-500 font-normal">
-                                            <option value="">-- ไม่เปลี่ยนแม่แบบ --</option>
-                                            @foreach ($robotModels as $model)
-                                                <option value="{{ $model->id }}">{{ $model->name }} ({{ $model->standard_weight }} Kg)</option>
-                                            @endforeach
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <label class="block text-xs font-semibold uppercase text-gray-500 mb-2">ประเภทเกมแข่งขัน *</label>
-                                        <select name="game_type_name" x-model="editClass.game_type_name" required
-                                            class="w-full border-gray-200 dark:border-gray-700 dark:bg-[#1a1a1a] dark:text-white rounded-xl focus:ring-yellow-500 font-normal">
-                                            <option value="">-- เลือกประเภท --</option>
-                                            @foreach ($gameTypes as $game)
-                                                <option value="{{ $game->name }}">{{ $game->name }}</option>
-                                            @endforeach
-                                        </select>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                    {{-- เลือกแม่แบบ --}}
+                                    <div class="space-y-2">
+                                        <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400">ดึงข้อมูลจากแม่แบบใหม่ (ข้ามได้)</label>
+                                        <div x-data="{ open: false }" class="relative" @click.outside="open = false">
+                                            <button @click="open = !open" type="button" class="w-full px-4 py-3 bg-white dark:bg-[#1a1a1a] border border-gray-200 dark:border-gray-700 rounded-xl text-sm text-left flex items-center justify-between focus:ring-2 focus:ring-blue-500/20 outline-none transition-colors">
+                                                <span x-text="robotModels.find(r => r.id == editClass.robot_model_id)?.name || '-- ไม่เปลี่ยนแม่แบบ --'" class="text-gray-900 dark:text-white"></span>
+                                                <i class="fas fa-chevron-down text-xs text-gray-400" :class="open && 'rotate-180'"></i>
+                                            </button>
+                                            <div x-show="open" style="display:none" class="absolute z-[60] w-full mt-1 bg-white dark:bg-[#222] shadow-xl rounded-xl border border-gray-100 dark:border-gray-700 overflow-hidden max-h-48 overflow-y-auto">
+                                                <div @click="editClass.robot_model_id = ''; open = false" class="px-4 py-3 text-sm cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-500 italic">-- ไม่เปลี่ยนแม่แบบ --</div>
+                                                @foreach ($robotModels as $model)
+                                                    <div @click="editClass.robot_model_id = '{{ $model->id }}'; fillRobotData('edit'); open = false" class="px-4 py-3 text-sm cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300">
+                                                        {{ $model->name }} ({{ $model->standard_weight }} Kg)
+                                                    </div>
+                                                @endforeach
+                                            </div>
+                                            <input type="hidden" name="robot_model_id" x-model="editClass.robot_model_id">
+                                        </div>
                                     </div>
 
-                                    <div>
-                                        <label class="block text-xs font-semibold uppercase text-gray-500 mb-2">ชื่อหุ่นยนต์ที่จะใช้แข่ง *</label>
+                                    {{-- ประเภทเกม --}}
+                                    <div class="space-y-2">
+                                        <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400">ประเภทเกมแข่งขัน <span class="text-red-500">*</span></label>
+                                        <div x-data="{ open: false }" class="relative" @click.outside="open = false">
+                                            <button @click="open = !open" type="button" class="w-full px-4 py-3 bg-white dark:bg-[#1a1a1a] border border-gray-200 dark:border-gray-700 rounded-xl text-sm text-left flex items-center justify-between focus:ring-2 focus:ring-blue-500/20 outline-none">
+                                                <span x-text="editClass.game_type_name || '-- เลือกประเภท --'" class="text-gray-900 dark:text-white"></span>
+                                                <i class="fas fa-chevron-down text-xs text-gray-400" :class="open && 'rotate-180'"></i>
+                                            </button>
+                                            <div x-show="open" style="display:none" class="absolute z-[60] w-full mt-1 bg-white dark:bg-[#222] shadow-xl rounded-xl border border-gray-100 dark:border-gray-700 overflow-hidden max-h-48 overflow-y-auto">
+                                                @foreach ($gameTypes as $game)
+                                                    <div @click="editClass.game_type_name = '{{ $game->name }}'; open = false" class="px-4 py-3 text-sm cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300">{{ $game->name }}</div>
+                                                @endforeach
+                                            </div>
+                                            <input type="hidden" name="game_type_name" x-model="editClass.game_type_name" required>
+                                        </div>
+                                    </div>
+
+                                    {{-- ชื่อหุ่น --}}
+                                    <div class="space-y-2">
+                                        <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400">ชื่อหุ่นยนต์ที่จะใช้แข่ง <span class="text-red-500">*</span></label>
                                         <input type="text" name="robot_name" x-model="editClass.robot_name" required
-                                            class="w-full border-gray-200 dark:border-gray-700 dark:bg-[#1a1a1a] dark:text-white rounded-xl focus:ring-yellow-500 font-semibold text-gray-900">
-                                    </div>
-                                    <div>
-                                        <label class="block text-xs font-semibold uppercase text-gray-500 mb-2">พิกัดน้ำหนัก (Kg.)</label>
-                                        <input type="number" step="0.01" name="robot_weight" x-model="editClass.robot_weight"
-                                            class="w-full border-gray-200 dark:border-gray-700 dark:bg-[#1a1a1a] dark:text-white rounded-xl focus:ring-yellow-500 font-semibold text-gray-900 ">
+                                            class="w-full px-4 py-3 text-sm border-gray-200 dark:border-gray-700 bg-white dark:bg-[#1a1a1a]  rounded-xl focus:ring-2 focus:ring-blue-500/20 font-semibold text-gray-900 dark:text-gray-100 outline-none transition-colors">
                                     </div>
 
-                                    <div class="md:col-span-2">
-                                        <label class="block text-xs font-semibold uppercase text-gray-500 mb-2">อัปโหลดรูปหุ่นยนต์ใหม่ (ข้ามได้ถ้ารูปเดิมดีแล้ว)</label>
+                                    {{-- น้ำหนัก --}}
+                                    <div class="space-y-2">
+                                        <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400">พิกัดน้ำหนัก (Kg.)</label>
+                                        <input type="number" step="0.01" name="robot_weight" x-model="editClass.robot_weight"
+                                            class="w-full px-4 py-3 text-sm border-gray-200 dark:border-gray-700 bg-white dark:bg-[#1a1a1a]  rounded-xl focus:ring-2 focus:ring-blue-500/20 font-semibold text-gray-900 dark:text-gray-100 outline-none transition-colors">
+                                    </div>
+
+                                    {{-- รูปหุ่น --}}
+                                    <div class="md:col-span-2 mt-2">
+                                        <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2">อัปโหลดรูปหุ่นยนต์ใหม่ <span class="font-normal">(ข้ามได้ถ้ารูปเดิมดีแล้ว)</span></label>
                                         <input type="file" name="robot_image" accept="image/*"
-                                            class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:bg-white dark:file:bg-gray-800 file:text-yellow-600 font-normal">
-                                        <p class="text-[10px] text-gray-400 mt-1">* หากอัปโหลดรูปใหม่ รูปเดิมจะถูกลบทิ้งอัตโนมัติ</p>
+                                            class="w-full text-sm text-gray-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-gray-100 dark:file:bg-gray-800 file:text-gray-700 dark:file:text-gray-300 hover:file:bg-gray-200 cursor-pointer transition-colors">
+                                        <p class="text-[10px] text-red-500 mt-1.5 ml-1">* หากอัปโหลดรูปใหม่ รูปเดิมจะถูกแทนที่ทันที</p>
                                     </div>
                                 </div>
                             </div>
 
-                            <div>
-                                <label class="block text-xs font-semibold uppercase text-gray-400 mb-2">ค่าสมัคร (บาท) *</label>
-                                <input type="number" name="entry_fee" x-model="editClass.entry_fee" required min="0"
-                                    class="w-full border-gray-100 dark:border-white/5 dark:bg-[#0f0f0f] dark:text-white rounded-xl focus:ring-yellow-500 font-normal">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-semibold uppercase text-gray-400 mb-2">สมาชิกสูงสุด (คน/ทีม) *</label>
-                                <input type="number" name="max_members" x-model="editClass.max_members" required min="1"
-                                    class="w-full border-gray-100 dark:border-white/5 dark:bg-[#0f0f0f] dark:text-white rounded-xl focus:ring-yellow-500 font-normal">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-semibold uppercase text-gray-400 mb-2">จำนวนทีมที่รับ (เว้นว่าง = ไม่อั้น)</label>
-                                <input type="number" name="max_teams" x-model="editClass.max_teams" min="1" placeholder="ไม่จำกัด"
-                                    class="w-full border-gray-100 dark:border-white/5 dark:bg-[#0f0f0f] dark:text-white rounded-xl focus:ring-yellow-500 font-normal">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-semibold uppercase text-gray-400 mb-2">อัปเดตไฟล์กติกา PDF (เฉพาะรุ่นนี้)</label>
-                                <input type="file" name="rule_pdf" accept="application/pdf"
-                                    class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:bg-yellow-50 dark:file:bg-yellow-900/20 file:text-yellow-600 font-normal">
+                            {{-- กติกา ค่าสมัคร จำนวน --}}
+                            <div class="space-y-2">
+                                <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300">ค่าสมัคร (บาท) <span class="text-red-500">*</span></label>
+                                <div class="relative">
+                                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                        <i class="fas fa-baht-sign text-gray-400"></i>
+                                    </div>
+                                    <input type="number" name="entry_fee" x-model="editClass.entry_fee" min="0" required
+                                        class="w-full pl-10 pr-4 py-3 text-sm border-gray-200 dark:border-gray-700 dark:bg-black/20 dark:text-white rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none transition-all">
+                                </div>
                             </div>
 
-                            <div class="md:col-span-2">
-                                <label class="block text-xs font-semibold uppercase text-gray-400 mb-3">หมวดหมู่อายุที่ลงแข่งได้ (เลือก 1 รุ่น) *</label>
+                            <div class="space-y-2">
+                                <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300">อัปเดตไฟล์กติกา PDF</label>
+                                <input type="file" name="rule_pdf" accept="application/pdf"
+                                    class="w-full text-sm text-gray-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-purple-50 dark:file:bg-purple-900/20 file:text-purple-600 dark:file:text-purple-400 hover:file:bg-purple-100 cursor-pointer transition-colors">
+                            </div>
+
+                            <div class="space-y-2">
+                                <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300">สมาชิกสูงสุด (คน/ทีม) <span class="text-red-500">*</span></label>
+                                <div class="relative">
+                                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                        <i class="fas fa-users text-gray-400"></i>
+                                    </div>
+                                    <input type="number" name="max_members" x-model="editClass.max_members" min="1" required
+                                        class="w-full pl-10 pr-4 py-3 text-sm border-gray-200 dark:border-gray-700 dark:bg-black/20 dark:text-white rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none transition-all">
+                                </div>
+                            </div>
+
+                            <div class="space-y-2">
+                                <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300">จำนวนทีมที่รับ <span class="text-gray-400 font-normal">(เว้นว่าง = ไม่อั้น)</span></label>
+                                <input type="number" name="max_teams" x-model="editClass.max_teams" min="1" placeholder="ไม่จำกัด"
+                                    class="w-full px-4 py-3 text-sm border-gray-200 dark:border-gray-700 dark:bg-black/20 dark:text-white rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none transition-all">
+                            </div>
+
+                            {{-- หมวดหมู่อายุ --}}
+                            <div class="md:col-span-2 space-y-3 mt-2">
+                                <div class="flex items-center gap-2 mb-1 border-b border-gray-100 dark:border-gray-800 pb-2">
+                                    <i class="fas fa-user-graduate text-blue-500"></i>
+                                    <label class="block text-base font-semibold text-gray-800 dark:text-gray-200">หมวดหมู่อายุที่ลงแข่งได้ <span class="text-red-500">*</span></label>
+                                </div>
                                 <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
                                     @foreach ($categories as $category)
-                                        <label class="flex items-center p-3 border border-gray-100 dark:border-white/5 rounded-xl cursor-pointer hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
-                                               :class="editClass.allowed_category === '{{ $category->name }}' ? 'border-yellow-500 bg-yellow-50/50 dark:bg-yellow-500/10' : ''">
-
-                                            <input type="radio" name="allowed_category" x-model="editClass.allowed_category"
-                                                value="{{ $category->name }}" required
-                                                class="w-4 h-4 text-yellow-600 border-gray-300 rounded-full focus:ring-yellow-500 mr-3">
-
+                                        <label class="flex items-center p-3.5 border-2 rounded-xl cursor-pointer transition-all duration-200"
+                                               :class="editClass.allowed_category === '{{ $category->name }}' ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 shadow-sm' : 'border-gray-100 dark:border-gray-800 bg-white dark:bg-[#111] hover:border-blue-200 dark:hover:border-gray-600'">
+                                            
+                                            <input type="radio" name="allowed_category" value="{{ $category->name }}" required
+                                                x-model="editClass.allowed_category"
+                                                class="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500 mr-3 mt-0.5">
+                                            
                                             <div class="flex flex-col">
-                                                <span class="text-sm font-semibold text-gray-900 dark:text-white">{{ $category->name }}</span>
-                                                <span class="text-[10px] text-gray-500 font-normal">{{ $category->min_age }} - {{ $category->max_age }} ปี</span>
+                                                <span class="text-sm font-semibold text-gray-900 dark:text-white leading-tight mb-0.5">{{ $category->name }}</span>
+                                                <span class="text-[11px] text-gray-500 font-medium bg-gray-100 dark:bg-black/40 px-2 py-0.5 rounded-md w-fit">{{ $category->min_age }} - {{ $category->max_age }} ปี</span>
                                             </div>
                                         </label>
                                     @endforeach
@@ -501,15 +527,16 @@
                             </div>
 
                         </div>
+                    </div>
 
-                        <div class="mt-8 flex justify-end space-x-3 pt-4 border-t border-gray-100 dark:border-white/5">
-                            <button type="button" @click="$dispatch('close')"
-                                class="px-6 py-2.5 bg-gray-100 dark:bg-gray-800 text-gray-500 rounded-xl text-xs font-semibold uppercase tracking-widest transition-all">ยกเลิก</button>
-                            <button type="submit"
-                                class="px-6 py-2.5 bg-yellow-500 hover:bg-yellow-600 text-white rounded-xl text-xs font-semibold uppercase tracking-widest shadow-lg shadow-yellow-500/20 transition-all">บันทึกการแก้ไข</button>
-                        </div>
-                    </form>
-                </div>
+                    {{-- Footer --}}
+                    <div class="px-6 py-4 bg-gray-50 dark:bg-[#111] border-t border-gray-200 dark:border-gray-800 shrink-0 flex justify-end gap-3 z-20">
+                        <button type="button" @click="$dispatch('close-modal', 'edit-class')" class="px-6 py-2.5 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-xl text-sm font-semibold transition-colors focus:outline-none shadow-sm">ยกเลิก</button>
+                        <button type="submit" class="px-8 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-semibold shadow-md flex items-center gap-2 transition-all">
+                            <i class="fas fa-save"></i> บันทึกการแก้ไข
+                        </button>
+                    </div>
+                </form>
             </div>
         </x-modal>
 
@@ -521,13 +548,18 @@
     <script>
         function confirmDelete(url, name) {
             Swal.fire({
-                title: 'ลบรายการแข่งขัน?',
+                title: 'ลบรายการย่อย?',
                 text: `ต้องการลบ "${name}" ใช่หรือไม่? (ไฟล์กติกาและรูปภาพจะถูกลบด้วย)`,
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#ef4444',
                 confirmButtonText: 'ยืนยันการลบ',
                 cancelButtonText: 'ยกเลิก',
+                customClass: {
+                    popup: 'rounded-2xl font-kanit',
+                    confirmButton: 'rounded-xl px-6 py-2.5 font-semibold',
+                    cancelButton: 'rounded-xl px-6 py-2.5 font-semibold'
+                },
                 background: document.documentElement.classList.contains('dark') ? '#1a1a1a' : '#fff',
                 color: document.documentElement.classList.contains('dark') ? '#fff' : '#000',
             }).then((result) => {

@@ -6,7 +6,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ $title ?? 'Easykids Competitions' }}</title>
+    
     <link href="https://fonts.bunny.net/css?family=kanit:300,400,500,600,700,800,900&display=swap" rel="stylesheet" />
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <link rel="icon" href="{{ asset('images/favicon.png?v=' . time()) }}" type="image/png">
 </head>
@@ -45,8 +49,10 @@
                         ค้นหางานแข่งขัน
                     </a>
 
-                    <a href="#"
-                        class="flex items-center px-4 py-3 text-sm rounded-xl font-normal text-gray-500 hover:text-gray-900 hover:bg-gray-50 dark:text-gray-400 dark:hover:text-white dark:hover:bg-white/5 transition-all duration-300">
+                    @php $isTeams = request()->routeIs('user.teams.*'); @endphp
+                    <a href="{{ route('user.teams.index') }}"
+                        class="flex items-center px-4 py-3 text-sm rounded-xl transition-all duration-300 
+                              {{ $isTeams ? 'text-blue-600 bg-blue-50 dark:bg-blue-500/10 dark:text-blue-400 font-semibold' : 'font-normal text-gray-500 hover:text-gray-900 hover:bg-gray-50 dark:text-gray-400 dark:hover:text-white dark:hover:bg-white/5' }}">
                         <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13.732 4c-.76-1.01-1.93-1.42-3.232-1.42s-2.472.41-3.232 1.42" />
@@ -229,8 +235,10 @@
                                         <template x-for="item in ['เด็กชาย', 'เด็กหญิง', 'นาย', 'นางสาว', 'นาง']">
                                             <div @click="selected = item; open = false"
                                                 class="px-4 py-3 text-xs sm:text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5 cursor-pointer transition-colors"
-                                                :class="{ 'bg-blue-50/80 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 font-semibold': selected ===
-                                                        item }">
+                                                :class="{
+                                                    'bg-blue-50/80 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 font-semibold': selected ===
+                                                        item
+                                                }">
                                                 <span x-text="item"></span>
                                             </div>
                                         </template>
@@ -288,8 +296,10 @@
                                         <template x-for="item in ['Master', 'Miss', 'Mr.', 'Ms.', 'Mrs.']">
                                             <div @click="selected = item; open = false"
                                                 class="px-4 py-3 text-xs sm:text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5 cursor-pointer transition-colors"
-                                                :class="{ 'bg-blue-50/80 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 font-semibold': selected ===
-                                                        item }">
+                                                :class="{
+                                                    'bg-blue-50/80 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 font-semibold': selected ===
+                                                        item
+                                                }">
                                                 <span x-text="item"></span>
                                             </div>
                                         </template>
@@ -358,8 +368,10 @@
                                     <template x-for="item in ['S', 'M', 'L', 'XL', '2XL', '3XL']">
                                         <div @click="selected = item; open = false"
                                             class="px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5 cursor-pointer transition-colors"
-                                            :class="{ 'bg-blue-50/80 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 font-semibold': selected ===
-                                                    item }">
+                                            :class="{
+                                                'bg-blue-50/80 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 font-semibold': selected ===
+                                                    item
+                                            }">
                                             <span x-text="item"></span>
                                         </div>
                                     </template>

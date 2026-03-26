@@ -50,9 +50,8 @@ Route::middleware(['auth', 'verified', 'user_only', 'check.profile', 'revalidate
 
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
 
-    // ระบบจัดการทีมของฉัน
-   
-    Route::resource('teams', TeamController::class)->names('user.teams');
+
+    Route::resource('/teams', TeamController::class)->except(['create', 'show'])->names('user.teams');
 
     // นโยบายและเงื่อนไข
     Route::get('/privacy-policy', function () {
