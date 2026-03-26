@@ -88,7 +88,10 @@
                                             <option value="นาง" {{ old('prefix_th') == 'นาง' ? 'selected' : '' }}>
                                                 นาง</option>
                                             <option value="นางสาว"
-                                                {{ old('prefix_th') == 'นางสาว' ? 'selected' : '' }}>นางสาว</option>
+                                                {{ old('prefix_th') == 'เด็กหญิง' ? 'selected' : '' }}>เด็กหญิง
+                                            </option>
+                                            <option value="นางสาว"
+                                                {{ old('prefix_th') == 'เด็กชาย' ? 'selected' : '' }}>เด็กชาย</option>
                                         </select>
                                     </div>
                                     <div class="col-span-12 sm:col-span-8">
@@ -123,6 +126,10 @@
                                                 Mrs.</option>
                                             <option value="Ms." {{ old('prefix_en') == 'Ms.' ? 'selected' : '' }}>
                                                 Ms.</option>
+                                            <option value="Miss" {{ old('prefix_en') == 'Miss' ? 'selected' : '' }}>
+                                                Miss</option>
+                                            <option value="Master" {{ old('prefix_en') == 'Master' ? 'selected' : '' }}>
+                                                Master</option>
                                         </select>
                                     </div>
                                     <div class="col-span-12 sm:col-span-8">

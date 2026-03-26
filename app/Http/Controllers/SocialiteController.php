@@ -51,18 +51,19 @@ class SocialiteController extends Controller
 
             // --- Logic การ Redirect (ลำดับความสำคัญ) ---
             
-            // 1. ถ้ายังตั้งค่าโปรไฟล์ไม่เสร็จ (ไม่ว่าจะเป็น User เก่าหรือใหม่)
-            if (!$user->has_setup_profile) {
-                return redirect()->route('profile.setup');
-            }
-
-            // 2. ถ้าเป็น Admin ให้ไปหน้า Admin
+            // ถ้าเป็น Admin ให้ไปหน้า Admin
             if ($user->isAdmin()) {
                 return redirect()->intended(route('admin.dashboard'));
             }
 
+            // ถ้ายังตั้งค่าโปรไฟล์ไม่เสร็จ (ไม่ว่าจะเป็น User เก่าหรือใหม่)
+            if (!$user->has_setup_profile) {
+                return redirect()->route('profile.setup');
+            }
+
+
             // 3. กรณีทั่วไป ไปหน้า Dashboard
-            return redirect()->intended(route('dashboard'));
+            return redirect()->intended(route('user.dashboard'));
 
         } catch (\Exception $e) {
             return redirect('/login')->with('error', 'เกิดข้อผิดพลาด: ' . $e->getMessage());

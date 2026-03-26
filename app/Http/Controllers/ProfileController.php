@@ -34,7 +34,9 @@ class ProfileController extends Controller
 
         $request->user()->save();
 
-        return Redirect::route('profile.edit')->with('status', 'profile-updated');
+        return Redirect::back()
+            ->with('status', 'profile-updated')
+            ->with('success', 'ข้อมูลโปรไฟล์ของคุณถูกบันทึกเรียบร้อยแล้ว');
     }
 
     /**

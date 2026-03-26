@@ -17,6 +17,7 @@ class AppServiceProvider extends ServiceProvider
     {
         Blade::component('layouts.setup', 'setup-layout');
         Blade::component('layouts.admin', 'admin-layout');
+        Blade::component('layouts.user', 'user-layout');
 
         Storage::extend('google', function ($app, $config) {
             $client = new Client();

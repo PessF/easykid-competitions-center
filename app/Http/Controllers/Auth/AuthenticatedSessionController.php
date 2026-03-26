@@ -31,18 +31,19 @@ class AuthenticatedSessionController extends Controller
         /** @var \App\Models\User $user */
         $user = Auth::user();
 
-        // 1. ถ้ายังไม่ได้ตั้งค่าโปรไฟล์ (ไม่ว่าจะบทบาทไหน) ให้ไปหน้า Setup ก่อน
-        if (!$user->has_setup_profile) {
-            return redirect()->route('profile.setup.index');
-        }
-
-        // 2. ถ้าเป็น Admin ให้ไปหน้า Admin Dashboard
-        if ($user->role === 'admin') {
+        //ถ้าเป็น Admin ให้ไปหน้า Admin Dashboard
+        if ($user->isAdmin()) {
             return redirect()->intended(route('admin.dashboard'));
         }
 
+        //ถ้ายังไม่ได้ตั้งค่าโปรไฟล์ (ไม่ว่าจะบทบาทไหน) ให้ไปหน้า Setup ก่อน
+        if (!$user->has_setup_profile) {
+            return redirect()->route('profile.setup');
+        }
+
+
         // 3. กรณีปกติ (User) ให้ไปหน้า Dashboard ทั่วไป
-        return redirect()->intended(route('dashboard'));
+        return redirect()->intended(route('user.dashboard'));
     }
 
     /**

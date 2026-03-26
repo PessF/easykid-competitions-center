@@ -3,14 +3,15 @@
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SocialiteController;
 use App\Http\Controllers\ProfileSetupController;
+use App\Models\Competition;
 use App\Http\Controllers\Admin\GameTypeController;
 use App\Http\Controllers\Admin\RobotModelController;
 use App\Http\Controllers\Admin\CompetitionController;
 use App\Http\Controllers\Admin\CategorySettingController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\AdminController;
-// 🟢 1. ดึง CompetitionClassController เข้ามาใช้งาน
-use App\Http\Controllers\Admin\CompetitionClassController; 
+use App\Http\Controllers\Admin\CompetitionClassController;
+use App\Http\Controllers\User\TeamController; 
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -34,11 +35,36 @@ Route::controller(SocialiteController::class)->group(function () {
 Route::middleware(['auth', 'verified', 'user_only', 'check.profile', 'revalidate'])->group(function () {
     
     Route::get('/dashboard', function () {
-        return view('dashboard');
-    })->name('dashboard');
+        $competitions = Competition::whereIn('status', ['registration', 'ongoing'])
+                        ->orderBy('event_start_date', 'asc')
+                        ->get();
 
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+        return view('user.dashboard', compact('competitions'));
+    })->name('user.dashboard');
+
+
+    Route::get('/profile', function() {
+        return redirect()->route('user.dashboard');
+    })->name('profile.edit');
+
+
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+
+    // ระบบจัดการทีมของฉัน
+   
+    Route::resource('teams', TeamController::class)->names('user.teams');
+
+    // นโยบายและเงื่อนไข
+    Route::get('/privacy-policy', function () {
+        return view('user.privacy');
+    })->name('privacy.policy');
+
+    Route::get('/terms-of-service', function () {
+        return view('user.terms');
+    })->name('terms.service');
+    
 });
+
 
 // --- กลุ่มที่ 2: สำหรับ USER ที่ "ยังกรอกโปรไฟล์ไม่เสร็จ" (หน้า Setup) ---
 Route::middleware(['auth', 'verified', 'user_only', 'revalidate'])->group(function () {
@@ -46,9 +72,13 @@ Route::middleware(['auth', 'verified', 'user_only', 'revalidate'])->group(functi
     Route::post('/setup-profile', [ProfileSetupController::class, 'store'])->name('profile.setup.store');
 });
 
+
 // --- กลุ่มที่ 3: สำหรับ ADMIN เท่านั้น ---
 Route::middleware(['auth', 'admin', 'revalidate'])->prefix('admin')->name('admin.')->group(function () {
 
+    Route::get('/', function () {
+        return redirect()->route('admin.dashboard');
+    });
     
     // Dashboard & Users
     Route::get('/dashboard', [AdminController::class, 'index'])->name('dashboard');
@@ -68,14 +98,11 @@ Route::middleware(['auth', 'admin', 'revalidate'])->prefix('admin')->name('admin
     Route::resource('competitions', CompetitionController::class);
 
     // Competition Classes (รายการย่อย)
-    // Proxy สำหรับดึงรูปภาพและ PDF (ต้องวางก่อน resource)
     Route::get('/competitions/{competition}/classes/{class}/picture', [CompetitionClassController::class, 'showPicture'])->name('competitions.classes.picture');
     Route::get('/competitions/{competition}/classes/{class}/rule', [CompetitionClassController::class, 'showRule'])->name('competitions.classes.rule');
-    
-    //ของรายการย่อย
     Route::resource('competitions.classes', CompetitionClassController::class)->except(['show']);
 
-    // 5. Teams & Matches
+    // 5. Teams & Matches (ฝั่ง Admin เอาไว้ดูภาพรวม)
     Route::get('/teams', fn() => view('admin.teams.index'))->name('teams.index');
     Route::get('/matches', fn() => view('admin.matches.index'))->name('matches.index');
 });

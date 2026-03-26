@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use Illuminate\Contracts\Auth\MustVerifyEmail;
-use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -21,7 +20,6 @@ protected $fillable = [
     'password',
     'google_id',
     'avatar',
-    'role',
     'has_setup_profile',
     'prefix_th',
     'first_name_th',
@@ -44,6 +42,7 @@ protected $fillable = [
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'birthday' => 'date',
             'has_setup_profile' => 'boolean',
         ];
     }
