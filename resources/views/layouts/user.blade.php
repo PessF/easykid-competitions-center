@@ -6,13 +6,39 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ $title ?? 'Easykids Competitions' }}</title>
-    
+
     <link href="https://fonts.bunny.net/css?family=kanit:300,400,500,600,700,800,900&display=swap" rel="stylesheet" />
-    
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+        integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <link rel="icon" href="{{ asset('images/favicon.png?v=' . time()) }}" type="image/png">
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <style>
+        /* ซ่อน Scrollbar สำหรับ Chrome, Safari และ Opera */
+        .no-scrollbar::-webkit-scrollbar,
+        .custom-scrollbar::-webkit-scrollbar,
+        body::-webkit-scrollbar,
+        aside::-webkit-scrollbar,
+        main::-webkit-scrollbar {
+            display: none;
+        }
+
+        /* ซ่อน Scrollbar สำหรับ IE, Edge และ Firefox */
+        .no-scrollbar,
+        .custom-scrollbar,
+        body,
+        aside,
+        main {
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
+        }
+    </style>
 </head>
 
 <body
@@ -140,7 +166,8 @@
                         <div class="flex items-center space-x-6 text-xs font-semibold text-gray-500 dark:text-gray-400">
                             <a href="{{ route('privacy.policy') }}"
                                 class="hover:text-blue-600 transition-colors">Privacy Policy</a>
-                            <a href="{{ route('terms.service') }}" class="hover:text-blue-600 transition-colors">Terms
+                            <a href="{{ route('terms.service') }}"
+                                class="hover:text-blue-600 transition-colors">Terms
                                 of Service</a>
                             <a href="https://www.easykidsrobotics.com/contact-us/"
                                 class="hover:text-blue-600 transition-colors">ติดต่อเรา</a>

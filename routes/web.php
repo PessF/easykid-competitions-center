@@ -3,7 +3,7 @@
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SocialiteController;
 use App\Http\Controllers\ProfileSetupController;
-use App\Models\Competition;
+use App\Http\Controllers\User\CompetitionUserController;
 use App\Http\Controllers\Admin\GameTypeController;
 use App\Http\Controllers\Admin\RobotModelController;
 use App\Http\Controllers\Admin\CompetitionController;
@@ -34,26 +34,26 @@ Route::controller(SocialiteController::class)->group(function () {
 // --- กลุ่มที่ 1: สำหรับ USER ทั่วไปที่กรอกโปรไฟล์ "เสร็จแล้ว" ---
 Route::middleware(['auth', 'verified', 'user_only', 'check.profile', 'revalidate'])->group(function () {
     
-    Route::get('/dashboard', function () {
-        $competitions = Competition::whereIn('status', ['registration', 'ongoing'])
-                        ->orderBy('event_start_date', 'asc')
-                        ->get();
+    // Dashboard & Show
+    Route::get('/dashboard', [CompetitionUserController::class, 'index'])->name('user.dashboard');
+    Route::get('/competitions/{id}', [CompetitionUserController::class, 'show'])->name('user.competitions.show');
 
-        return view('user.dashboard', compact('competitions'));
-    })->name('user.dashboard');
+    // File Proxy Routes (ต้องตรงกับที่เรียกใน Blade)
+    Route::get('/competitions/{id}/banner', [CompetitionUserController::class, 'banner'])->name('user.competitions.banner');
+    Route::get('/competitions/{competition}/classes/{class}/picture', [CompetitionUserController::class, 'classPicture'])->name('user.competitions.classes.picture');
+    Route::get('/competitions/{competition}/classes/{class}/rules', [CompetitionUserController::class, 'rules'])->name('user.competitions.classes.rule');
 
-
+    // Profile Settings
     Route::get('/profile', function() {
         return redirect()->route('user.dashboard');
     })->name('profile.edit');
 
-
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
 
-
+    // Teams Management (จบในหน้าเดียวตามที่เราคุยกัน)
     Route::resource('/teams', TeamController::class)->except(['create', 'show'])->names('user.teams');
 
-    // นโยบายและเงื่อนไข
+    // Policies & Terms
     Route::get('/privacy-policy', function () {
         return view('user.privacy');
     })->name('privacy.policy');
@@ -61,6 +61,9 @@ Route::middleware(['auth', 'verified', 'user_only', 'check.profile', 'revalidate
     Route::get('/terms-of-service', function () {
         return view('user.terms');
     })->name('terms.service');
+
+    Route::post('/competitions/{competition}/classes/{class}/register', [CompetitionUserController::class, 'register'])
+             ->name('competitions.classes.register');
     
 });
 

@@ -87,14 +87,20 @@ class CompetitionController extends Controller
         }
     }
 
-    public function showBanner($id)
+public function showBanner($id)
     {
         $competition = Competition::findOrFail($id);
-        if (!$competition->banner_url || !Storage::disk('google')->exists($competition->banner_url)) {
+        
+        $disk = Storage::disk('google');
+        $path = $competition->banner_url;
+
+        if (!$path || !$disk->exists($path)) {
             abort(404);
         }
-        $file = Storage::disk('google')->get($competition->banner_url);
-        $mimeType = Storage::disk('google')->mimeType($competition->banner_url);
+
+        $file = $disk->get($path);
+        $mimeType = $disk->mimeType($path) ?? 'image/jpeg';
+        
         return response($file, 200)->header('Content-Type', $mimeType);
     }
 
@@ -110,16 +116,15 @@ private function validateCompetition(Request $request)
             'longitude' => 'nullable|numeric',
             'status' => 'required|in:draft,registration,ongoing,completed',
             'regis_start_date' => 'nullable|date',
-            'regis_end_date' => 'nullable|date|after_or_equal:regis_start_date',
+            'regis_end_date' => 'nullable|date|after_or_equal:regis_start_date|before_or_equal:event_start_date',
             'event_start_date' => 'nullable|date|after:regis_end_date',
             'event_end_date' => 'nullable|date|after_or_equal:event_start_date',
             'banner' => 'nullable|image|mimes:jpeg,png,jpg|max:5120',
         ], [
             'name.required' => 'กรุณากรอกชื่อรายการแข่งขัน',
             'regis_end_date.after_or_equal' => 'วันปิดรับสมัครต้องไม่ต่ำกว่าวันเริ่มรับสมัคร',
-            
+            'regis_end_date.before_or_equal' => 'วันปิดรับสมัครต้องไม่เลยวันเริ่มแข่งขัน',
             'event_start_date.after' => 'วันเริ่มการแข่งขันต้องเป็นวันหลังจากที่ปิดรับสมัครแล้วเท่านั้น',
-            
             'event_end_date.after_or_equal' => 'วันจบการแข่งขันต้องไม่ต่ำกว่าวันเริ่มแข่ง',
         ]);
     }
@@ -132,7 +137,12 @@ private function validateCompetition(Request $request)
         // โครงสร้าง: Competitions/{ชื่อการแข่งขัน}/Banner
         $fullPath = "Competitions/{$safeCompName}/Banner/$fileName";
         
-        Storage::disk('google')->put($fullPath, file_get_contents($file));
+        // Stream upload prevents RAM exhaustion (Octane-safe)
+        $stream = fopen($file->getRealPath(), 'r');
+        Storage::disk('google')->put($fullPath, $stream);
+        if (is_resource($stream)) {
+            fclose($stream);
+        }
         return $fullPath;
     }
 

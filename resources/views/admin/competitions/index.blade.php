@@ -8,10 +8,10 @@
             location: '',
             description: '',
             status: '',
-            regis_start: '',
-            regis_end: '',
-            event_start: '',
-            event_end: '',
+            regis_start_date: '',
+            regis_end_date: '',
+            event_start_date: '',
+            event_end_date: '',
             latitude: '',
             longitude: ''
         },
@@ -222,10 +222,10 @@
                                         id: '{{ $comp->id }}', name: '{{ addslashes($comp->name) }}', status: '{{ $comp->status }}',
                                         location: '{{ addslashes($comp->location) }}', description: '{{ addslashes(str_replace(["\r", "\n"], '', $comp->description)) }}',
                                         latitude: '{{ $comp->latitude }}', longitude: '{{ $comp->longitude }}',
-                                        regis_start: '{{ $comp->regis_start_date ? \Carbon\Carbon::parse($comp->regis_start_date)->format('Y-m-d\TH:i') : '' }}',
-                                        regis_end: '{{ $comp->regis_end_date ? \Carbon\Carbon::parse($comp->regis_end_date)->format('Y-m-d\TH:i') : '' }}',
-                                        event_start: '{{ $comp->event_start_date ? \Carbon\Carbon::parse($comp->event_start_date)->format('Y-m-d') : '' }}',
-                                        event_end: '{{ $comp->event_end_date ? \Carbon\Carbon::parse($comp->event_end_date)->format('Y-m-d') : '' }}'
+                                        regis_start_date: '{{ $comp->regis_start_date ? \Carbon\Carbon::parse($comp->regis_start_date)->format('Y-m-d\TH:i') : '' }}',
+                                        regis_end_date: '{{ $comp->regis_end_date ? \Carbon\Carbon::parse($comp->regis_end_date)->format('Y-m-d\TH:i') : '' }}',
+                                        event_start_date: '{{ $comp->event_start_date ? \Carbon\Carbon::parse($comp->event_start_date)->format('Y-m-d') : '' }}',
+                                        event_end_date: '{{ $comp->event_end_date ? \Carbon\Carbon::parse($comp->event_end_date)->format('Y-m-d') : '' }}'
                                     }; $dispatch('open-modal', 'edit-competition'); initMap('map-edit', 'edit_lat', 'edit_lng', editComp.latitude, editComp.longitude)"
                                     class="w-10 h-10 flex items-center justify-center text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-xl transition-colors border border-transparent hover:border-blue-100 dark:hover:border-blue-800"
                                     title="แก้ไข">
@@ -259,11 +259,11 @@
             @endforelse
         </div>
 
-        {{-- ===== MODAL: CREATE (โครงสร้าง Flex แก้บั๊ก Scroll) ===== --}}
+        {{-- ===== MODAL: CREATE ===== --}}
         <x-modal name="add-competition" focusable maxWidth="3xl">
             <div class="bg-white dark:bg-[#1a1a1a] flex flex-col h-[90vh] overflow-hidden rounded-2xl">
 
-                {{-- 1. Header (ไม่เลื่อน) --}}
+                {{-- Header --}}
                 <div
                     class="px-6 py-5 border-b border-gray-200 dark:border-gray-800 shrink-0 flex items-center justify-between bg-white dark:bg-[#1a1a1a] z-20">
                     <div class="flex items-center gap-3">
@@ -279,12 +279,12 @@
                     </button>
                 </div>
 
-                {{-- Form Wrap (Flex-1 เพื่อผลัก Footer ลงล่าง) --}}
+                {{-- Form Wrap --}}
                 <form method="POST" action="{{ route('admin.competitions.store') }}" enctype="multipart/form-data"
                     class="flex flex-col flex-1 min-h-0">
                     @csrf
 
-                    {{-- 2. Body (เลื่อนได้เฉพาะส่วนนี้) --}}
+                    {{--  Body --}}
                     <div class="p-6 sm:p-8 overflow-y-auto custom-scrollbar flex-1 space-y-6">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
@@ -456,7 +456,7 @@
                 </div>
 
                 {{-- Form Wrap --}}
-                <form method="POST" :action="`{{ route('admin.competitions.index') }}/${editComp.id}`"
+                <form method="POST" :action="`/admin/competitions/${editComp.id}`"
                     enctype="multipart/form-data" class="flex flex-col flex-1 min-h-0">
                     @csrf @method('PUT')
 
@@ -566,13 +566,13 @@
                                     <label
                                         class="block text-xs font-semibold text-gray-500 dark:text-gray-400">วันเริ่มรับสมัคร</label>
                                     <input type="datetime-local" name="regis_start_date"
-                                        x-model="editComp.regis_start"
+                                        x-model="editComp.regis_start_date"
                                         class="w-full px-4 py-2.5 text-sm border-gray-200 dark:border-gray-700 bg-white dark:bg-black/20 dark:text-white rounded-xl focus:ring-2 focus:ring-yellow-500/20 outline-none [color-scheme:light] dark:[color-scheme:dark] cursor-pointer">
                                 </div>
                                 <div class="space-y-1.5">
                                     <label
                                         class="block text-xs font-semibold text-gray-500 dark:text-gray-400">วันสิ้นสุดรับสมัคร</label>
-                                    <input type="datetime-local" name="regis_end_date" x-model="editComp.regis_end"
+                                    <input type="datetime-local" name="regis_end_date" x-model="editComp.regis_end_date"
                                         class="w-full px-4 py-2.5 text-sm border-gray-200 dark:border-gray-700 bg-white dark:bg-black/20 dark:text-white rounded-xl focus:ring-2 focus:ring-yellow-500/20 outline-none [color-scheme:light] dark:[color-scheme:dark] cursor-pointer">
                                 </div>
                             </div>
@@ -589,13 +589,13 @@
                                 <div class="space-y-1.5">
                                     <label
                                         class="block text-xs font-semibold text-gray-500 dark:text-gray-400">วันเริ่มงาน</label>
-                                    <input type="date" name="event_start_date" x-model="editComp.event_start"
+                                    <input type="date" name="event_start_date" x-model="editComp.event_start_date"
                                         class="w-full px-4 py-2.5 text-sm border-gray-200 dark:border-gray-700 bg-white dark:bg-black/20 dark:text-white rounded-xl focus:ring-2 focus:ring-purple-500/20 outline-none [color-scheme:light] dark:[color-scheme:dark] cursor-pointer">
                                 </div>
                                 <div class="space-y-1.5">
                                     <label
                                         class="block text-xs font-semibold text-gray-500 dark:text-gray-400">วันจบงาน</label>
-                                    <input type="date" name="event_end_date" x-model="editComp.event_end"
+                                    <input type="date" name="event_end_date" x-model="editComp.event_end_date"
                                         class="w-full px-4 py-2.5 text-sm border-gray-200 dark:border-gray-700 bg-white dark:bg-black/20 dark:text-white rounded-xl focus:ring-2 focus:ring-purple-500/20 outline-none [color-scheme:light] dark:[color-scheme:dark] cursor-pointer">
                                 </div>
                             </div>
@@ -621,6 +621,57 @@
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
+
+        document.addEventListener('DOMContentLoaded', function() {
+            @if (session('success'))
+                Swal.fire({
+                    title: 'สำเร็จ!',
+                    text: '{{ session('success') }}',
+                    icon: 'success',
+                    confirmButtonText: 'ตกลง',
+                    confirmButtonColor: '#2563eb',
+                    customClass: {
+                        popup: 'rounded-2xl',
+                        confirmButton: 'rounded-xl px-8 py-2.5 font-semibold'
+                    }
+                });
+            @endif
+
+            @if (session('error'))
+                Swal.fire({
+                    title: 'เกิดข้อผิดพลาด!',
+                    text: '{{ session('error') }}',
+                    icon: 'error',
+                    confirmButtonText: 'ตกลง',
+                    confirmButtonColor: '#ef4444',
+                    customClass: {
+                        popup: 'rounded-2xl',
+                        confirmButton: 'rounded-xl px-8 py-2.5 font-semibold'
+                    }
+                });
+            @endif
+
+            @if ($errors->any())
+                let errorHtml = '<ul class="text-sm text-red-500 text-left list-disc list-inside mt-3 space-y-1">';
+                @foreach ($errors->all() as $error)
+                    errorHtml += '<li>{{ $error }}</li>';
+                @endforeach
+                errorHtml += '</ul>';
+
+                Swal.fire({
+                    title: 'ข้อมูลไม่ถูกต้อง ⚠️',
+                    html: '<p class="text-gray-600 dark:text-gray-400 text-sm mb-2">กรุณาตรวจสอบข้อมูลด้านล่างให้ถูกต้อง:</p>' + errorHtml,
+                    icon: 'warning',
+                    confirmButtonText: 'แก้ไขข้อมูล',
+                    confirmButtonColor: '#f59e0b',
+                    customClass: {
+                        popup: 'rounded-2xl',
+                        confirmButton: 'rounded-xl px-8 py-2.5 font-semibold'
+                    }
+                });
+            @endif
+        });
+
         function confirmDelete(url, name) {
             Swal.fire({
                 title: 'ลบรายการแข่งขัน?',

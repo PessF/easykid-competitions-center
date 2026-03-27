@@ -12,7 +12,7 @@ class AdminController extends Controller
     public function index()
     {
         $userCount = User::count();
-        $users = User::latest()->get(); 
+        $users = User::latest()->paginate(50);  // Octane-safe: limit to 50 users per page
         
         return view('admin.dashboard', compact('userCount', 'users'));
     }

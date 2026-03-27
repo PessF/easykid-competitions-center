@@ -30,4 +30,5 @@ class Registration extends Model
     public function competitionClass() {
         return $this->belongsTo(CompetitionClass::class);
     }
+
 }

@@ -19,6 +19,27 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+
+    <style>
+        /* ซ่อน Scrollbar สำหรับ Chrome, Safari และ Opera */
+        .no-scrollbar::-webkit-scrollbar,
+        .custom-scrollbar::-webkit-scrollbar,
+        body::-webkit-scrollbar,
+        aside::-webkit-scrollbar,
+        main::-webkit-scrollbar {
+            display: none;
+        }
+
+        /* ซ่อน Scrollbar สำหรับ IE, Edge และ Firefox */
+        .no-scrollbar,
+        .custom-scrollbar,
+        body,
+        aside,
+        main {
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
+        }
+    </style>
 </head>
 
 <body

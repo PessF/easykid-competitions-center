@@ -9,10 +9,15 @@ use Illuminate\Support\Facades\Storage;
 
 class RobotModelController extends Controller
 {
+    /**
+     * หน้าหลักรายการแม่แบบหุ่นยนต์ (เพิ่ม Pagination เพื่อความปลอดภัย)
+     */
     public function index()
     {
-        $robotModels = RobotModel::latest()->get();
-        // ปรับให้ตรงกับโครงสร้างโฟลเดอร์ views/admin/robot-models/index.blade.php
+        // เปลี่ยนจาก get() เป็น paginate(20) เพื่อรองรับข้อมูลจำนวนมาก
+        $robotModels = RobotModel::latest()->paginate(20);
+        
+        // ปรับให้ตรงกับชื่อไฟล์ view ของคุณภูมิ
         return view('admin.robot-models', compact('robotModels'));
     }
 
@@ -21,7 +26,7 @@ class RobotModelController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'standard_weight' => 'nullable|numeric|min:0',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048', // เพิ่มลิมิต 2MB
         ], [
             'name.required' => 'กรุณากรอกชื่อแม่แบบหุ่นยนต์',
             'image.max' => 'ขนาดไฟล์รูปภาพต้องไม่เกิน 2MB',
@@ -58,11 +63,9 @@ class RobotModelController extends Controller
             $data = $request->only(['name', 'standard_weight']);
 
             if ($request->hasFile('image')) {
-                // 1. ลบรูปเก่าออกจาก Google Drive เพื่อประหยัดพื้นที่
                 if ($robot->image_url) {
                     Storage::disk('google')->delete($robot->image_url);
                 }
-                // 2. อัปโหลดรูปใหม่
                 $data['image_url'] = $this->uploadImage($request->file('image'));
             }
 
@@ -78,7 +81,6 @@ class RobotModelController extends Controller
         try {
             $robot = RobotModel::findOrFail($id);
             
-            // ลบรูปออกจาก Google Drive ก่อนลบข้อมูลใน DB
             if ($robot->image_url) {
                 Storage::disk('google')->delete($robot->image_url);
             }
@@ -90,37 +92,41 @@ class RobotModelController extends Controller
         }
     }
 
-    // ฟังก์ชันช่วยอัปโหลด (Helper) เพื่อลดโค้ดซ้ำซ้อน
+    /**
+     * ฟังก์ชันช่วยอัปโหลด (Helper) - ใช้ Stream เพื่อประหยัด RAM
+     */
     private function uploadImage($file)
     {
         $fileName = "robot_" . time() . "_" . uniqid() . "." . $file->getClientOriginalExtension();
         $fullPath = "Robots/Models/$fileName";
-        Storage::disk('google')->put($fullPath, file_get_contents($file));
+        
+        $stream = fopen($file->getRealPath(), 'r');
+        Storage::disk('google')->put($fullPath, $stream);
+        if (is_resource($stream)) {
+            fclose($stream);
+        }
         return $fullPath;
     }
     
+    /**
+     * สำหรับแสดงรูปภาพหุ่นยนต์ (กู้คืนให้รูปกลับมาแสดงผลได้)
+     */
     public function showImage($id)
     {
-        // 1. หาข้อมูลหุ่นยนต์
         $robot = RobotModel::findOrFail($id);
 
-        // 2. เช็คว่ามี Path รูปภาพหรือไม่
-        if (!$robot->image_url) {
-            abort(404, 'ไม่มีรูปภาพสำหรับหุ่นยนต์ตัวนี้');
+        $disk = Storage::disk('google');
+        $path = $robot->image_url;
+
+        // เช็คว่ามี Path และไฟล์มีอยู่จริงหรือไม่
+        if (!$path || !$disk->exists($path)) {
+            abort(404, 'ไม่พบไฟล์รูปภาพ');
         }
 
-        // 3. เช็คว่าไฟล์มีอยู่จริงใน Google Drive หรือไม่
-        if (!Storage::disk('google')->exists($robot->image_url)) {
-            abort(404, 'ไม่พบไฟล์รูปภาพใน Google Drive');
-        }
+        // 🚀 กู้คืนท่ามาตรฐาน: ดึงไฟล์ไบนารีและยัด Header Content-Type
+        $file = $disk->get($path);
+        $mimeType = $disk->mimeType($path) ?? 'image/jpeg';
 
-        // 4. ดึงข้อมูลไฟล์ (Binary Data)
-        $file = Storage::disk('google')->get($robot->image_url);
-
-        // 5. ดึง MimeType (เช่น image/png, image/jpeg) เพื่อบอก Browser ว่านี่คือไฟล์ภาพนะ
-        $mimeType = Storage::disk('google')->mimeType($robot->image_url);
-
-        // 6. พ่นข้อมูลภาพกลับไปพร้อม Header ที่ถูกต้อง
         return response($file, 200)->header('Content-Type', $mimeType);
     }
 }

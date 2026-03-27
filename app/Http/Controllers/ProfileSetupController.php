@@ -60,8 +60,12 @@ class ProfileSetupController extends Controller
                     Storage::disk('google_secure')->delete($user->avatar);
                 }
 
-                // อัปโหลดไฟล์ใหม่ขึ้น Google Drive
-                Storage::disk('google_secure')->put($fullPath, file_get_contents($file));
+                // Stream upload prevents RAM exhaustion (Octane-safe)
+                $stream = fopen($file->getRealPath(), 'r');
+                Storage::disk('google_secure')->put($fullPath, $stream);
+                if (is_resource($stream)) {
+                    fclose($stream);
+                }
                 
                 // เก็บ Path ใหม่ลงในตัวแปรเพื่อรอ Save ลง DB
                 $user->avatar = $fullPath;
