@@ -181,6 +181,9 @@ class CompetitionClassController extends Controller
     /**
      * สำหรับดึงไฟล์ PDF กติกา (กู้คืน Syntax ที่พัง)
      */
+/**
+     * สำหรับดึงไฟล์ PDF กติกา (Octane-Safe & Inline Preview)
+     */
     public function showRule(Competition $competition, CompetitionClass $class)
     {
         $disk = Storage::disk('google');
@@ -190,28 +193,52 @@ class CompetitionClassController extends Controller
             abort(404);
         }
 
-        $file = $disk->get($path);
-        
-        return response($file, 200)
-            ->header('Content-Type', 'application/pdf')
-            ->header('Content-Disposition', 'inline; filename="rules_' . $class->id . '.pdf"');
+        // ดึงข้อมูล Meta เพื่อใช้ใน Header
+        $mimeType = 'application/pdf';
+        $size = $disk->size($path);
+
+        return response()->stream(function () use ($disk, $path) {
+            if (ob_get_level() > 0) ob_end_clean();
+            
+            $stream = $disk->readStream($path);
+            fpassthru($stream);
+            if (is_resource($stream)) fclose($stream);
+        }, 200, [
+            'Content-Type' => $mimeType,
+            'Content-Length' => $size,
+            'Content-Disposition' => 'inline; filename="rules_' . $class->id . '.pdf"',
+            'Cache-Control' => 'public, max-age=86400',
+        ]);
     }
 
     /**
-     * สำหรับดึงรูปภาพหุ่นยนต์ (กู้คืน Syntax ที่พัง)
+     * สำหรับดึงรูปภาพหุ่นยนต์ (Memory-Safe Streaming)
      */
     public function showPicture(Competition $competition, CompetitionClass $class)
     {
         $disk = Storage::disk('google');
         $path = $class->robot_image_url;
 
+        // 1. ถ้าไม่มีรูป ให้ใช้รูป Default จากเครื่อง (Local)
         if (!$path || !$disk->exists($path)) {
             return response()->file(public_path('images/default-robot.png')); 
         }
 
-        $file = $disk->get($path);
+        // 2. ถ้ามีรูปใน Google Drive ให้ทำ Streaming
         $mimeType = $disk->mimeType($path) ?? 'image/jpeg';
-        
-        return response($file, 200)->header('Content-Type', $mimeType);
+        $size = $disk->size($path);
+
+        return response()->stream(function () use ($disk, $path) {
+            if (ob_get_level() > 0) ob_end_clean();
+
+            $stream = $disk->readStream($path);
+            fpassthru($stream);
+            if (is_resource($stream)) fclose($stream);
+        }, 200, [
+            'Content-Type' => $mimeType,
+            'Content-Length' => $size,
+            'Content-Disposition' => 'inline',
+            'Cache-Control' => 'public, max-age=86400',
+        ]);
     }
 }

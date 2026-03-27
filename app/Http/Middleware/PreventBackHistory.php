@@ -13,12 +13,20 @@ class PreventBackHistory
      *
      * @param  Closure(Request): (Response)  $next
      */
-    public function handle(Request $request, Closure $next)
+    public function handle($request, \Closure $next)
     {
         $response = $next($request);
 
-        return $response->header('Cache-Control', 'no-cache, no-store, max-age=0, must-revalidate')
-                        ->header('Pragma', 'no-cache')
-                        ->header('Expires', 'Sun, 02 Jan 1990 00:00:00 GMT');
+        if (method_exists($response, 'header')) {
+            return $response->header('Cache-Control', 'nocache, no-store, max-age=0, must-revalidate')
+                            ->header('Pragma', 'no-cache')
+                            ->header('Expires', 'Sun, 02 Jan 1990 00:00:00 GMT');
+        } else {
+            // สำหรับ StreamedResponse
+            $response->headers->set('Cache-Control', 'nocache, no-store, max-age=0, must-revalidate');
+            $response->headers->set('Pragma', 'no-cache');
+            $response->headers->set('Expires', 'Sun, 02 Jan 1990 00:00:00 GMT');
+            return $response;
+        }
     }
 }
