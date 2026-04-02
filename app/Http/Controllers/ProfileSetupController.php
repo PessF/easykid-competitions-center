@@ -13,7 +13,7 @@ class ProfileSetupController extends Controller
     {
         // เช็คว่าถ้า setup เรียบร้อยแล้ว ไม่ให้เข้าหน้านี้อีก ให้เด้งไป Dashboard
         if (Auth::user()->has_setup_profile) {
-            return redirect()->route('dashboard');
+            return redirect()->route('user.dashboard');
         }
 
         return view('auth.setup-profile'); 
@@ -21,6 +21,11 @@ class ProfileSetupController extends Controller
 
     public function store(Request $request)
     {
+        // 🚀 ด่านที่ 1: ดักจับ PHP Post Drop (รูปโปรไฟล์ตั้งไว้ที่ 2MB)
+        if (empty($request->all()) && $request->server('CONTENT_LENGTH') > 0) {
+            return back()->withInput()->withErrors(['avatar' => 'ไฟล์มีขนาดใหญ่เกินไป (ระบบรองรับสูงสุด 2MB)']);
+        }
+
         /** @var \App\Models\User $user */
         $user = Auth::user();
         $needsPassword = is_null($user->password);
@@ -35,7 +40,7 @@ class ProfileSetupController extends Controller
             'last_name_en' => ['required', 'string', 'max:255'],
             'birthday' => ['required', 'date', 'before:today'],
             'phone_number' => ['required', 'string', 'min:10'],
-            'avatar' => ['nullable', 'image', 'mimes:jpg,jpeg,png', 'max:2048'],
+            'avatar' => ['nullable', 'image', 'mimes:jpg,jpeg,png', 'max:2048'], // ลิมิต 2MB
             'shirt_size' => ['nullable', 'string', 'max:10'],
         ];
 
@@ -45,34 +50,32 @@ class ProfileSetupController extends Controller
 
         $validated = $request->validate($rules);
 
-        // 2. จัดการรูปภาพ (ย้ายจาก Local ไป Google Drive)
+        // 2. จัดการรูปภาพ (เก็บลง Local Public Disk ตามนโยบาย)
         if ($request->hasFile('avatar')) {
             $file = $request->file('avatar');
             
-            // สร้างโครงสร้างโฟลเดอร์: Users/User_1_Poom
-            $folderName = "User_" . $user->id . "_" . str_replace(' ', '_', $validated['first_name_en']);
-            $fileName = "avatar_" . time() . "." . $file->getClientOriginalExtension();
-            $fullPath = "Users/$folderName/$fileName";
+            // 🚀 ด่านที่ 2: เช็คความสมบูรณ์ของไฟล์
+            if (!$file->isValid()) {
+                return back()->withInput()->withErrors(['avatar' => 'ไฟล์รูปภาพไม่สมบูรณ์ กรุณาลองใหม่อีกครั้ง']);
+            }
 
             try {
-                // ลบรูปเก่าใน Google Drive ถ้าเคยมี Path เก็บไว้
-                if ($user->avatar) {
-                    Storage::disk('google_secure')->delete($user->avatar);
+                // ลบรูปเก่าใน Public Disk (เช็คด้วยว่าไม่ใช่ลิงก์จาก Google Login)
+                if ($user->avatar && !str_starts_with($user->avatar, 'http')) {
+                    Storage::disk('public')->delete($user->avatar);
                 }
 
-                // Stream upload prevents RAM exhaustion (Octane-safe)
-                $stream = fopen($file->getRealPath(), 'r');
-                Storage::disk('google_secure')->put($fullPath, $stream);
-                if (is_resource($stream)) {
-                    fclose($stream);
-                }
+                $folderName = "Users/User_" . $user->id . "_" . str_replace(' ', '_', $validated['first_name_en']);
+                $fileName = "avatar_" . time() . "." . $file->getClientOriginalExtension();
+
+                // บันทึกลง Public Disk ทันที (ไม่ต้องใช้ Stream แล้ว เร็วกว่าเดิมเยอะ)
+                $fullPath = $file->storeAs($folderName, $fileName, 'public');
                 
-                // เก็บ Path ใหม่ลงในตัวแปรเพื่อรอ Save ลง DB
                 $user->avatar = $fullPath;
 
             } catch (\Exception $e) {
-                // กรณีเชื่อมต่อ Google Drive ไม่ได้ ให้กลับไปหน้าเดิมพร้อมแจ้ง Error
-                return back()->withInput()->withErrors(['avatar' => 'การเชื่อมต่อ Google Drive ขัดข้อง: ' . $e->getMessage()]);
+                $safeError = str_replace(["'", '"'], "", $e->getMessage());
+                return back()->withInput()->withErrors(['avatar' => 'ไม่สามารถบันทึกรูปภาพได้: ' . $safeError]);
             }
         }
 
@@ -94,6 +97,6 @@ class ProfileSetupController extends Controller
 
         $user->save();
 
-        return redirect()->route('dashboard')->with('status', 'profile-setup-completed');
+        return redirect()->route('user.dashboard')->with('status', 'profile-setup-completed');
     }
 }

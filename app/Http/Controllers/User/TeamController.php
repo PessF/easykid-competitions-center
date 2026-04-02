@@ -4,6 +4,7 @@ namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
 use App\Models\Team;
+use App\Models\Registration;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr; 
 use Illuminate\Support\Facades\DB;
@@ -20,7 +21,7 @@ class TeamController extends Controller
                     ->teams()
                     ->withCount('members')
                     ->latest()
-                    ->get();
+                    ->paginate(15);
         
         return view('user.team', compact('teams'));
     }
@@ -32,12 +33,10 @@ class TeamController extends Controller
 
     public function store(Request $request)
     {
-        // 1. ตรวจสอบข้อมูลแบบ Array (รับข้อมูลลูกทีมได้หลายคนพร้อมกัน)
         $validated = $request->validate([
             'name'                      => ['required', 'string', 'max:255'],
             'school_name'               => ['required', 'string', 'max:255'],
-            // กฎของ Array ลูกทีม
-            'members'                   => ['required', 'array', 'min:1'], // ต้องมีลูกทีมอย่างน้อย 1 คน
+            'members'                   => ['required', 'array', 'min:1'],
             'members.*.prefix_th'       => ['nullable', 'string', 'max:100'],
             'members.*.first_name_th'   => ['required', 'string', 'max:255'],
             'members.*.last_name_th'    => ['required', 'string', 'max:255'],
@@ -49,16 +48,13 @@ class TeamController extends Controller
         ]);
 
         try {
-            // 2. ใช้ DB Transaction คลุมการทำงาน
             DB::transaction(function () use ($validated, $request) {
                 
-                // 2.1 สร้างทีมให้ User ปัจจุบัน
                 $team = $request->user()->teams()->create([
                     'name'        => $validated['name'],
                     'school_name' => $validated['school_name'],
                 ]);
 
-                // 2.2 วนลูปสร้างลูกทีมทั้งหมด บันทึกเชื่อมกับทีมที่เพิ่งสร้าง
                 foreach ($validated['members'] as $memberData) {
                     $team->members()->create($memberData);
                 }
@@ -83,49 +79,49 @@ class TeamController extends Controller
             abort(403, 'คุณไม่มีสิทธิ์แก้ไขทีมนี้');
         }
 
-        // 2. Validate ข้อมูลแบบ Array
+        // 🚀 2. MASTER DATA LOCK: ห้ามแก้ข้อมูลถ้าทีมนี้มีใบสมัครค้างอยู่
+        $isLocked = Registration::where('team_id', $team->id)
+            ->whereIn('status', ['pending_payment', 'waiting_verify', 'approved'])
+            ->exists();
+
+        if ($isLocked) {
+            return back()->with('error', 'ไม่สามารถแก้ไขข้อมูลได้ เนื่องจากทีมนี้ถูกนำไปใช้สมัครแข่งขันแล้ว (หากต้องการแก้ไข กรุณาติดต่อแอดมิน)');
+        }
+
+        // 3. Validate ข้อมูลแบบ Array
         $validated = $request->validate([
             'name'                      => ['required', 'string', 'max:255'],
             'school_name'               => ['required', 'string', 'max:255'],
             'members'                   => ['required', 'array', 'min:1'],
-            'members.*.id'              => ['nullable', 'integer'], // 🚀 ต้องรับ ID มาด้วย เพื่อแยกระหว่างคนเก่า/คนใหม่
+            'members.*.id'              => ['nullable', 'integer'], 
             'members.*.prefix_th'       => ['nullable', 'string', 'max:100'],
             'members.*.first_name_th'   => ['required', 'string', 'max:255'],
             'members.*.last_name_th'    => ['required', 'string', 'max:255'],
             'members.*.prefix_en'       => ['nullable', 'string', 'max:100'],
-            'members.*.first_name_en'   => ['required', 'string', 'max:255'], // ปรับเป็น required ตามฟอร์ม
-            'members.*.last_name_en'    => ['required', 'string', 'max:255'], // ปรับเป็น required ตามฟอร์ม
+            'members.*.first_name_en'   => ['required', 'string', 'max:255'], 
+            'members.*.last_name_en'    => ['required', 'string', 'max:255'], 
             'members.*.birth_date'      => ['required', 'date'],
             'members.*.shirt_size'      => ['nullable', 'string', 'max:10'],
         ]);
 
         try {
             DB::transaction(function () use ($validated, $team) {
-                // 3. อัปเดตข้อมูลทีมหลัก (Parent)
                 $team->update([
                     'name'        => $validated['name'],
                     'school_name' => $validated['school_name'],
                 ]);
 
-                // 4. THE SYNC LOGIC (จัดการลูกทีม)
                 $submittedMembers = collect($validated['members']);
-                
-                // ดึงเฉพาะ ID ของลูกทีมที่ถูกส่งมา (กรอง null ทิ้งเผื่อเป็นคนใหม่)
                 $submittedIds = $submittedMembers->pluck('id')->filter()->toArray();
 
-                // 4.1 ลบลูกทีมที่ "ไม่มี" อยู่ในฟอร์มที่ส่งมา (แปลว่าถูกกดปุ่มกากบาททิ้งไปแล้ว)
                 $team->members()->whereNotIn('id', $submittedIds)->delete();
 
-                // 4.2 วนลูปเพื่อ อัปเดตคนเดิม หรือ สร้างคนใหม่
                 foreach ($submittedMembers as $memberData) {
                     if (!empty($memberData['id'])) {
-                        // มี ID = คนเก่า -> ทำการ Update
-                        // ใช้ Arr::except เพื่อตัดช่อง 'id' ออก ป้องกันความผิดพลาดตอนเซฟลง DB
                         $team->members()
                              ->where('id', $memberData['id'])
                              ->update(Arr::except($memberData, ['id']));
                     } else {
-                        // ไม่มี ID = คนใหม่ที่เพิ่งกดปุ่มเพิ่ม -> ทำการ Create
                         $team->members()->create(Arr::except($memberData, ['id']));
                     }
                 }
@@ -143,13 +139,22 @@ class TeamController extends Controller
     }
 
     /**
-     * ลบทีมและลูกทีมทั้งหมด (Cascade Delete)
+     * ลบทีมและลูกทีมทั้งหมด
      */
     public function destroy(Request $request, Team $team)
     {
-        // 🔒 Security Check
+        // 🔒 1. Security Check
         if ($team->user_id !== $request->user()->id) {
             abort(403, 'คุณไม่มีสิทธิ์ลบทีมนี้');
+        }
+
+        // 🚀 2. MASTER DATA LOCK: ห้ามลบถ้าทีมนี้มีใบสมัครค้างอยู่
+        $isLocked = Registration::where('team_id', $team->id)
+            ->whereIn('status', ['pending_payment', 'waiting_verify', 'approved'])
+            ->exists();
+
+        if ($isLocked) {
+            return back()->with('error', 'ไม่สามารถลบทีมได้ เนื่องจากทีมนี้มีประวัติการส่งใบสมัครเข้าแข่งขันแล้ว');
         }
 
         try {

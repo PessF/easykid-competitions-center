@@ -13,7 +13,7 @@ class GameTypeController extends Controller
      */
     public function index()
     {
-        $gameTypes = GameType::orderBy('id', 'asc')->get();
+        $gameTypes = GameType::orderBy('id', 'asc')->paginate(10);
 
         return view('admin.game_types.index', compact('gameTypes'));
     }

@@ -23,7 +23,9 @@ return new class extends Migration
             $table->dateTime('regis_end_date')->nullable();
             $table->date('event_start_date')->nullable();
             $table->date('event_end_date')->nullable();
-            $table->enum('status', ['draft', 'registration', 'ongoing', 'completed'])->default('draft');
+            $table->enum('status', ['draft', 'published', 'cancelled'])->default('draft');
+            $table->index('status'); 
+            $table->index('regis_end_date'); 
             $table->timestamps();
         });
     }

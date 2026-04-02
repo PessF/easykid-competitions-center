@@ -63,23 +63,33 @@ class ProfileController extends Controller
 
     public function showAvatar($id)
     {
-
         $user = User::findOrFail($id);
 
         if (!$user->avatar) {
             abort(404);
         }
 
-        $disk = Storage::disk('google_secure');
+        if (str_starts_with($user->avatar, 'http')) {
+            return redirect($user->avatar);
+        }
+
+        $disk = \Illuminate\Support\Facades\Storage::disk('google_secure');
         $path = $user->avatar;
 
         if (!$disk->exists($path)) {
             abort(404);
         }
 
-        $file = $disk->get($path);
         $mimeType = $disk->mimeType($path) ?? 'image/jpeg';
         
-        return response($file, 200)->header('Content-Type', $mimeType);
+        return response()->stream(function () use ($disk, $path) {
+            if (ob_get_level() > 0) ob_end_clean();
+            $stream = $disk->readStream($path);
+            fpassthru($stream);
+            if (is_resource($stream)) fclose($stream);
+        }, 200, [
+            'Content-Type' => $mimeType,
+            'Cache-Control' => 'public, max-age=86400'
+        ]);
     }
 }

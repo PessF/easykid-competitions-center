@@ -13,7 +13,9 @@
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=kanit:300,400,500,600,700,800,900&display=swap" rel="stylesheet" />
 
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+        integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
 
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -21,23 +23,16 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
     <style>
-        /* ซ่อน Scrollbar สำหรับ Chrome, Safari และ Opera */
-        .no-scrollbar::-webkit-scrollbar,
-        .custom-scrollbar::-webkit-scrollbar,
-        body::-webkit-scrollbar,
-        aside::-webkit-scrollbar,
-        main::-webkit-scrollbar {
-            display: none;
+        /* 🚀 มาตรการเด็ดขาด: ซ่อน Scrollbar ของ "ทุก Element" ทั้งเว็บ แต่ยัง Scroll ได้ปกติ */
+        *::-webkit-scrollbar {
+            display: none !important;
         }
 
-        /* ซ่อน Scrollbar สำหรับ IE, Edge และ Firefox */
-        .no-scrollbar,
-        .custom-scrollbar,
-        body,
-        aside,
-        main {
-            -ms-overflow-style: none;  /* IE and Edge */
-            scrollbar-width: none;  /* Firefox */
+        * {
+            -ms-overflow-style: none !important;
+            /* สำหรับ IE และ Edge */
+            scrollbar-width: none !important;
+            /* สำหรับ Firefox */
         }
     </style>
 </head>
@@ -58,6 +53,10 @@
         {{-- 2. Sidebar --}}
         <aside :class="mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'"
             class="fixed inset-y-0 left-0 z-50 w-64 flex-shrink-0 bg-white dark:bg-[#0f0f0f] border-r border-gray-100 dark:border-white/5 transition-transform duration-300 transform lg:static lg:translate-x-0 overflow-y-auto">
+
+            @php
+                $pendingPaymentsCount = \App\Models\Registration::where('status', 'waiting_verify')->count();
+            @endphp
 
             <div class="flex items-center justify-between px-6 py-8">
                 <span class="text-xl font-semibold tracking-tighter text-black dark:text-white uppercase">
@@ -85,28 +84,38 @@
                 {{-- 2. OPERATION (งานหลักแอดมิน) --}}
                 {{-- =================================== --}}
                 <div class="px-4 pt-6 pb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">Operation</div>
-                
+
                 <x-admin-nav-link :href="route('admin.competitions.index')" :active="request()->routeIs('admin.competitions.*')">
                     <i class="fas fa-trophy w-5 h-5 mr-3 flex items-center justify-center"></i>
                     {{ __('จัดการงานแข่งขัน') }}
                 </x-admin-nav-link>
 
-                {{-- รอทำหน้า Index สำหรับ Teams --}}
                 <x-admin-nav-link :href="route('admin.teams.index')" :active="request()->routeIs('admin.teams.*')">
                     <i class="fas fa-users w-5 h-5 mr-3 flex items-center justify-center"></i>
                     {{ __('รายชื่อทีมผู้สมัคร') }}
                 </x-admin-nav-link>
 
-                <x-admin-nav-link href="#" :active="false">
-                    <i class="fas fa-file-invoice-dollar w-5 h-5 mr-3 flex items-center justify-center"></i>
-                    {{ __('ตรวจสอบการชำระเงิน') }}
+                <x-admin-nav-link :href="route('admin.payments.index')" :active="request()->routeIs('admin.payments.*')">
+                    <div class="flex items-center justify-between w-full">
+                        <div class="flex items-center">
+                            <i class="fas fa-file-invoice-dollar w-5 h-5 mr-3 flex items-center justify-center"></i>
+                            {{ __('ตรวจการชำระเงิน') }}
+                        </div>
+                        @if ($pendingPaymentsCount > 0)
+                            <span
+                                class="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 text-[10px] font-bold text-white bg-red-500 rounded-full shadow-sm animate-pulse-slow">
+                                {{ $pendingPaymentsCount > 99 ? '99+' : $pendingPaymentsCount }}
+                            </span>
+                        @endif
+                    </div>
                 </x-admin-nav-link>
 
                 {{-- =================================== --}}
                 {{-- 3. MASTER DATA --}}
                 {{-- =================================== --}}
-                <div class="px-4 pt-6 pb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">Master Data</div>
-                
+                <div class="px-4 pt-6 pb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">Master Data
+                </div>
+
                 <x-admin-nav-link :href="route('admin.category-settings')" :active="request()->routeIs('admin.category-settings')">
                     <i class="fas fa-tags w-5 h-5 mr-3 flex items-center justify-center"></i>
                     {{ __('ตั้งค่าหมวดหมู่') }}
@@ -121,7 +130,7 @@
                 {{-- 4. SYSTEM --}}
                 {{-- =================================== --}}
                 <div class="px-4 pt-6 pb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">System</div>
-                
+
                 <x-admin-nav-link :href="route('admin.users.index')" :active="request()->routeIs('admin.users.*')">
                     <i class="fas fa-user-cog w-5 h-5 mr-3 flex items-center justify-center"></i>
                     {{ __('จัดการผู้ใช้งาน') }}
@@ -133,9 +142,7 @@
         <div class="flex-1 flex flex-col overflow-hidden">
             <header
                 class="flex items-center justify-between px-4 lg:px-8 py-4 bg-white dark:bg-[#0f0f0f] border-b border-gray-100 dark:border-white/5">
-
                 <div class="flex items-center">
-                    {{-- Hamburger Button (แสดงเฉพาะมือถือ) --}}
                     <button @click="mobileSidebarOpen = true" class="mr-4 text-gray-500 lg:hidden focus:outline-none">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -165,7 +172,8 @@
                                 class="hidden xs:inline text-xs font-bold uppercase tracking-widest mr-2">Logout</span>
                             <div
                                 class="p-2 rounded-lg bg-gray-50 dark:bg-white/5 group-hover:bg-red-50 dark:group-hover:bg-red-500/10 transition-colors duration-300">
-                                <i class="fas fa-sign-out-alt w-4 h-4 transform group-hover:translate-x-1 transition-transform duration-300 flex items-center justify-center"></i>
+                                <i
+                                    class="fas fa-sign-out-alt w-4 h-4 transform group-hover:translate-x-1 transition-transform duration-300 flex items-center justify-center"></i>
                             </div>
                         </button>
                     </form>
@@ -177,6 +185,105 @@
             </main>
         </div>
     </div>
+
+    {{-- ========================================================= --}}
+    {{-- 🚀 GLOBAL SWEETALERT2 & HELPER FUNCTIONS --}}
+    {{-- ========================================================= --}}
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // เช็คว่า User ใช้ Dark Mode อยู่หรือไม่
+            const isDark = document.documentElement.classList.contains('dark');
+            const swalConfig = {
+                background: isDark ? '#1a1a1a' : '#ffffff',
+                color: isDark ? '#ffffff' : '#111827',
+                customClass: {
+                    popup: 'rounded-2xl border border-gray-100 dark:border-gray-800 shadow-xl font-kanit',
+                    confirmButton: 'rounded-xl px-6 py-2.5 font-semibold tracking-wide',
+                    cancelButton: 'rounded-xl px-6 py-2.5 font-semibold tracking-wide'
+                }
+            };
+
+            // 1. ตรวจจับ Session Success
+            @if (session('success'))
+                Swal.fire({
+                    ...swalConfig,
+                    icon: 'success',
+                    title: 'สำเร็จ!',
+                    text: "{{ session('success') }}",
+                    confirmButtonColor: '#2563eb', // blue-600
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+            @endif
+
+            // 2. ตรวจจับ Session Error
+            @if (session('error'))
+                Swal.fire({
+                    ...swalConfig,
+                    icon: 'error',
+                    title: 'เกิดข้อผิดพลาด!',
+                    text: "{{ session('error') }}",
+                    confirmButtonColor: '#ef4444', // red-500
+                    confirmButtonText: 'ตกลง'
+                });
+            @endif
+
+            // 3. ตรวจจับ Validation Errors
+            @if ($errors->any())
+                let errorHtml = '<ul class="text-sm text-red-500 text-left list-disc list-inside mt-3 space-y-1">';
+                @foreach ($errors->all() as $error)
+                    errorHtml += '<li>{{ $error }}</li>';
+                @endforeach
+                errorHtml += '</ul>';
+
+                Swal.fire({
+                    ...swalConfig,
+                    icon: 'warning',
+                    title: 'ข้อมูลไม่ถูกต้อง ⚠️',
+                    html: '<p class="text-gray-600 dark:text-gray-400 text-sm mb-2 text-left">กรุณาตรวจสอบข้อมูลด้านล่างให้ถูกต้อง:</p>' +
+                        errorHtml,
+                    confirmButtonColor: '#f59e0b', // amber-500
+                    confirmButtonText: 'แก้ไขข้อมูล'
+                });
+            @endif
+        });
+
+        /**
+         * 🚀 GLOBAL Helper: สำหรับลบข้อมูล (เรียกใช้ได้ทุกหน้า)
+         * ตัวอย่างการใช้: <button onclick="confirmDelete('url/to/delete', 'ชื่อรายการ')">ลบ</button>
+         */
+        window.confirmDelete = function(url, name) {
+            const isDark = document.documentElement.classList.contains('dark');
+            Swal.fire({
+                title: 'ยืนยันการลบ?',
+                text: `คุณกำลังจะลบ "${name}" ข้อมูลจะไม่สามารถกู้คืนได้!`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: 'ยืนยันการลบ',
+                cancelButtonText: 'ยกเลิก',
+                background: isDark ? '#1a1a1a' : '#ffffff',
+                color: isDark ? '#ffffff' : '#111827',
+                customClass: {
+                    popup: 'rounded-2xl border border-gray-100 dark:border-gray-800 shadow-xl font-kanit',
+                    confirmButton: 'rounded-xl px-6 py-2.5 font-semibold tracking-wide',
+                    cancelButton: 'rounded-xl px-6 py-2.5 font-semibold tracking-wide'
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // สร้าง Form จำลองขึ้นมาส่งค่า DELETE อัตโนมัติ
+                    let form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = url;
+                    form.innerHTML = `@csrf @method('DELETE')`;
+                    document.body.appendChild(form);
+                    form.submit();
+                }
+            });
+        }
+    </script>
 </body>
 
 </html>

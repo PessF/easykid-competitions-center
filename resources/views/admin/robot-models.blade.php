@@ -68,6 +68,11 @@
             @endforelse
         </div>
 
+        {{-- Pagination Links --}}
+        <div class="mt-8 flex justify-center">
+            {{ $robotModels->links() }}
+        </div>
+
         {{-- Modal: เพิ่มหุ่นยนต์ (ปรับ padding สำหรับมือถือ) --}}
         <x-modal name="add-robot" focusable>
             <div class="p-5 sm:p-6 bg-white dark:bg-[#1a1a1a]">
@@ -84,7 +89,7 @@
                             <input type="number" name="standard_weight" step="0.01" placeholder="เช่น 3.00" class="w-full border-gray-300 dark:border-gray-700 dark:bg-[#0f0f0f] dark:text-white rounded-xl focus:ring-blue-500 text-sm">
                         </div>
                         <div>
-                            <label class="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 sm:mb-2">รูปภาพ (ไม่เกิน 2MB)</label>
+                            <label class="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 sm:mb-2">รูปภาพ (ไม่เกิน 12MB)</label>
                             <input type="file" name="image" accept="image/png, image/jpeg, image/jpg" class="w-full text-xs sm:text-sm text-gray-500 file:mr-3 file:py-1.5 file:px-3 sm:file:py-2 sm:file:px-4 file:rounded-xl file:border-0 file:bg-blue-50 dark:file:bg-blue-900/20 dark:file:text-blue-400 font-semibold cursor-pointer">
                         </div>
                     </div>

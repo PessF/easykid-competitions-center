@@ -7,12 +7,15 @@ use App\Http\Controllers\User\CompetitionUserController;
 use App\Http\Controllers\Admin\GameTypeController;
 use App\Http\Controllers\Admin\RobotModelController;
 use App\Http\Controllers\Admin\CompetitionController;
+use App\Http\Controllers\Admin\AdminPaymentController;
 use App\Http\Controllers\Admin\CategorySettingController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\CompetitionClassController;
 use App\Http\Controllers\User\TeamController; 
 use Illuminate\Support\Facades\Route;
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
+use App\Http\Controllers\TicketVerificationController;
 
 /*
 |--------------------------------------------------------------------------
@@ -31,17 +34,25 @@ Route::controller(SocialiteController::class)->group(function () {
     Route::get('/auth/google-callback', 'googleAuth')->name('auth.google-callback');
 });
 
+Route::get('/verify/ticket/{reg_no}', [TicketVerificationController::class, 'verify'])
+    ->name('verify.ticket')
+    ->middleware('signed');
+
+// --- 🚀 เส้นทางที่ใช้ร่วมกันได้ทั้ง Admin และ User ---
+Route::middleware(['auth', 'revalidate'])->group(function () {
+    // โหลดรูปโปรไฟล์ (Avatar) จาก Google Drive แบบ Stream
+    Route::get('/avatar/{id}', [ProfileController::class, 'showAvatar'])->name('avatar.show');
+    
+    // 🚀 โหลดไฟล์กติกา (Rule PDF) จาก Google Drive เพื่อให้ User เข้ามาโหลดอ่านได้
+    Route::get('/competitions/{competition}/classes/{class}/rule', [CompetitionClassController::class, 'showRule'])->name('competitions.classes.rule');
+});
+
 // --- กลุ่มที่ 1: สำหรับ USER ทั่วไปที่กรอกโปรไฟล์ "เสร็จแล้ว" ---
 Route::middleware(['auth', 'verified', 'user_only', 'check.profile', 'revalidate'])->group(function () {
     
     // Dashboard & Show
     Route::get('/dashboard', [CompetitionUserController::class, 'index'])->name('user.dashboard');
     Route::get('/competitions/{id}', [CompetitionUserController::class, 'show'])->name('user.competitions.show');
-
-    // File Proxy Routes (ต้องตรงกับที่เรียกใน Blade)
-    Route::get('/competitions/{id}/banner', [CompetitionUserController::class, 'banner'])->name('user.competitions.banner');
-    Route::get('/competitions/{competition}/classes/{class}/picture', [CompetitionUserController::class, 'classPicture'])->name('user.competitions.classes.picture');
-    Route::get('/competitions/{competition}/classes/{class}/rules', [CompetitionUserController::class, 'rules'])->name('user.competitions.classes.rule');
 
     // Profile Settings
     Route::get('/profile', function() {
@@ -64,7 +75,14 @@ Route::middleware(['auth', 'verified', 'user_only', 'check.profile', 'revalidate
 
     Route::post('/competitions/{competition}/classes/{class}/register', [CompetitionUserController::class, 'register'])
              ->name('competitions.classes.register');
+
+    Route::get('/registrations', [CompetitionUserController::class, 'myRegistrations'])->name('user.registrations');
+    Route::post('/my-registrations/{id}/payment', [CompetitionUserController::class, 'uploadSlip'])->name('user.registrations.payment');
     
+    Route::get('/my-registrations/{id}/slip', [CompetitionUserController::class, 'showSlip'])->name('user.registrations.slip');
+
+    // สำหรับเปิดหน้าบัตร E-Ticket ของ User
+    Route::get('/my-registrations/{id}/e-ticket', [\App\Http\Controllers\User\CompetitionUserController::class, 'eTicket'])->name('user.registrations.e-ticket');
 });
 
 
@@ -96,17 +114,19 @@ Route::middleware(['auth', 'admin', 'revalidate'])->prefix('admin')->name('admin
     Route::resource('robot-models', RobotModelController::class)->except(['show']);
 
     // Competitions (งานแข่งขันหลัก)
-    Route::get('/competitions/{id}/banner', [CompetitionController::class, 'showBanner'])->name('competitions.banner');
     Route::resource('competitions', CompetitionController::class);
 
     // Competition Classes (รายการย่อย)
-    Route::get('/competitions/{competition}/classes/{class}/picture', [CompetitionClassController::class, 'showPicture'])->name('competitions.classes.picture');
-    Route::get('/competitions/{competition}/classes/{class}/rule', [CompetitionClassController::class, 'showRule'])->name('competitions.classes.rule');
     Route::resource('competitions.classes', CompetitionClassController::class)->except(['show']);
 
-    // 5. Teams & Matches (ฝั่ง Admin เอาไว้ดูภาพรวม)
+    // Payments
+    Route::get('/payments/{id}/slip', [AdminPaymentController::class, 'slip'])->name('payments.slip');
+    Route::resource('payments', AdminPaymentController::class)->only(['index', 'update']);
+
+    // Teams & Matches (ฝั่ง Admin เอาไว้ดูภาพรวม)
     Route::get('/teams', fn() => view('admin.teams.index'))->name('teams.index');
     Route::get('/matches', fn() => view('admin.matches.index'))->name('matches.index');
 });
+
 
 require __DIR__.'/auth.php';

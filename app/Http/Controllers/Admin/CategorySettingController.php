@@ -10,9 +10,9 @@ class CategorySettingController extends Controller
 {
     public function index()
     {
-        // Octane-safe: explicitly limit queries instead of .all()
-        $gameTypes = GameType::orderBy('id')->limit(500)->get();
-        $categories = Category::orderBy('id')->limit(500)->get();
+        // Paginate for better performance with table display management
+        $gameTypes = GameType::orderBy('id')->paginate(25, ['*'], 'game_types_page');
+        $categories = Category::orderBy('id')->paginate(25, ['*'], 'categories_page');
 
         // สั่งให้ไปที่ไฟล์ view ชื่อ category_settings
         return view('admin.category_settings', compact('gameTypes', 'categories'));

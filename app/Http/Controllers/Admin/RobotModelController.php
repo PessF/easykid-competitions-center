@@ -9,32 +9,34 @@ use Illuminate\Support\Facades\Storage;
 
 class RobotModelController extends Controller
 {
-    /**
-     * หน้าหลักรายการแม่แบบหุ่นยนต์ (เพิ่ม Pagination เพื่อความปลอดภัย)
-     */
     public function index()
     {
-        // เปลี่ยนจาก get() เป็น paginate(20) เพื่อรองรับข้อมูลจำนวนมาก
         $robotModels = RobotModel::latest()->paginate(20);
-        
-        // ปรับให้ตรงกับชื่อไฟล์ view ของคุณภูมิ
         return view('admin.robot-models', compact('robotModels'));
     }
 
     public function store(Request $request)
     {
+        if (empty($request->all()) && $request->server('CONTENT_LENGTH') > 0) {
+            return back()->withInput()->withErrors(['image' => 'ไฟล์มีขนาดใหญ่เกินไป (ระบบรองรับสูงสุด 12MB)']);
+        }
+
         $request->validate([
             'name' => 'required|string|max:255',
             'standard_weight' => 'nullable|numeric|min:0',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048', // เพิ่มลิมิต 2MB
+            'image' => 'nullable|image|mimes:jpeg,png,jpg|max:12288',
         ], [
             'name.required' => 'กรุณากรอกชื่อแม่แบบหุ่นยนต์',
-            'image.max' => 'ขนาดไฟล์รูปภาพต้องไม่เกิน 2MB',
+            'image.max' => 'ขนาดไฟล์รูปภาพต้องไม่เกิน 12MB',
+            'image.image' => 'ไฟล์ต้องเป็นรูปภาพเท่านั้น',
         ]);
 
         try {
             $imagePath = null;
             if ($request->hasFile('image')) {
+                if (!$request->file('image')->isValid()) {
+                    return back()->withInput()->withErrors(['image' => 'ไฟล์รูปภาพไม่สมบูรณ์ หรือมีขนาดใหญ่เกินกำหนดของเซิร์ฟเวอร์']);
+                }
                 $imagePath = $this->uploadImage($request->file('image'));
             }
 
@@ -52,10 +54,16 @@ class RobotModelController extends Controller
 
     public function update(Request $request, string $id)
     {
+        if (empty($request->all()) && $request->server('CONTENT_LENGTH') > 0) {
+            return back()->withInput()->withErrors(['image' => 'ไฟล์มีขนาดใหญ่เกินไป (ระบบรองรับสูงสุด 12MB)']);
+        }
+
         $request->validate([
             'name' => 'required|string|max:255',
             'standard_weight' => 'nullable|numeric|min:0',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg|max:12288',
+        ], [
+            'image.max' => 'ขนาดไฟล์รูปภาพต้องไม่เกิน 12MB',
         ]);
 
         try {
@@ -63,8 +71,12 @@ class RobotModelController extends Controller
             $data = $request->only(['name', 'standard_weight']);
 
             if ($request->hasFile('image')) {
+                if (!$request->file('image')->isValid()) {
+                    return back()->withInput()->withErrors(['image' => 'ไฟล์รูปภาพไม่สมบูรณ์ หรือมีขนาดใหญ่เกินกำหนดของเซิร์ฟเวอร์']);
+                }
+
                 if ($robot->image_url) {
-                    Storage::disk('google')->delete($robot->image_url);
+                    Storage::disk('public')->delete($robot->image_url);
                 }
                 $data['image_url'] = $this->uploadImage($request->file('image'));
             }
@@ -82,7 +94,7 @@ class RobotModelController extends Controller
             $robot = RobotModel::findOrFail($id);
             
             if ($robot->image_url) {
-                Storage::disk('google')->delete($robot->image_url);
+                Storage::disk('public')->delete($robot->image_url);
             }
 
             $robot->delete();
@@ -92,41 +104,24 @@ class RobotModelController extends Controller
         }
     }
 
-    /**
-     * ฟังก์ชันช่วยอัปโหลด (Helper) - ใช้ Stream เพื่อประหยัด RAM
-     */
     private function uploadImage($file)
     {
         $fileName = "robot_" . time() . "_" . uniqid() . "." . $file->getClientOriginalExtension();
-        $fullPath = "Robots/Models/$fileName";
+        $folderPath = "Robots/Models";
         
-        $stream = fopen($file->getRealPath(), 'r');
-        Storage::disk('google')->put($fullPath, $stream);
-        if (is_resource($stream)) {
-            fclose($stream);
-        }
-        return $fullPath;
+        return $file->storeAs($folderPath, $fileName, 'public');
     }
     
-    /**
-     * สำหรับแสดงรูปภาพหุ่นยนต์ (กู้คืนให้รูปกลับมาแสดงผลได้)
-     */
     public function showImage($id)
     {
         $robot = RobotModel::findOrFail($id);
-
-        $disk = Storage::disk('google');
+        $disk = Storage::disk('public');
         $path = $robot->image_url;
 
-        // เช็คว่ามี Path และไฟล์มีอยู่จริงหรือไม่
         if (!$path || !$disk->exists($path)) {
             abort(404, 'ไม่พบไฟล์รูปภาพ');
         }
 
-        // 🚀 กู้คืนท่ามาตรฐาน: ดึงไฟล์ไบนารีและยัด Header Content-Type
-        $file = $disk->get($path);
-        $mimeType = $disk->mimeType($path) ?? 'image/jpeg';
-
-        return response($file, 200)->header('Content-Type', $mimeType);
+        return response()->file($disk->path($path));
     }
 }

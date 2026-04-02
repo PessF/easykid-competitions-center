@@ -65,6 +65,11 @@
                             </tbody>
                         </table>
                     </div>
+
+                    {{-- Pagination for Game Types --}}
+                    <div class="mt-4 flex justify-center">
+                        {{ $gameTypes->appends(request()->except('game_page'))->links() }}
+                    </div>
                 </div>
             </div>
 
@@ -117,6 +122,11 @@
                                 @endforelse
                             </tbody>
                         </table>
+                    </div>
+
+                    {{-- Pagination for Categories --}}
+                    <div class="mt-4 flex justify-center">
+                        {{ $categories->appends(request()->except('cat_page'))->links() }}
                     </div>
                 </div>
             </div>

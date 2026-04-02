@@ -35,8 +35,10 @@
         body,
         aside,
         main {
-            -ms-overflow-style: none;  /* IE and Edge */
-            scrollbar-width: none;  /* Firefox */
+            -ms-overflow-style: none;
+            /* IE and Edge */
+            scrollbar-width: none;
+            /* Firefox */
         }
     </style>
 </head>
@@ -86,13 +88,28 @@
                         จัดการทีมของฉัน
                     </a>
 
-                    <a href="#"
-                        class="flex items-center px-4 py-3 text-sm rounded-xl font-normal text-gray-500 hover:text-gray-900 hover:bg-gray-50 dark:text-gray-400 dark:hover:text-white dark:hover:bg-white/5 transition-all duration-300">
-                        <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                        </svg>
-                        ประวัติการสมัคร
+                    @php
+                        $isRegistrations = request()->routeIs('user.registrations');
+                        $pendingPaymentCount = \App\Models\Registration::where('user_id', auth()->id())
+                            ->where('status', 'pending_payment')
+                            ->count();
+                    @endphp
+                    <a href="{{ route('user.registrations') }}"
+                        class="flex items-center justify-between px-4 py-3 text-sm rounded-xl transition-all duration-300 
+                              {{ $isRegistrations ? 'text-blue-600 bg-blue-50 dark:bg-blue-500/10 dark:text-blue-400 font-semibold' : 'font-normal text-gray-500 hover:text-gray-900 hover:bg-gray-50 dark:text-gray-400 dark:hover:text-white dark:hover:bg-white/5' }}">
+                        <div class="flex items-center">
+                            <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                            </svg>
+                            ประวัติการสมัคร
+                        </div>
+                        @if ($pendingPaymentCount > 0)
+                            <div
+                                class="flex items-center justify-center min-w-[20px] h-5 px-1.5 text-[10px] font-bold text-white bg-red-500 rounded-full shadow-sm">
+                                {{ $pendingPaymentCount }}
+                            </div>
+                        @endif
                     </a>
                 </nav>
             </div>
@@ -124,7 +141,16 @@
                                 </div>
                                 <div
                                     class="w-10 h-10 rounded-md bg-gray-200 overflow-hidden ring-2 ring-blue-500/10 group-hover:ring-blue-500/30 transition-all shadow-sm">
-                                    <img src="{{ auth()->user()->avatar_url }}" class="w-full h-full object-cover">
+                                    {{-- 🚀 FIX: เปลี่ยนการเรียกรูปภาพมาเป็น Local Public Storage --}}
+                                    @if (Auth::user()->avatar)
+                                        @if (str_starts_with(Auth::user()->avatar, 'http'))
+                                            <img src="{{ Auth::user()->avatar }}" class="w-full h-full object-cover" alt="{{ Auth::user()->name }}">
+                                        @else
+                                            <img src="{{ asset('storage/' . Auth::user()->avatar) }}" class="w-full h-full object-cover" alt="{{ Auth::user()->name }}">
+                                        @endif
+                                    @else
+                                        <img src="{{ asset('images/default-avatar.png') }}" class="w-full h-full object-cover" alt="{{ Auth::user()->name }}">
+                                    @endif
                                 </div>
                                 <svg class="fill-current h-4 w-4 text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300 transition-colors"
                                     xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
@@ -163,7 +189,8 @@
                     <div class="flex flex-col md:flex-row items-center justify-between gap-4">
                         <p class="text-xs font-normal text-gray-500 dark:text-gray-400">&copy; {{ date('Y') }}
                             Easykids Robotics. All rights reserved.</p>
-                        <div class="flex items-center space-x-6 text-xs font-semibold text-gray-500 dark:text-gray-400">
+                        <div
+                            class="flex items-center space-x-6 text-xs font-semibold text-gray-500 dark:text-gray-400">
                             <a href="{{ route('privacy.policy') }}"
                                 class="hover:text-blue-600 transition-colors">Privacy Policy</a>
                             <a href="{{ route('terms.service') }}"
@@ -239,7 +266,7 @@
                         </h3>
 
                         <div class="grid grid-cols-12 gap-3 sm:gap-4">
-                            {{-- Prefix TH (ขยายจาก md:col-span-2 เป็น md:col-span-3) --}}
+                            {{-- Prefix TH --}}
                             <div class="col-span-5 sm:col-span-3 md:col-span-3 lg:col-span-3 space-y-1.5">
                                 <label class="text-[10px] sm:text-xs font-semibold text-gray-500">คำนำหน้า</label>
                                 <div x-data="{ open: false, selected: '{{ old('prefix_th', Auth::user()->prefix_th) }}', placeholder: 'เลือก' }" class="relative" @click.away="open = false">
@@ -273,7 +300,7 @@
                                 </div>
                             </div>
 
-                            {{-- ชื่อจริง (ปรับให้พอดีกับพื้นที่ที่เหลือ) --}}
+                            {{-- ชื่อจริง --}}
                             <div class="col-span-7 sm:col-span-4 md:col-span-5 lg:col-span-4 space-y-1.5">
                                 <label class="text-[10px] sm:text-xs font-semibold text-gray-500">ชื่อจริง</label>
                                 <input name="first_name_th" type="text"
@@ -281,7 +308,7 @@
                                     class="w-full px-3 sm:px-4 py-2.5 bg-white dark:bg-black border {{ $errors->has('first_name_th') ? 'border-red-500' : 'border-gray-200 dark:border-white/10' }} rounded-xl focus:ring-2 focus:ring-blue-500/50 outline-none transition-all text-xs sm:text-sm dark:text-white">
                             </div>
 
-                            {{-- นามสกุล (ปรับให้พอดีกับพื้นที่ที่เหลือ) --}}
+                            {{-- นามสกุล --}}
                             <div class="col-span-12 sm:col-span-5 md:col-span-4 lg:col-span-5 space-y-1.5">
                                 <label class="text-[10px] sm:text-xs font-semibold text-gray-500">นามสกุล</label>
                                 <input name="last_name_th" type="text"
@@ -300,7 +327,7 @@
                         </h3>
                         <div class="grid grid-cols-12 gap-3 sm:gap-4">
 
-                            {{-- Prefix EN (ขยายจาก md:col-span-2 เป็น md:col-span-3) --}}
+                            {{-- Prefix EN --}}
                             <div class="col-span-5 sm:col-span-3 md:col-span-3 lg:col-span-3 space-y-1.5">
                                 <label class="text-[10px] sm:text-xs font-semibold text-gray-500">Prefix</label>
                                 <div x-data="{ open: false, selected: '{{ old('prefix_en', Auth::user()->prefix_en) }}', placeholder: 'Select' }" class="relative" @click.away="open = false">
@@ -334,7 +361,7 @@
                                 </div>
                             </div>
 
-                            {{-- First Name (ปรับให้พอดีกับพื้นที่ที่เหลือ) --}}
+                            {{-- First Name --}}
                             <div class="col-span-7 sm:col-span-4 md:col-span-5 lg:col-span-4 space-y-1.5">
                                 <label class="text-[10px] sm:text-xs font-semibold text-gray-500">First Name</label>
                                 <input name="first_name_en" type="text"
@@ -342,7 +369,7 @@
                                     class="w-full px-3 sm:px-4 py-2.5 bg-white dark:bg-black border {{ $errors->has('first_name_en') ? 'border-red-500' : 'border-gray-200 dark:border-white/10' }} rounded-xl focus:ring-2 focus:ring-blue-500/50 outline-none transition-all text-xs sm:text-sm dark:text-white">
                             </div>
 
-                            {{-- Last Name (ปรับให้พอดีกับพื้นที่ที่เหลือ) --}}
+                            {{-- Last Name --}}
                             <div class="col-span-12 sm:col-span-5 md:col-span-4 lg:col-span-5 space-y-1.5">
                                 <label class="text-[10px] sm:text-xs font-semibold text-gray-500">Last Name</label>
                                 <input name="last_name_en" type="text"
@@ -447,56 +474,73 @@
         </div>
     </x-modal>
 
-    {{-- สคริปต์ --}}
+    {{-- 🚀 FIX: เติม addslashes() ป้องกัน JS ช็อก --}}
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            const ToastConfig = {
+                background: '#ffffff',
+                confirmButtonColor: '#2563eb',
+                customClass: {
+                    popup: 'rounded-2xl p-4 shadow-sm border border-gray-100',
+                    title: 'text-xl font-bold text-gray-800',
+                    htmlContainer: 'text-left',
+                    confirmButton: 'rounded-lg px-8 py-2.5 font-bold text-sm transition-all hover:brightness-110'
+                },
+                buttonsStyling: true
+            };
+
+            // Success 
             @if (session('success') || session('status') === 'profile-updated')
                 Swal.fire({
-                    title: 'สำเร็จ!',
-                    text: '{{ session('success') ?? 'ข้อมูลโปรไฟล์ของคุณถูกบันทึกเรียบร้อยแล้ว' }}',
+                    ...ToastConfig,
                     icon: 'success',
+                    iconColor: '#10b981',
+                    title: 'สำเร็จ',
+                    html: `{!! addslashes(session('success') ?? 'บันทึกข้อมูลเรียบร้อยแล้ว') !!}`,
                     confirmButtonText: 'ตกลง',
-                    confirmButtonColor: '#2563eb',
-                    customClass: {
-                        popup: 'rounded-2xl',
-                        confirmButton: 'rounded-xl px-8 py-2.5 font-semibold'
-                    }
+                    confirmButtonColor: '#10b981',
                 });
             @endif
 
+            // Error 
             @if (session('error'))
                 Swal.fire({
-                    title: 'เกิดข้อผิดพลาด!',
-                    text: '{{ session('error') }}',
+                    ...ToastConfig,
                     icon: 'error',
-                    confirmButtonText: 'ตกลง',
+                    iconColor: '#ef4444',
+                    title: 'เกิดข้อผิดพลาด',
+                    html: `{!! addslashes(session('error')) !!}`,
+                    confirmButtonText: 'ปิด',
                     confirmButtonColor: '#ef4444',
-                    customClass: {
-                        popup: 'rounded-2xl',
-                        confirmButton: 'rounded-xl px-8 py-2.5 font-semibold'
-                    }
                 });
             @endif
 
+            // Validation Errors
             @if ($errors->any())
-                let errorHtml = '<ul class="text-sm text-red-500 text-left list-disc list-inside mt-2 space-y-1">';
+                let errorHtml = `
+            <div class="mt-4 space-y-3">
                 @foreach ($errors->all() as $error)
-                    errorHtml += '<li>{{ $error }}</li>';
+                    <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border-l-4 border-amber-500">
+                        <i class="fas fa-info-circle text-amber-500 text-xs"></i>
+                        <span class="text-xs text-gray-700 font-medium leading-tight">{!! addslashes($error) !!}</span>
+                    </div>
                 @endforeach
-                errorHtml += '</ul>';
+            </div>
+        `;
 
                 Swal.fire({
-                    title: 'ข้อมูลไม่ถูกต้อง',
-                    html: '<p class="text-gray-600 dark:text-gray-400 text-sm">กรุณาตรวจสอบข้อมูลให้ถูกต้อง:</p>' +
-                        errorHtml,
+                    ...ToastConfig,
                     icon: 'warning',
-                    confirmButtonText: 'แก้ไขข้อมูล',
+                    iconColor: '#f59e0b',
+                    title: 'พบข้อผิดพลาด',
+                    html: `
+                <p class="text-gray-400 text-xs ml-1">กรุณาตรวจสอบข้อมูลตามรายการด้านล่าง:</p>
+                ${errorHtml}
+            `,
+                    confirmButtonText: 'รับทราบ',
                     confirmButtonColor: '#f59e0b',
-                    customClass: {
-                        popup: 'rounded-2xl',
-                        confirmButton: 'rounded-xl px-8 py-2.5 font-semibold'
-                    }
+                    width: '28rem'
                 });
             @endif
         });

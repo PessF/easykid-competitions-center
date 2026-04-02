@@ -10,7 +10,7 @@ class CompetitionClass extends Model
     use HasFactory;
 
     protected $fillable = [
-        'competition_id', 'name', 'entry_fee', 'max_members', 'max_teams', 
+        'competition_id', 'name', 'entry_fee','min_members', 'max_teams','max_members',
         'rules_url', 'game_type_name', 'robot_name', 'robot_weight', 
         'robot_image_url', 'allowed_categories'
     ];

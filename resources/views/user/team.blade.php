@@ -130,6 +130,11 @@
                     </div>
                 @endforelse
             </div>
+
+            {{-- Pagination Links --}}
+            <div class="mt-6 flex justify-center">
+                {{ $teams->links() }}
+            </div>
         </div>
 
         {{-- ===== THE OMNISCIENT MODAL ===== --}}

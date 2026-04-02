@@ -34,6 +34,8 @@ return new class extends Migration
                 // 4. เงื่อนไขหมวดหมู่อายุ (JSON)
                 $table->json('allowed_categories'); 
 
+                $table->index('game_type_name'); 
+
                 $table->timestamps();
             });
     }

@@ -23,9 +23,19 @@ return new class extends Migration
             
             // สถานะและการชำระเงิน
             $table->enum('status', ['pending_payment', 'waiting_verify', 'approved', 'rejected'])->default('pending_payment');
-            $table->string('payment_slip_path')->nullable(); // เก็บ Path Google Drive
+            $table->string('payment_slip_path')->nullable(); // พาธสลิป Google Drive
+            
+ 
+            $table->text('reject_reason')->nullable(); 
+            $table->timestamp('rejected_at')->nullable(); 
+            
+
+            $table->foreignId('verified_by')->nullable()->constrained('users')->nullOnDelete();
+            $table->timestamp('verified_at')->nullable();
             
             $table->timestamps();
+
+            $table->index(['status', 'competition_class_id']); 
         });
     }
 

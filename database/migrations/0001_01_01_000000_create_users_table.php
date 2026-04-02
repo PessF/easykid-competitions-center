@@ -20,7 +20,7 @@ return new class extends Migration
             
             // ข้อมูล Social & Setup
             $table->string('google_id')->nullable();
-            $table->string('avatar')->nullable();
+            $table->text('avatar')->nullable();
             $table->boolean('has_setup_profile')->default(false);
             $table->timestamp('password_set_at')->nullable();
             
@@ -38,6 +38,10 @@ return new class extends Migration
             $table->timestamp('email_verified_at')->nullable();
             $table->rememberToken();
             $table->timestamps();
+
+            
+            $table->index('role'); 
+            $table->index('google_id');
         });
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {
@@ -54,6 +58,7 @@ return new class extends Migration
             $table->longText('payload');
             $table->integer('last_activity')->index();
         });
+
     }
 
     /**

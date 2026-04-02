@@ -22,7 +22,7 @@
     <div class="min-h-screen flex flex-col items-center p-6 py-12">
 
         <div class="mb-8 animate-in fade-in slide-in-from-top duration-700">
-            <img src="https://www.easykidsrobotics.com/wp-content/uploads/2021/07/logo_EasyKids_re3.png"
+            <img src="{{ asset('images/logo.png') }}"
                 class="h-16 w-auto" alt="EasyKids Robotics">
         </div>
 
