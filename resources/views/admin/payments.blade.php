@@ -2,22 +2,7 @@
     <x-slot name="title">ตรวจสอบการชำระเงิน | Payments</x-slot>
 
     @php
-        // 1. เตรียมข้อมูล Array ไว้ให้ Alpine.js
-        $alpineItems = collect($registrations->items())
-            ->map(function ($reg) {
-                return [
-                    'team' => strtolower($reg->team->name ?? ''),
-                    'regNo' => strtolower($reg->regis_no ?? ''),
-                    'user' => strtolower($reg->user->name ?? ''),
-                    'compId' => (string) $reg->competition_id,
-                    'className' => strtolower($reg->competitionClass->name ?? ''),
-                    'status' => $reg->status,
-                ];
-            })
-            ->values()
-            ->all();
-
-        // 2. เตรียมข้อมูลรายชื่องานแข่งให้ Alpine.js
+        // เตรียมข้อมูลรายชื่องานแข่งให้ Alpine.js
         $alpineCompetitions = $competitions
             ->map(function ($comp) {
                 return [
@@ -35,20 +20,14 @@
             {{-- Page Header --}}
             <div class="mb-8">
                 <h1 class="text-3xl font-bold text-gray-900 dark:text-white">ตรวจสอบการชำระเงิน</h1>
-                <p class="text-gray-500 dark:text-gray-400 mt-2">จัดการและอนุมัติหลักฐานการโอนเงินของผู้สมัคร</p>
+                <p class="text-gray-500 dark:text-gray-400 mt-2">จัดการและอนุมัติหลักฐานการโอนเงิน
+                </p>
             </div>
 
-            {{-- Stats Cards (ปรับเป็น 5 คอลัมน์) --}}
-            <div class="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
+            {{-- Stats Cards (ปรับเป็น 4 คอลัมน์ เพราะไม่มีรอชำระเงินแล้ว) --}}
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
                 @php
                     $statCards = [
-                        [
-                            'label' => 'รอชำระเงิน',
-                            'count' => $stats['pending_payment'] ?? 0,
-                            'class' => 'slate',
-                            'icon' => 'fa-file-invoice-dollar',
-                            'val' => 'pending_payment',
-                        ],
                         [
                             'label' => 'รอตรวจสอบ',
                             'count' => $stats['waiting_verify'] ?? 0,
@@ -71,7 +50,7 @@
                             'val' => 'rejected',
                         ],
                         [
-                            'label' => 'ทั้งหมด',
+                            'label' => 'บิลทั้งหมด',
                             'count' => $stats['all'] ?? 0,
                             'class' => 'blue',
                             'icon' => 'fa-layer-group',
@@ -108,7 +87,7 @@
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">ค้นหา</label>
                             <div class="relative">
                                 <input type="text" x-model="search" @keyup.enter="applyFilter('search', search)"
-                                    placeholder="ชื่อทีม, รหัสสมัคร..."
+                                    placeholder="รหัสบิล, ชื่อผู้โอน, ชื่อทีม..."
                                     class="w-full px-4 py-2.5 text-sm border border-gray-200 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-colors">
                                 <button @click="applyFilter('search', search)"
                                     class="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 text-gray-400 hover:text-blue-500 transition-colors">
@@ -187,11 +166,10 @@
                 </div>
             </div>
 
-            {{-- Status Tabs (เพิ่ม รอชำระเงิน) --}}
+            {{-- Status Tabs (ตัด รอชำระเงิน ออก) --}}
             <div
                 class="flex flex-wrap items-center bg-gray-50 dark:bg-gray-900/50 border border-gray-100 dark:border-gray-800 rounded-xl p-1 w-full lg:w-auto shrink-0 z-10 mb-6">
                 @foreach ([
-        'pending_payment' => ['label' => 'รอชำระเงิน', 'icon' => 'fa-file-invoice-dollar'],
         'waiting_verify' => ['label' => 'รอตรวจสอบ', 'icon' => 'fa-clock'],
         'approved' => ['label' => 'อนุมัติแล้ว', 'icon' => 'fa-check-circle'],
         'rejected' => ['label' => 'ไม่ผ่าน', 'icon' => 'fa-times-circle'],
@@ -217,45 +195,51 @@
                             <tr class="bg-gray-50/50 dark:bg-gray-900/50 border-b border-gray-200 dark:border-gray-800">
                                 <th
                                     class="px-6 py-4 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
-                                    ทีมผู้สมัคร</th>
+                                    รหัสบิล / ผู้โอน
+                                </th>
                                 <th
                                     class="px-6 py-4 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
-                                    งานแข่งขัน</th>
+                                    งานแข่งขัน
+                                </th>
                                 <th
                                     class="px-6 py-4 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
-                                    รุ่น</th>
+                                    ยอดชำระสุทธิ
+                                </th>
                                 <th
                                     class="px-6 py-4 text-center text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
-                                    สถานะ</th>
+                                    สถานะ
+                                </th>
                                 <th
                                     class="px-6 py-4 text-right text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
-                                    การจัดการ</th>
+                                    การจัดการ
+                                </th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-100 dark:divide-gray-800/60 relative">
-                            @forelse ($registrations as $reg)
+                            @forelse ($transactions as $tx)
                                 <tr class="hover:bg-gray-50/50 dark:hover:bg-white/[0.02] transition-colors">
                                     <td class="px-6 py-4">
-                                        <div class="text-sm font-semibold text-gray-900 dark:text-gray-100">
-                                            {{ $reg->team->name ?? '-' }}</div>
+                                        <div class="text-sm font-mono font-bold text-blue-600 dark:text-blue-400">
+                                            {{ $tx->tx_no }}
+                                        </div>
                                         <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                            <span
-                                                class="font-mono text-blue-600 dark:text-blue-400">{{ $reg->regis_no }}</span>
-                                            | <i class="far fa-user mr-1"></i>{{ $reg->user->name ?? '-' }}
+                                            <i class="far fa-user mr-1"></i>{{ $tx->user->name ?? '-' }}
                                         </div>
                                     </td>
                                     <td class="px-6 py-4 text-sm text-gray-700 dark:text-gray-300">
-                                        {{ $reg->competition->name ?? '-' }}</td>
-                                    <td class="px-6 py-4 text-sm text-gray-700 dark:text-gray-300">
-                                        {{ $reg->competitionClass->name ?? '-' }}</td>
+                                        {{ $tx->competition->name ?? '-' }}
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <div class="text-sm font-semibold text-gray-900 dark:text-white">
+                                            {{ number_format($tx->total_amount) }} ฿
+                                        </div>
+                                        <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                            จ่ายสำหรับ {{ $tx->registrations->count() }} ทีม
+                                        </div>
+                                    </td>
                                     <td class="px-6 py-4 text-center">
                                         @php
                                             $statusMap = [
-                                                'pending_payment' => [
-                                                    'badge' =>
-                                                        'bg-slate-50 text-slate-700 dark:bg-slate-500/10 dark:text-slate-400 border-slate-200 dark:border-slate-800',
-                                                    'text' => 'รอชำระเงิน',
-                                                ],
                                                 'waiting_verify' => [
                                                     'badge' =>
                                                         'bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400 border-amber-200 dark:border-amber-900/50',
@@ -272,10 +256,10 @@
                                                     'text' => 'ปฏิเสธ',
                                                 ],
                                             ];
-                                            $status = $statusMap[$reg->status] ?? [
+                                            $status = $statusMap[$tx->status] ?? [
                                                 'badge' =>
                                                     'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300 border-gray-200',
-                                                'text' => $reg->status,
+                                                'text' => $tx->status,
                                             ];
                                         @endphp
                                         <span
@@ -284,16 +268,26 @@
                                     <td class="px-6 py-4 text-right">
                                         <button type="button"
                                             @click="openModal({
-                                                id: '{{ $reg->id }}',
-                                                teamName: {{ Js::from($reg->team->name ?? '-') }},
-                                                regNo: '{{ $reg->regis_no }}',
-                                                userName: {{ Js::from($reg->user->name ?? '-') }},
-                                                compName: {{ Js::from($reg->competition->name ?? '-') }},
-                                                className: {{ Js::from($reg->competitionClass->name ?? '-') }},
-                                                slipUrl: '{{ $reg->payment_slip_path ? route('admin.payments.slip', $reg->id) : '' }}',
-                                                status: '{{ $reg->status }}',
-                                                rejectReason: {{ Js::from($reg->reject_reason) }},
-                                                actionUrl: '{{ route('admin.payments.update', $reg->id) }}'
+                                                id: '{{ $tx->id }}',
+                                                txNo: '{{ $tx->tx_no }}',
+                                                userName: {{ Js::from($tx->user->name ?? '-') }},
+                                                compName: {{ Js::from($tx->competition->name ?? '-') }},
+                                                totalAmount: {{ $tx->total_amount }},
+                                                teamCount: {{ $tx->registrations->count() }},
+                                                slipUrl: '{{ $tx->payment_slip_path ? route('admin.payments.slip', $tx->id) : '' }}',
+                                                status: '{{ $tx->status }}',
+                                                rejectReason: {{ Js::from($tx->reject_reason) }},
+                                                actionUrl: '{{ route('admin.payments.update', $tx->id) }}',
+                                                teamList: [
+                                                    {{-- 🚀 ดึงค่า fee มาใส่ตรงนี้ --}}
+                                                    @foreach ($tx->registrations as $reg)
+                                                        { 
+                                                            teamName: {{ Js::from($reg->team->name ?? '-') }}, 
+                                                            className: {{ Js::from($reg->competitionClass->name ?? '-') }}, 
+                                                            regNo: '{{ $reg->regis_no }}',
+                                                            fee: {{ $reg->competitionClass->entry_fee ?? 0 }}
+                                                        }, @endforeach
+                                                ]
                                             })"
                                             class="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-500/20 text-sm font-semibold rounded-lg transition-colors focus:outline-none">
                                             <i class="fas fa-search text-xs"></i> ตรวจสอบ
@@ -305,8 +299,8 @@
                                     <td colspan="5" class="px-6 py-16 text-center">
                                         <div class="flex flex-col items-center justify-center">
                                             <i class="fas fa-inbox text-4xl text-gray-300 dark:text-gray-600 mb-3"></i>
-                                            <p class="text-gray-500 dark:text-gray-400 font-medium">ไม่พบข้อมูลใบสมัคร
-                                            </p>
+                                            <p class="text-gray-500 dark:text-gray-400 font-medium">
+                                                ไม่พบข้อมูลบิลชำระเงิน</p>
                                         </div>
                                     </td>
                                 </tr>
@@ -317,14 +311,14 @@
             </div>
 
             {{-- Pagination --}}
-            @if ($registrations->hasPages())
+            @if ($transactions->hasPages())
                 <div class="mt-6 flex justify-center">
-                    {{ $registrations->appends(request()->query())->links() }}
+                    {{ $transactions->appends(request()->query())->links() }}
                 </div>
             @endif
         </div>
 
-        {{-- MODAL ตรวจสอบสลิป --}}
+        {{-- MODAL ตรวจสอบสลิป (ดีไซน์ใหม่ รวบบิล) --}}
         <div x-show="modalOpen" class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title"
             role="dialog" aria-modal="true" style="display: none;">
             <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
@@ -339,26 +333,16 @@
                     x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
                     class="relative transform overflow-hidden rounded-2xl bg-white dark:bg-[#141414] text-left shadow-2xl transition-all sm:my-8 w-full max-w-4xl border border-gray-200 dark:border-gray-800 flex flex-col md:flex-row">
 
+                    {{-- ด้านซ้าย: รูปสลิป --}}
                     <div class="w-full md:w-1/2 bg-gray-100 dark:bg-black/50 p-4 flex flex-col h-[40vh] md:h-[70vh]">
                         <div class="flex justify-between items-center mb-2 md:hidden">
-                            <h3 class="text-sm font-bold dark:text-white" x-text="'รหัส ' + modalData.regNo"></h3>
+                            <h3 class="text-sm font-bold dark:text-white" x-text="'รหัสบิล ' + modalData.txNo"></h3>
                             <button @click="closeModal()" class="text-gray-400 hover:text-gray-600"><i
                                     class="fas fa-times"></i></button>
                         </div>
                         <div
                             class="flex-1 relative rounded-xl overflow-hidden flex items-center justify-center bg-gray-200 dark:bg-gray-900/50">
-
-                            {{-- กรณีรอชำระเงิน (ยังไม่มีสลิป) --}}
-                            <template x-if="modalData.status === 'pending_payment'">
-                                <div class="flex flex-col items-center justify-center text-gray-400 p-8 text-center">
-                                    <i class="fas fa-file-invoice-dollar text-5xl mb-4 opacity-20"></i>
-                                    <p class="text-sm font-medium">ยังไม่มีการอัปโหลดหลักฐานการโอนเงิน</p>
-                                    <p class="text-xs mt-1">ผู้สมัครยังอยู่ในขั้นตอนรอชำระเงิน</p>
-                                </div>
-                            </template>
-
-                            {{-- กรณีที่มีสลิป --}}
-                            <template x-if="modalData.status !== 'pending_payment'">
+                            <template x-if="modalData.slipUrl">
                                 <div class="w-full h-full relative flex items-center justify-center">
                                     <div x-show="!modalData.imgLoaded"
                                         class="absolute inset-0 flex flex-col items-center justify-center bg-gray-100 dark:bg-gray-800 z-10">
@@ -366,13 +350,11 @@
                                         <p class="text-[10px] text-gray-400 uppercase tracking-widest font-bold">
                                             กำลังโหลดรูปภาพ...</p>
                                     </div>
-
                                     <div x-show="modalData.imgError"
                                         class="absolute inset-0 flex flex-col items-center justify-center bg-gray-100 dark:bg-gray-800 z-10 text-red-500">
                                         <i class="fas fa-exclamation-triangle text-3xl mb-2"></i>
                                         <p class="text-xs font-bold uppercase">ไม่สามารถโหลดรูปภาพได้</p>
                                     </div>
-
                                     <img :src="modalData.slipUrl" x-on:load="modalData.imgLoaded = true"
                                         x-on:error="modalData.imgError = true; modalData.imgLoaded = true"
                                         class="w-full h-full object-contain"
@@ -380,7 +362,6 @@
                                 </div>
                             </template>
                         </div>
-
                         <template x-if="modalData.slipUrl">
                             <a :href="modalData.slipUrl" target="_blank"
                                 class="mt-3 text-center text-xs text-blue-500 hover:text-blue-600 font-medium">
@@ -389,7 +370,8 @@
                         </template>
                     </div>
 
-                    <div class="w-full md:w-1/2 p-6 flex flex-col h-auto md:h-[70vh] overflow-y-auto custom-scrollbar">
+                    {{-- ด้านขวา: ข้อมูลและแบบฟอร์ม --}}
+                    <div class="w-full md:w-1/2 p-6 flex flex-col h-auto md:h-[70vh]">
                         <div class="hidden md:flex justify-end mb-2">
                             <button @click="closeModal()"
                                 class="text-gray-400 hover:text-red-500 w-8 h-8 rounded-full bg-gray-50 dark:bg-gray-800 flex items-center justify-center transition-colors">
@@ -397,92 +379,109 @@
                             </button>
                         </div>
 
-                        <div class="mb-6">
-                            <p class="text-xs font-bold text-blue-600 tracking-wider mb-1" x-text="modalData.regNo">
-                            </p>
+                        {{-- Header ข้อมูลบิล --}}
+                        <div class="mb-4 shrink-0 border-b border-gray-100 dark:border-gray-800 pb-4">
+                            <p class="text-xs font-bold text-blue-600 tracking-wider mb-1"
+                                x-text="'รหัสบิล: ' + modalData.txNo"></p>
                             <h2 class="text-xl font-bold text-gray-900 dark:text-white leading-tight"
-                                x-text="modalData.teamName"></h2>
-                            <p class="text-sm text-gray-500 mt-1"><i class="far fa-user mr-1"></i> <span
+                                x-text="modalData.compName"></h2>
+                            <p class="text-sm text-gray-500 mt-1"><i class="far fa-user mr-1"></i> ผู้โอน: <span
                                     x-text="modalData.userName"></span></p>
+                            <p class="text-lg font-semibold text-emerald-600 dark:text-emerald-400 mt-2"
+                                x-text="'ยอดโอนสุทธิ: ' + new Intl.NumberFormat('th-TH').format(modalData.totalAmount) + ' ฿'">
+                            </p>
                         </div>
 
-                        <div class="space-y-2 mb-6 text-sm">
-                            <div
-                                class="flex items-start gap-3 p-3 bg-gray-50 dark:bg-gray-900/50 rounded-xl border border-gray-100 dark:border-gray-800">
-                                <i class="fas fa-trophy text-blue-500 mt-0.5 text-xs"></i>
-                                <div>
-                                    <p class="text-gray-500 text-[10px] uppercase font-bold tracking-wider">งานแข่งขัน
-                                    </p>
-                                    <p class="font-medium dark:text-gray-200" x-text="modalData.compName"></p>
-                                </div>
-                            </div>
-                            <div
-                                class="flex items-start gap-3 p-3 bg-gray-50 dark:bg-gray-900/50 rounded-xl border border-gray-100 dark:border-gray-800">
-                                <i class="fas fa-robot text-indigo-500 mt-0.5 text-xs"></i>
-                                <div>
-                                    <p class="text-gray-500 text-[10px] uppercase font-bold tracking-wider">รุ่นแข่งขัน
-                                    </p>
-                                    <p class="font-medium dark:text-gray-200" x-text="modalData.className"></p>
-                                </div>
-                            </div>
-                        </div>
+                        {{-- รายชื่อทีมในบิลนี้ --}}
+                        <div class="flex-1 overflow-y-auto custom-scrollbar pr-2 mb-4 space-y-2.5">
+                            <p class="text-xs font-bold text-gray-500 uppercase flex items-center gap-2">
+                                รายการแข่งขันและทีม
+                                <span
+                                    class="bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 px-2 py-0.5 rounded-full text-[10px]"
+                                    x-text="modalData.teamCount + ' ทีม'"></span>
+                            </p>
 
-                        {{-- ส่วนจัดการสถานะ (จะแสดงเฉพาะเมื่อมีสลิปและรอตรวจสอบ) --}}
-                        <form method="POST" :action="modalData.actionUrl" class="mt-auto">
-                            @csrf @method('PUT')
-
-                            <template x-if="modalData.status === 'pending_payment'">
+                            <template x-for="team in modalData.teamList">
                                 <div
-                                    class="p-4 rounded-xl bg-blue-50 dark:bg-blue-500/5 border border-blue-100 dark:border-blue-900/30 text-blue-600 dark:text-blue-400 text-sm">
-                                    <p class="font-bold flex items-center gap-2"><i class="fas fa-info-circle"></i>
-                                        รอผู้สมัครแจ้งชำระเงิน</p>
-                                    <p class="text-xs mt-1 opacity-80">แอดมินยังไม่สามารถดำเนินการอนุมัติได้
-                                        จนกว่าผู้สมัครจะอัปโหลดหลักฐาน</p>
-                                </div>
-                            </template>
+                                    class="p-3 bg-white dark:bg-[#1a1a1a] rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm relative overflow-hidden group">
+                                    {{-- Accent Bar --}}
+                                    <div class="absolute left-0 top-0 bottom-0 w-1 bg-blue-500"></div>
 
-                            <template x-if="modalData.status === 'waiting_verify'">
-                                <div class="space-y-4">
-                                    <div>
-                                        <label
-                                            class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5">หมายเหตุ
-                                            (กรณีปฏิเสธ)</label>
-                                        <textarea name="reason" rows="2" placeholder="เช่น สลิปไม่ชัดเจน, ยอดเงินไม่ถูกต้อง..."
-                                            class="w-full text-sm rounded-xl border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 dark:text-white focus:ring-blue-500"></textarea>
-                                    </div>
-                                    <div class="flex gap-2">
-                                        <button type="submit" name="action" value="approve"
-                                            class="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white py-3 rounded-xl font-semibold text-sm transition-colors shadow-lg shadow-emerald-500/20"><i
-                                                class="fas fa-check mr-1"></i> อนุมัติ</button>
-                                        <button type="submit" name="action" value="reject"
-                                            class="flex-1 bg-red-500 hover:bg-red-600 text-white py-3 rounded-xl font-semibold text-sm transition-colors shadow-lg shadow-red-500/20"><i
-                                                class="fas fa-times mr-1"></i> ปฏิเสธ</button>
+                                    <div class="pl-2">
+                                        <div class="flex justify-between items-start mb-1">
+                                            <p class="font-bold text-sm text-gray-900 dark:text-white pr-2"
+                                                x-text="team.teamName"></p>
+                                            <span
+                                                class="shrink-0 text-[10px] font-mono font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-500/10 px-1.5 py-0.5 rounded border border-blue-100 dark:border-blue-900/50"
+                                                x-text="team.regNo"></span>
+                                        </div>
+                                        <div class="flex justify-between items-center">
+                                            <p
+                                                class="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1.5">
+                                                <i class="fas fa-robot opacity-70"></i> <span
+                                                    x-text="team.className"></span>
+                                            </p>
+                                            {{-- 🚀 แสดงยอดค่าสมัครตรงนี้ --}}
+                                            <p class="text-xs font-semibold text-gray-700 dark:text-gray-300">
+                                                <span
+                                                    x-text="team.fee == 0 ? 'ฟรี' : new Intl.NumberFormat('th-TH').format(team.fee) + ' ฿'"></span>
+                                            </p>
+                                        </div>
                                     </div>
                                 </div>
                             </template>
+                        </div>
 
-                            <template x-if="modalData.status === 'approved'">
-                                <div
-                                    class="text-center p-4 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-900/30">
-                                    <div class="font-bold text-lg text-emerald-600"><i
-                                            class="fas fa-check-circle"></i> <span>อนุมัติเรียบร้อย</span></div>
-                                </div>
-                            </template>
+                        {{-- ส่วนจัดการสถานะ (ปุ่มอนุมัติ/ปฏิเสธ) --}}
+                        <div class="shrink-0 pt-4 border-t border-gray-100 dark:border-gray-800 mt-auto">
+                            <form method="POST" :action="modalData.actionUrl">
+                                @csrf @method('PUT')
 
-                            <template x-if="modalData.status === 'rejected'">
-                                <div
-                                    class="text-center p-4 rounded-xl bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-900/30">
-                                    <div class="font-bold text-lg text-red-600 mb-2"><i
-                                            class="fas fa-times-circle"></i> <span>ปฏิเสธแล้ว</span></div>
+                                <template x-if="modalData.status === 'waiting_verify'">
+                                    <div class="space-y-3">
+                                        <div>
+                                            <label
+                                                class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5">หมายเหตุ
+                                                (เฉพาะกรณีปฏิเสธ)</label>
+                                            <textarea name="reason" rows="2" placeholder="เช่น สลิปไม่ชัดเจน, ยอดเงินไม่ถูกต้อง..."
+                                                class="w-full text-sm rounded-xl border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 dark:text-white focus:ring-blue-500"></textarea>
+                                        </div>
+                                        <div class="flex gap-2">
+                                            <button type="submit" name="action" value="approve"
+                                                class="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white py-3 rounded-xl font-semibold text-sm transition-colors shadow-lg shadow-emerald-500/20"><i
+                                                    class="fas fa-check mr-1"></i> อนุมัติ</button>
+                                            <button type="submit" name="action" value="reject"
+                                                class="flex-1 bg-red-500 hover:bg-red-600 text-white py-3 rounded-xl font-semibold text-sm transition-colors shadow-lg shadow-red-500/20"><i
+                                                    class="fas fa-times mr-1"></i> ปฏิเสธ</button>
+                                        </div>
+                                        <p class="text-[10px] text-gray-400 text-center mt-2">*การอนุมัติ/ปฏิเสธ
+                                            จะมีผลกับทุกทีมในบิลนี้พร้อมกัน</p>
+                                    </div>
+                                </template>
+
+                                <template x-if="modalData.status === 'approved'">
                                     <div
-                                        class="text-sm text-red-700 dark:text-red-400 bg-white/50 dark:bg-black/20 p-2 rounded-lg text-left">
-                                        <span
-                                            class="font-semibold text-xs text-red-500 block mb-1 uppercase tracking-wider">เหตุผล:</span>
-                                        <span x-text="modalData.rejectReason || 'ไม่มีการระบุเหตุผล'"></span>
+                                        class="text-center p-4 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-900/30">
+                                        <div class="font-bold text-lg text-emerald-600"><i
+                                                class="fas fa-check-circle"></i> <span>อนุมัติเรียบร้อย</span></div>
                                     </div>
-                                </div>
-                            </template>
-                        </form>
+                                </template>
+
+                                <template x-if="modalData.status === 'rejected'">
+                                    <div
+                                        class="text-center p-4 rounded-xl bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-900/30">
+                                        <div class="font-bold text-lg text-red-600 mb-2"><i
+                                                class="fas fa-times-circle"></i> <span>ปฏิเสธแล้ว</span></div>
+                                        <div
+                                            class="text-sm text-red-700 dark:text-red-400 bg-white/50 dark:bg-black/20 p-2 rounded-lg text-left">
+                                            <span
+                                                class="font-semibold text-xs text-red-500 block mb-1 uppercase tracking-wider">เหตุผล:</span>
+                                            <span x-text="modalData.rejectReason || 'ไม่มีการระบุเหตุผล'"></span>
+                                        </div>
+                                    </div>
+                                </template>
+                            </form>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -498,23 +497,22 @@
                 competitionFilter: '{{ request('competition_id', '') }}',
                 compList: @json($alpineCompetitions),
 
-                // แผนผังชื่อสถานะ
                 statusLabels: {
-                    'pending_payment': 'รอชำระเงิน',
                     'waiting_verify': 'รอตรวจสอบ',
                     'approved': 'อนุมัติแล้ว',
                     'rejected': 'ปฏิเสธ',
-                    'all': 'ทั้งหมด'
+                    'all': 'บิลทั้งหมด'
                 },
 
                 modalOpen: false,
                 modalData: {
                     id: '',
-                    teamName: '',
-                    regNo: '',
+                    txNo: '',
                     userName: '',
                     compName: '',
-                    className: '',
+                    totalAmount: 0,
+                    teamCount: 0,
+                    teamList: [], // เก็บรายชื่อทีม
                     slipUrl: '',
                     status: '',
                     actionUrl: '',
@@ -560,11 +558,12 @@
                     setTimeout(() => {
                         this.modalData = {
                             id: '',
-                            teamName: '',
-                            regNo: '',
+                            txNo: '',
                             userName: '',
                             compName: '',
-                            className: '',
+                            totalAmount: 0,
+                            teamCount: 0,
+                            teamList: [],
                             slipUrl: '',
                             status: '',
                             actionUrl: '',

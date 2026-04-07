@@ -19,7 +19,7 @@ class TeamController extends Controller
     {
         $teams = $request->user()
                     ->teams()
-                    ->withCount('members')
+                    ->withCount(['members', 'registrations']) 
                     ->latest()
                     ->paginate(15);
         
@@ -74,12 +74,10 @@ class TeamController extends Controller
 
     public function update(Request $request, Team $team)
     {
-        // 🔒 1. Security Check: ป้องกันคนอื่นเอา ID ทีมมาแก้ URL ตรงๆ
         if ($team->user_id !== $request->user()->id) {
             abort(403, 'คุณไม่มีสิทธิ์แก้ไขทีมนี้');
         }
 
-        // 🚀 2. MASTER DATA LOCK: ห้ามแก้ข้อมูลถ้าทีมนี้มีใบสมัครค้างอยู่
         $isLocked = Registration::where('team_id', $team->id)
             ->whereIn('status', ['pending_payment', 'waiting_verify', 'approved'])
             ->exists();
@@ -143,12 +141,10 @@ class TeamController extends Controller
      */
     public function destroy(Request $request, Team $team)
     {
-        // 🔒 1. Security Check
         if ($team->user_id !== $request->user()->id) {
             abort(403, 'คุณไม่มีสิทธิ์ลบทีมนี้');
         }
 
-        // 🚀 2. MASTER DATA LOCK: ห้ามลบถ้าทีมนี้มีใบสมัครค้างอยู่
         $isLocked = Registration::where('team_id', $team->id)
             ->whereIn('status', ['pending_payment', 'waiting_verify', 'approved'])
             ->exists();

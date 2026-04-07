@@ -2,7 +2,7 @@
 
 namespace App\Mail;
 
-use App\Models\Registration;
+use App\Models\PaymentTransaction;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
@@ -14,17 +14,17 @@ class RegistrationApprovedMail extends Mailable implements ShouldQueue
 {
     use Queueable, SerializesModels;
 
-    public $registration;
+    public $transaction;
 
-    public function __construct(Registration $registration)
+    public function __construct(PaymentTransaction $transaction)
     {
-        $this->registration = $registration->loadMissing(['team.members', 'competition', 'competitionClass', 'user']);
+        $this->transaction = $transaction->loadMissing(['competition', 'user', 'registrations.team', 'registrations.competitionClass']);
     }
 
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'อนุมัติการสมัครแข่งขัน: ' . $this->registration->competition->name,
+            subject: 'อนุมัติการชำระเงิน รหัสบิล: ' . $this->transaction->tx_no,
         );
     }
 

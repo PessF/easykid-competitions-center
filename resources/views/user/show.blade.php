@@ -3,14 +3,17 @@
 
     @php
         $uniqueGameTypes = $competition->classes->pluck('game_type_name')->filter()->unique()->values();
-        
+
         // 🚀 ดึงข้อมูลหมวดหมู่ทั้งหมดแบบไม่ซ้ำ พร้อมทั้งเก็บค่า min/max age เอาไว้ด้วย
         $uniqueCategoriesData = collect();
-        $competition->classes->pluck('allowed_categories')->flatten(1)->each(function($cat) use ($uniqueCategoriesData) {
-            if ($cat && !$uniqueCategoriesData->has($cat['name'])) {
-                $uniqueCategoriesData->put($cat['name'], $cat);
-            }
-        });
+        $competition->classes
+            ->pluck('allowed_categories')
+            ->flatten(1)
+            ->each(function ($cat) use ($uniqueCategoriesData) {
+                if ($cat && !$uniqueCategoriesData->has($cat['name'])) {
+                    $uniqueCategoriesData->put($cat['name'], $cat);
+                }
+            });
         $uniqueCategoriesData = $uniqueCategoriesData->values();
 
         $alpineClasses = $competition->classes->map(function ($c) {
@@ -102,15 +105,15 @@
         },
         getTeamError(team) {
             if (!this.selectedClass) return '';
-            
+    
             let min = this.selectedClass.min_members;
             let max = this.selectedClass.max_members;
             let current = team.members.length;
-
+    
             if (current < min || current > max) {
-                return min === max 
-                    ? `จำนวนสมาชิกต้องมี ${max} คนพอดี` 
-                    : `จำนวนสมาชิกต้องมี ${min}-${max} คน`;
+                return min === max ?
+                    `จำนวนสมาชิกต้องมี ${max} คนพอดี` :
+                    `จำนวนสมาชิกต้องมี ${min}-${max} คน`;
             }
     
             let cats = this.selectedClass.categories_details || [];
@@ -135,7 +138,7 @@
         }
     }" x-init="initMap()"
         class="bg-[#f8f9fa] dark:bg-[#0a0a0a] min-h-screen font-kanit text-gray-800 dark:text-gray-200 pb-20">
-        
+
         {{-- ─── 1. COMPACT HERO BANNER ─── --}}
         <div class="relative w-full h-[220px] md:h-[280px] bg-gray-900 flex flex-col justify-between">
             @if ($competition->banner_url)
@@ -280,7 +283,9 @@
                                                 'text-blue-600 font-semibold bg-blue-50/50 dark:bg-blue-500/10' :
                                                 'text-gray-700 dark:text-gray-300'">
                                             <span>{{ $cat['name'] }}</span>
-                                            <span class="text-[10px] opacity-60">({{ $cat['min_age'] }}-{{ $cat['max_age'] }} ปี)</span>
+                                            <span
+                                                class="text-[10px] opacity-60">({{ $cat['min_age'] }}-{{ $cat['max_age'] }}
+                                                ปี)</span>
                                         </button>
                                     @endforeach
                                 </div>
@@ -305,13 +310,16 @@
                             class="bg-white dark:bg-[#141414] border border-gray-100 dark:border-gray-800 rounded-[1.25rem] p-4 md:p-5 flex flex-col md:flex-row gap-4 md:gap-5 hover:shadow-md hover:border-blue-200 dark:hover:border-blue-900 transition-all duration-300 group">
 
                             {{-- 🚀 Image Thumbnail (Fit & Cover) --}}
-                            <div class="-mx-4 -mt-4 md:m-0 w-[calc(100%+2rem)] md:w-36 h-48 md:h-32 rounded-t-[1.25rem] rounded-b-none md:rounded-xl border-b md:border-b-0 md:border border-gray-100 dark:border-gray-800 shrink-0 overflow-hidden relative bg-white dark:bg-[#1a1a1a]">
+                            <div
+                                class="-mx-4 -mt-4 md:m-0 w-[calc(100%+2rem)] md:w-36 h-48 md:h-32 rounded-t-[1.25rem] rounded-b-none md:rounded-xl border-b md:border-b-0 md:border border-gray-100 dark:border-gray-800 shrink-0 overflow-hidden relative bg-white dark:bg-[#1a1a1a]">
                                 <template x-if="cls.robot_image_url">
-                                    <img :src="cls.robot_image_url.startsWith('http') ? cls.robot_image_url : '/storage/' + cls.robot_image_url"
+                                    <img :src="cls.robot_image_url.startsWith('http') ? cls.robot_image_url : '/storage/' + cls
+                                        .robot_image_url"
                                         class="absolute inset-0 w-full h-full object-cover bg-white dark:bg-[#1a1a1a] transition-transform duration-500 group-hover:scale-105">
                                 </template>
                                 <template x-if="!cls.robot_image_url">
-                                    <div class="absolute inset-0 flex items-center justify-center bg-gray-50 dark:bg-[#1a1a1a]">
+                                    <div
+                                        class="absolute inset-0 flex items-center justify-center bg-gray-50 dark:bg-[#1a1a1a]">
                                         <i class="fas fa-robot text-4xl text-gray-200 dark:text-gray-700"></i>
                                     </div>
                                 </template>
@@ -321,13 +329,16 @@
                             <div class="flex-1 min-w-0 flex flex-col pt-1 md:pt-0">
                                 {{-- Tags Section --}}
                                 <div class="flex flex-wrap items-center gap-1.5 mb-2">
-                                    <span class="text-[10px] font-semibold tracking-wide text-blue-600 bg-blue-50 dark:bg-blue-500/10 px-2.5 py-1 rounded-md"
+                                    <span
+                                        class="text-[10px] font-semibold tracking-wide text-blue-600 bg-blue-50 dark:bg-blue-500/10 px-2.5 py-1 rounded-md"
                                         x-text="cls.game_type"></span>
-                                    
+
                                     <template x-for="cat in cls.categories_details" :key="cat.name">
-                                        <span class="text-[10px] font-medium text-gray-500 bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-700 px-2.5 py-1 rounded-md">
+                                        <span
+                                            class="text-[10px] font-medium text-gray-500 bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-700 px-2.5 py-1 rounded-md">
                                             <span x-text="cat.name"></span>
-                                            <span class="opacity-60 ml-0.5" x-text="`(${cat.min_age}-${cat.max_age} ปี)`"></span>
+                                            <span class="opacity-60 ml-0.5"
+                                                x-text="`(${cat.min_age}-${cat.max_age} ปี)`"></span>
                                         </span>
                                     </template>
                                 </div>
@@ -337,25 +348,29 @@
                                     x-text="cls.name" :title="cls.name"></h3>
 
                                 {{-- Specs Info --}}
-                                <div class="mt-auto flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-gray-500 dark:text-gray-400 font-medium">
+                                <div
+                                    class="mt-auto flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-gray-500 dark:text-gray-400 font-medium">
                                     <div class="flex items-center gap-1.5">
                                         <i class="fas fa-robot text-gray-400"></i>
                                         <span x-text="cls.robot_name"></span>
                                     </div>
                                     <div class="flex items-center gap-1.5">
                                         <i class="fas fa-weight-hanging text-gray-400"></i>
-                                        <span x-text="cls.robot_weight ? cls.robot_weight + ' Kg' : 'ไม่จำกัดน้ำหนัก'"></span>
+                                        <span
+                                            x-text="cls.robot_weight ? cls.robot_weight + ' Kg' : 'ไม่จำกัดน้ำหนัก'"></span>
                                     </div>
                                     <div class="flex items-center gap-1.5">
                                         <i class="fas fa-users text-gray-400"></i>
-                                        <span x-text="cls.min_members === cls.max_members ? `สมาชิก ${cls.max_members} คน/ทีม` : `สมาชิก ${cls.min_members}-${cls.max_members} คน/ทีม`"></span>
+                                        <span
+                                            x-text="cls.min_members === cls.max_members ? `สมาชิก ${cls.max_members} คน/ทีม` : `สมาชิก ${cls.min_members}-${cls.max_members} คน/ทีม`"></span>
                                     </div>
                                 </div>
                             </div>
 
                             {{-- Price & Actions Section --}}
-                            <div class="flex flex-row md:flex-col items-center md:items-end justify-between md:justify-center gap-3 md:w-36 border-t md:border-t-0 md:border-l border-gray-100 dark:border-gray-800 pt-4 md:pt-0 md:pl-5 shrink-0">
-                                
+                            <div
+                                class="flex flex-row md:flex-col items-center md:items-end justify-between md:justify-center gap-3 md:w-36 border-t md:border-t-0 md:border-l border-gray-100 dark:border-gray-800 pt-4 md:pt-0 md:pl-5 shrink-0">
+
                                 {{-- Price --}}
                                 <div class="text-left md:text-right w-full">
                                     <p class="text-[10px] font-medium text-gray-400 mb-0.5">ค่าสมัคร</p>
@@ -465,13 +480,17 @@
                 </div>
 
                 {{-- About Card --}}
+                {{-- About Card --}}
                 <div
                     class="bg-white dark:bg-[#141414] border border-gray-200 dark:border-gray-800 rounded-2xl p-6 shadow-sm">
                     <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">เกี่ยวกับงาน</h3>
-                    <div class="text-xs font-normal text-gray-600 dark:text-gray-400 leading-relaxed"
+
+                    {{-- 🚀 แก้ตรงนี้: เพิ่ม break-words และจัดการ overflow --}}
+                    <div class="text-xs font-normal text-gray-600 dark:text-gray-400 leading-relaxed break-words overflow-hidden w-full"
                         :class="descExpanded ? '' : 'line-clamp-4'">
                         {!! nl2br(e($competition->description)) !!}
                     </div>
+
                     <button @click="descExpanded = !descExpanded"
                         class="mt-2 text-xs font-medium text-blue-600 hover:underline">
                         <span x-text="descExpanded ? 'ซ่อน' : 'อ่านต่อ'"></span>
@@ -548,7 +567,8 @@
                     <div x-show="myTeams.length === 0" class="text-center py-8">
                         <div
                             class="w-16 h-16 bg-blue-50 text-blue-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <i class="fas fa-users text-xl"></i></div>
+                            <i class="fas fa-users text-xl"></i>
+                        </div>
                         <p class="font-medium text-gray-900 dark:text-white mb-1">คุณยังไม่มีทีมในระบบ</p>
                         <p class="text-sm text-gray-500 mb-6">สร้างทีมและเพิ่มชื่อสมาชิกก่อนกดสมัครนะครับ</p>
                         <a href="{{ route('user.teams.index') }}"

@@ -9,19 +9,16 @@ class Registration extends Model
 {
     use HasFactory;
 
-protected $fillable = [
-        'regis_no', 
-        'user_id', 
-        'team_id', 
-        'competition_id', 
-        'competition_class_id', 
-        'status', 
-        'payment_slip_path',
-        'verified_by',      
-        'verified_at',     
-        'reject_reason',    
-    ];
-
+    protected $fillable = [
+            'regis_no', 
+            'user_id', 
+            'team_id', 
+            'competition_id', 
+            'competition_class_id', 
+            'payment_transaction_id', 
+            'status', 
+            'checked_in_at',
+        ];
     public function user() {
         return $this->belongsTo(User::class);
     }
@@ -36,6 +33,11 @@ protected $fillable = [
 
     public function competitionClass() {
         return $this->belongsTo(CompetitionClass::class);
+    }
+
+    public function paymentTransaction()
+    {
+        return $this->belongsTo(PaymentTransaction::class);
     }
 
 }

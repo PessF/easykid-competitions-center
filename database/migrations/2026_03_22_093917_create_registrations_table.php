@@ -9,35 +9,27 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-    public function up(): void
-    {
-        Schema::create('registrations', function (Blueprint $table) {
-            $table->id();
-            $table->string('regis_no')->unique(); // รหัสใบสมัคร เช่น REG-20260322-0001
-            
-            // Foreign Keys
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('team_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('competition_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('competition_class_id')->constrained('competition_classes')->cascadeOnDelete();
-            
-            // สถานะและการชำระเงิน
-            $table->enum('status', ['pending_payment', 'waiting_verify', 'approved', 'rejected'])->default('pending_payment');
-            $table->string('payment_slip_path')->nullable(); // พาธสลิป Google Drive
-            
- 
-            $table->text('reject_reason')->nullable(); 
-            $table->timestamp('rejected_at')->nullable(); 
-            
+public function up(): void
+{
+    Schema::create('registrations', function (Blueprint $table) {
+        $table->id();
+        $table->string('regis_no')->unique();
+        
+        $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+        $table->foreignId('team_id')->constrained()->cascadeOnDelete();
+        $table->foreignId('competition_id')->constrained()->cascadeOnDelete();
+        $table->foreignId('competition_class_id')->constrained('competition_classes')->cascadeOnDelete();
 
-            $table->foreignId('verified_by')->nullable()->constrained('users')->nullOnDelete();
-            $table->timestamp('verified_at')->nullable();
-            
-            $table->timestamps();
+        $table->unsignedBigInteger('payment_transaction_id')->nullable()->after('competition_class_id');
+        
+        $table->enum('status', ['pending_payment', 'waiting_verify', 'approved', 'rejected'])->default('pending_payment');
+        $table->timestamp('checked_in_at')->nullable()->after('status');
+        $table->timestamps();
 
-            $table->index(['status', 'competition_class_id']); 
-        });
-    }
+        $table->index(['status', 'competition_class_id']); 
+        $table->index('payment_transaction_id');
+    });
+}
 
     /**
      * Reverse the migrations.

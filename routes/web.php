@@ -38,12 +38,16 @@ Route::get('/verify/ticket/{reg_no}', [TicketVerificationController::class, 'ver
     ->name('verify.ticket')
     ->middleware('signed');
 
-// --- 🚀 เส้นทางที่ใช้ร่วมกันได้ทั้ง Admin และ User ---
+Route::post('/verify/ticket/{reg_no}/check-in', [TicketVerificationController::class, 'checkIn'])
+    ->name('verify.ticket.checkin')
+    ->middleware('signed');
+
+// --- เส้นทางที่ใช้ร่วมกันได้ทั้ง Admin และ User ---
 Route::middleware(['auth', 'revalidate'])->group(function () {
     // โหลดรูปโปรไฟล์ (Avatar) จาก Google Drive แบบ Stream
     Route::get('/avatar/{id}', [ProfileController::class, 'showAvatar'])->name('avatar.show');
     
-    // 🚀 โหลดไฟล์กติกา (Rule PDF) จาก Google Drive เพื่อให้ User เข้ามาโหลดอ่านได้
+    // โหลดไฟล์กติกา (Rule PDF) จาก Google Drive เพื่อให้ User เข้ามาโหลดอ่านได้
     Route::get('/competitions/{competition}/classes/{class}/rule', [CompetitionClassController::class, 'showRule'])->name('competitions.classes.rule');
 });
 
@@ -73,14 +77,17 @@ Route::middleware(['auth', 'verified', 'user_only', 'check.profile', 'revalidate
         return view('user.terms');
     })->name('terms.service');
 
+    // ระบบรับสมัครแข่งขัน
     Route::post('/competitions/{competition}/classes/{class}/register', [CompetitionUserController::class, 'register'])
              ->name('competitions.classes.register');
 
     Route::get('/registrations', [CompetitionUserController::class, 'myRegistrations'])->name('user.registrations');
-    Route::post('/my-registrations/{id}/payment', [CompetitionUserController::class, 'uploadSlip'])->name('user.registrations.payment');
     
-    Route::get('/my-registrations/{id}/slip', [CompetitionUserController::class, 'showSlip'])->name('user.registrations.slip');
+    // เปลี่ยนเป็น Route ของระบบ Group Payment (Cart System)
+    Route::post('/my-registrations/group-payment', [CompetitionUserController::class, 'submitGroupPayment'])->name('user.registrations.payment');
 
+    Route::delete('/my-registrations/{id}/delete', [CompetitionUserController::class, 'destroy'])->name('user.registrations.destroy');
+    
     // สำหรับเปิดหน้าบัตร E-Ticket ของ User
     Route::get('/my-registrations/{id}/e-ticket', [\App\Http\Controllers\User\CompetitionUserController::class, 'eTicket'])->name('user.registrations.e-ticket');
 });

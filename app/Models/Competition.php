@@ -23,7 +23,8 @@ class Competition extends Model
         'regis_end_date', 
         'event_start_date', 
         'event_end_date', 
-        'status'
+        'status',
+        'google_sheet_id',
     ];
 
     // $casts: แปลงชนิดข้อมูลอัตโนมัติ 

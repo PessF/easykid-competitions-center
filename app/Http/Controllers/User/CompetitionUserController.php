@@ -5,6 +5,7 @@ namespace App\Http\Controllers\User;
 use App\Http\Controllers\Controller;
 use App\Models\Competition;
 use App\Models\CompetitionClass;
+use App\Models\PaymentTransaction;
 use Illuminate\Support\Facades\Storage;
 use App\Models\Registration;
 use App\Models\Team;
@@ -12,14 +13,18 @@ use Carbon\Carbon;
 use App\Mail\RegistrationSubmittedMail;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log; 
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB; 
 
 class CompetitionUserController extends Controller
 {
     public function index()
     {
         $competitions = Competition::where('status', '!=', 'draft')
-            ->with(['classes']) 
+            ->with(['classes' => function($query) {
+                // 🚀 Optimize: โหลดเฉพาะคอลัมน์ที่จำเป็นสำหรับหน้า Index
+                $query->select('id', 'competition_id', 'name', 'entry_fee');
+            }]) 
             ->withCount(['registrations' => function($query) {
                 $query->where('status', '!=', 'rejected');
             }])
@@ -35,7 +40,11 @@ class CompetitionUserController extends Controller
             ->where('status', '!=', 'draft') 
             ->findOrFail($id);
 
-        $myTeams = auth()->user()->teams()->with('members')->get();
+        // 🚀 Optimize: โหลดเฉพาะชื่อทีมและสมาชิกที่จำเป็น
+        $myTeams = auth()->user()->teams()
+            ->select('id', 'user_id', 'name', 'school_name')
+            ->with(['members:id,team_id,first_name_th,last_name_th'])
+            ->get();
 
         return view('user.show', compact('competition', 'myTeams'));
     }
@@ -49,10 +58,11 @@ class CompetitionUserController extends Controller
         ]);
 
         $user = auth()->user();
-        $team = Team::with('members')->findOrFail($request->team_id);
+        $team = Team::select('id', 'user_id')->findOrFail($request->team_id);
+        
+        // 🛠️ แก้ไข: เอา select() ออก ดึงข้อมูลมาทั้งหมดปกติเพื่อใช้ dynamic_status
         $competition = Competition::findOrFail($compId);
-        $class = CompetitionClass::where('competition_id', $compId)->findOrFail($classId);
-
+        
         if ($competition->dynamic_status !== 'open') {
             return back()->with('error', 'ไม่อยู่ในช่วงเวลาที่เปิดรับสมัคร กรุณาตรวจสอบกำหนดการแข่งขันอีกครั้ง');
         }
@@ -61,75 +71,68 @@ class CompetitionUserController extends Controller
             abort(403, 'Unauthorized action.');
         }
 
+        // 🚀 ลอจิกป้องกันการสมัครซ้ำ (เช็คจาก Status ที่กำลัง Active อยู่)
         $alreadyRegistered = Registration::where('competition_class_id', $classId)
             ->where('team_id', $team->id)
-            ->where('status', '!=', 'rejected')
+            ->whereIn('status', ['pending_payment', 'waiting_verify', 'approved']) 
             ->exists();
 
         if ($alreadyRegistered) {
-            return back()->with('error', 'ทีมของคุณได้ทำการสมัครเข้าแข่งขันในรุ่นนี้ไปเรียบร้อยแล้ว');
+            return back()->with('error', 'ทีมของคุณมีชื่ออยู่ในระบบการรับสมัครรุ่นนี้อยู่แล้ว (กำลังรอชำระเงิน / รอตรวจสอบ / หรืออนุมัติแล้ว)');
         }
 
-        $memberCount = $team->members->count();
-        $min = $class->min_members ?? 1; // เผื่อกรณีค่าว่าง
-        $max = $class->max_members;
-
-        if ($memberCount < $min || $memberCount > $max) {
-            if ($min === $max) {
-                return back()->with('error', "จำนวนสมาชิกในทีมต้องมี {$max} คนพอดี");
-            } else {
-                return back()->with('error', "จำนวนสมาชิกในทีมต้องอยู่ระหว่าง {$min} - {$max} คน");
-            }
-        }
-
-        $allowedCategories = is_string($class->allowed_categories) 
-                            ? json_decode($class->allowed_categories, true) 
-                            : $class->allowed_categories;
-        
-        if (!empty($allowedCategories)) {
-            $minAllowed = collect($allowedCategories)->min('min_age');
-            $maxAllowed = collect($allowedCategories)->max('max_age');
-
-            foreach ($team->members as $member) {
-                if (!$member->birth_date) {
-                    return back()->with('error', 'กรุณาระบุวันเกิดของสมาชิกทุกคนในทีมให้ครบถ้วนในเมนูจัดการทีม');
-                }
-
-                $age = Carbon::parse($member->birth_date)->age; 
-
-                if ($age < $minAllowed || $age > $maxAllowed) {
-                    return back()->with('error', "อายุของ {$member->first_name_th} ({$age} ปี) ไม่เข้าเกณฑ์ของรุ่นนี้ ({$minAllowed}-{$maxAllowed} ปี)");
-                }
-            }
-        }
-
-        $datePrefix = now()->format('Ymd');
-        $latestRegisToday = Registration::whereDate('created_at', now()->toDateString())->count() + 1;
-        $runningNumber = str_pad($latestRegisToday, 4, '0', STR_PAD_LEFT);
-        $regisNo = "REG-{$compId}-{$classId}-{$datePrefix}-{$runningNumber}";
-
-        $registration = Registration::create([
-            'regis_no' => $regisNo,
-            'user_id' => $user->id,
-            'team_id' => $team->id,
-            'competition_id' => $compId,
-            'competition_class_id' => $classId,
-            'status' => 'pending_payment',
-        ]);
-
+        // 🚀 ลอจิกการสร้างใบสมัคร และรันเลขที่ใบสมัครอย่างปลอดภัย (Lock Table)
+        DB::beginTransaction();
         try {
-            Mail::to($user->email)->send(new RegistrationSubmittedMail($registration));
-        } catch (\Exception $e) {
-            Log::error('ไม่สามารถส่งอีเมลยืนยันการสมัครได้: ' . $e->getMessage());
-        }
+            $datePrefix = now()->format('Ymd');
+            
+            // ดึงใบสมัครล่าสุดของวันนี้ พร้อมล็อก Row ป้องกันการกดรัวๆ จนเลขซ้ำ
+            $latestRegistration = Registration::whereDate('created_at', now()->toDateString())
+                ->lockForUpdate()
+                ->orderBy('id', 'desc')
+                ->first();
 
-        return redirect()->route('user.dashboard')
-            ->with('success', "สมัครแข่งขันสำเร็จ!<br><br>รหัสใบสมัคร: <strong>{$regisNo}</strong><br>สถานะปัจจุบัน: รอชำระเงินค่าสมัคร");
+            if ($latestRegistration) {
+                $parts = explode('-', $latestRegistration->regis_no);
+                $nextNumber = (int) end($parts) + 1;
+            } else {
+                $nextNumber = 1;
+            }
+
+            $runningNumber = str_pad($nextNumber, 4, '0', STR_PAD_LEFT);
+            $regisNo = "REG-{$compId}-{$classId}-{$datePrefix}-{$runningNumber}";
+
+            Registration::create([
+                'regis_no' => $regisNo,
+                'user_id' => $user->id,
+                'team_id' => $team->id,
+                'competition_id' => $compId,
+                'competition_class_id' => $classId,
+                'status' => 'pending_payment',
+            ]);
+
+            DB::commit();
+
+            return redirect()->route('user.competitions.show', $compId)
+                ->with('success', "สมัครแข่งขันสำเร็จ!<br><br>รหัสใบสมัคร: <strong>{$regisNo}</strong><br>สถานะปัจจุบัน: เพิ่มลงตะกร้ารอชำระเงินแล้ว");
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Registration Error: ' . $e->getMessage());
+            return back()->with('error', 'เกิดข้อผิดพลาดในการรันรหัสใบสมัคร กรุณาลองใหม่อีกครั้ง');
+        }
     }
 
     public function myRegistrations()
     {
-        $registrations = Registration::with(['competition', 'competitionClass', 'team.members'])
+        // 🚀 Optimize: ดึงข้อมูลแบบเจาะจงคอลัมน์ เพื่อลดขนาด Memory ตอนโหลดหน้าตะกร้า
+        $registrations = Registration::with([
+                'competition:id,name', 
+                'competitionClass:id,name,entry_fee', 
+                'team:id,name', 
+                'team.members:id,team_id,first_name_th,last_name_th', 
+                'paymentTransaction:id,tx_no'
+            ])
             ->where('user_id', auth()->id())
             ->orderBy('created_at', 'desc')
             ->get();
@@ -137,111 +140,104 @@ class CompetitionUserController extends Controller
         return view('user.registrations', compact('registrations'));
     }
 
-    public function uploadSlip(Request $request, $id)
+    public function submitGroupPayment(Request $request)
     {
-        // 1. ตรวจสอบขนาดไฟล์เบื้องต้น
-        if (empty($request->all()) && $request->server('CONTENT_LENGTH') > 0) {
-            return back()->with('error', 'ไฟล์มีขนาดใหญ่เกินไป (ระบบรองรับสูงสุด 5MB)');
-        }
-
-        // 2. Validate ความถูกต้องของไฟล์
         $request->validate([
+            'registration_ids' => 'required|array',
+            'registration_ids.*' => 'exists:registrations,id',
             'payment_slip' => 'required|image|mimes:jpeg,png,jpg|max:5120',
         ], [
-            'payment_slip.required' => 'กรุณาอัปโหลดรูปภาพหลักฐานการโอนเงิน',
+            'registration_ids.required' => 'กรุณาเลือกอย่างน้อย 1 รายการเพื่อชำระเงิน',
+            'payment_slip.required' => 'กรุณาอัปโหลดสลิปโอนเงิน',
             'payment_slip.image' => 'ไฟล์ที่อัปโหลดต้องเป็นรูปภาพเท่านั้น',
             'payment_slip.mimes' => 'รองรับเฉพาะไฟล์รูปภาพนามสกุล JPEG, PNG, JPG เท่านั้น',
             'payment_slip.max' => 'ขนาดไฟล์รูปภาพต้องไม่เกิน 5MB',
         ]);
 
-        // 3. ดึงข้อมูลใบสมัคร
-        $registration = Registration::with(['competition'])->where('user_id', auth()->id())->findOrFail($id);
+        $registrations = Registration::with(['competitionClass:id,entry_fee', 'competition:id,name'])
+            ->whereIn('id', $request->registration_ids)
+            ->where('user_id', auth()->id())
+            ->whereIn('status', ['pending_payment', 'rejected']) 
+            ->get();
 
-        // 4. เช็คว่าสถานะปัจจุบันอนุญาตให้อัปโหลดได้หรือไม่
-        if (!in_array($registration->status, ['pending_payment', 'rejected'])) {
-            return back()->with('error', 'ใบสมัครนี้ไม่สามารถอัปโหลดสลิปได้ในขณะนี้');
+        if ($registrations->isEmpty()) {
+            return back()->with('error', 'ไม่พบรายการที่สามารถชำระเงินได้');
         }
 
-        if ($request->hasFile('payment_slip')) {
-            try {
-                $file = $request->file('payment_slip');
-                
-                if (!$file->isValid()) {
-                    return back()->with('error', 'ไฟล์รูปภาพไม่สมบูรณ์ กรุณาลองใหม่อีกครั้ง');
+        $compId = $registrations->first()->competition_id;
+        if ($registrations->contains('competition_id', '!=', $compId)) {
+            return back()->with('error', 'ไม่สามารถรวมบิลข้ามงานแข่งขันได้ กรุณาเลือกชำระเงินทีละงาน');
+        }
+
+        $totalAmount = $registrations->sum(fn($reg) => $reg->competitionClass->entry_fee);
+
+        // 🚀 เก็บ ID ของบิลแม่ใบเก่าไว้ก่อน (กรณีที่เลือกจ่ายจากรายการที่โดน Reject)
+        $oldTransactionIds = $registrations->pluck('payment_transaction_id')->filter()->unique();
+
+        try {
+            $file = $request->file('payment_slip');
+            
+            $folderMonth = now()->format('Y-m');
+            $safeCompName = preg_replace('/[^A-Za-z0-9ก-๙\-\s]/u', '', $registrations->first()->competition->name);
+            $safeCompName = str_replace(' ', '-', trim($safeCompName));
+            
+            $folderPath = "payment_transactions/{$safeCompName}/{$folderMonth}";
+            
+            $txNo = "TX-" . now()->format('Ymd') . "-" . rand(10000, 99999);
+            $filename = "slip_{$txNo}_" . time() . '.' . $file->getClientOriginalExtension();
+
+            $path = $file->storeAs($folderPath, $filename, 'google_secure');
+
+            if (!$path) throw new \Exception('ไม่สามารถบันทึกไฟล์ลงเซิร์ฟเวอร์ได้');
+
+            // 1. สร้าง "บิลแม่ใบใหม่"
+            $transaction = PaymentTransaction::create([
+                'tx_no' => $txNo,
+                'user_id' => auth()->id(),
+                'competition_id' => $compId,
+                'total_amount' => $totalAmount,
+                'payment_slip_path' => $path,
+                'status' => 'waiting_verify'
+            ]);
+
+            // 2. อัปเดต "ใบสมัครลูก" ให้ชี้ไปที่บิลใหม่
+            Registration::whereIn('id', $registrations->pluck('id'))->update([
+                'payment_transaction_id' => $transaction->id,
+                'status' => 'waiting_verify'
+            ]);
+
+            // 🚀 3. ทำลายบิลแม่ใบเก่าทิ้ง (ป้องกันแอดมินเห็นบิลผีที่โดน Reject ค้างในระบบ)
+            if ($oldTransactionIds->isNotEmpty()) {
+                foreach ($oldTransactionIds as $oldId) {
+                    $oldTx = PaymentTransaction::find($oldId);
+                    // ถ้าบิลเก่าไม่มีใบสมัครไหนผูกอยู่แล้ว ให้ลบทิ้งไปเลย
+                    if ($oldTx && $oldTx->registrations()->count() === 0) {
+                        $oldTx->delete();
+                    }
                 }
-
-                // 🚀 ส่วนที่หายไป: การสร้างชื่อโฟลเดอร์และชื่อไฟล์
-                $safeCompName = preg_replace('/[^A-Za-z0-9ก-๙\-\s]/u', '', $registration->competition->name);
-                $safeCompName = str_replace(' ', '-', trim($safeCompName));
-                
-                $folderPath = "{$safeCompName}/team_{$registration->team_id}/slips";
-                $filename = "slip_" . $registration->regis_no . '_' . time() . '.' . $file->getClientOriginalExtension();
-
-                // 5. ลบสลิปเก่าทิ้งก่อน (ถ้ามี) เพื่อประหยัดพื้นที่ Google Drive
-                if ($registration->payment_slip_path && Storage::disk('google_secure')->exists($registration->payment_slip_path)) {
-                    Storage::disk('google_secure')->delete($registration->payment_slip_path);
-                }
-
-                // 6. อัปโหลดไฟล์ใหม่ขึ้น Google Drive
-                $path = $file->storeAs($folderPath, $filename, 'google_secure');
-
-                if (!$path) {
-                    Log::error("Secure Upload Failed: Regis No {$registration->regis_no}");
-                    return back()->with('error', 'ระบบ Cloud Storage ขัดข้อง ไม่สามารถอัปโหลดไฟล์ได้');
-                }
-
-                // 7. อัปเดตฐานข้อมูล: ล้างค่าเก่าที่โดน Reject ทิ้งให้หมด
-                $registration->update([
-                    'payment_slip_path' => $path, 
-                    'status' => 'waiting_verify', // กลับไปรอตรวจสอบ
-                    'reject_reason' => null,      // ล้างเหตุผลที่เคยโดนปฏิเสธ
-                    'verified_by' => null,        // ล้างชื่อคนตรวจเก่า
-                    'verified_at' => null         // ล้างวันที่ตรวจเก่า
-                ]);
-
-                return back()->with('success', 'ส่งหลักฐานการชำระเงินเรียบร้อยแล้ว กรุณารอทีมงานตรวจสอบอีกครั้งครับ');
-
-            } catch (\Exception $e) {
-                // บันทึก Error ลง Log เพื่อให้เรามาไล่ดูได้ภายหลัง
-                Log::error("Upload Exception: " . $e->getMessage());
-                return back()->with('error', 'เกิดข้อผิดพลาดในการเชื่อมต่อระบบไฟล์: ' . $e->getMessage());
             }
+
+            // โหลดความสัมพันธ์ที่จำเป็นให้บิลแม่ ก่อนส่งอีเมล
+            $transaction->load(['competition', 'registrations.competitionClass', 'registrations.team.members', 'user']);
+
+            // ส่งอีเมลแจ้งเตือน
+            try {
+                Mail::to(auth()->user()->email)->send(new RegistrationSubmittedMail($transaction));
+            } catch (\Exception $e) {
+                Log::error('ไม่สามารถส่งอีเมลยืนยันการชำระเงินได้: ' . $e->getMessage());
+            }
+
+            return back()->with('success', "ส่งหลักฐานการชำระเงินเรียบร้อยแล้ว! รหัสบิล: {$txNo}");
+
+        } catch (\Exception $e) {
+            Log::error("Payment Group Upload Error: " . $e->getMessage());
+            return back()->with('error', 'เกิดข้อผิดพลาดในการอัปโหลดไฟล์: ' . $e->getMessage());
         }
-
-        return back()->with('error', 'ไม่พบไฟล์แนบ');
-    }
-
-    public function showSlip($id)
-    {
-        $registration = Registration::where('user_id', auth()->id())->findOrFail($id);
-        
-        if (!$registration->payment_slip_path) {
-            abort(404, 'ไม่พบไฟล์สลิปโอนเงิน');
-        }
-
-        $disk = Storage::disk('google_secure');
-        $path = $registration->payment_slip_path;
-
-        if (!$disk->exists($path)) {
-            abort(404, 'ไฟล์สลิปถูกลบหรือสูญหาย');
-        }
-
-        $mimeType = $disk->mimeType($path) ?? 'image/jpeg';
-        
-        return response()->stream(function () use ($disk, $path) {
-            if (ob_get_level() > 0) ob_end_clean();
-            $stream = $disk->readStream($path);
-            fpassthru($stream);
-            if (is_resource($stream)) fclose($stream);
-        }, 200, [
-            'Content-Type' => $mimeType,
-            'Cache-Control' => 'private, max-age=3600' 
-        ]);
     }
 
     public function showRule($compId, $classId)
     {
-        $class = CompetitionClass::where('competition_id', $compId)->findOrFail($classId);
+        $class = CompetitionClass::select('id', 'competition_id', 'rules_url')->where('competition_id', $compId)->findOrFail($classId);
         
         $disk = Storage::disk('google'); 
         $path = $class->rules_url;
@@ -266,15 +262,26 @@ class CompetitionUserController extends Controller
         ]);
     }
 
-
     public function eTicket($id)
     {
-        // ดึงข้อมูลใบสมัคร (ต้องเป็นของตัวเอง และต้อง "อนุมัติแล้ว" เท่านั้น)
         $registration = Registration::with(['competition', 'competitionClass', 'team.members', 'user'])
             ->where('user_id', auth()->id())
             ->where('status', 'approved')
             ->findOrFail($id);
 
         return view('user.e-ticket', compact('registration'));
+    }
+
+    public function destroy($id)
+    {
+        $registration = Registration::where('user_id', auth()->id())->findOrFail($id);
+
+        if (!in_array($registration->status, ['pending_payment', 'rejected'])) {
+            return back()->with('error', 'ไม่สามารถยกเลิกรายการนี้ได้ เนื่องจากสถานะถูกเปลี่ยนแปลงไปแล้ว');
+        }
+
+        $registration->delete();
+
+        return back()->with('success', 'ยกเลิกใบสมัครเรียบร้อยแล้ว');
     }
 }
