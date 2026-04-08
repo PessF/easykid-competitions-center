@@ -53,16 +53,25 @@
             class="fixed inset-0 z-40 bg-black/50 lg:hidden transition-opacity" style="display: none;"></div>
 
         {{-- 2. Sidebar --}}
+        {{-- 🚀 FIX: เติม -translate-x-full บังคับซ่อนบนมือถือตั้งแต่จังหวะโหลด HTML --}}
         <aside :class="mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'"
-            class="fixed inset-y-0 left-0 z-50 w-72 bg-white dark:bg-[#0f0f0f] border-r border-gray-100 dark:border-white/5 transition-transform duration-300 transform lg:static lg:translate-x-0 overflow-y-auto shadow-2xl lg:shadow-none">
+            class="fixed inset-y-0 left-0 z-50 w-72 bg-white dark:bg-[#0f0f0f] border-r border-gray-100 dark:border-white/5 transition-transform duration-300 transform -translate-x-full lg:static lg:translate-x-0 overflow-y-auto shadow-2xl lg:shadow-none">
 
-            <div class="flex flex-col h-full">
+            <div class="flex flex-col h-full relative">
+                {{-- ปุ่มปิด Sidebar สำหรับมือถือ (ซ่อนในจอใหญ่) --}}
+                <button @click="mobileSidebarOpen = false" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors bg-gray-50 dark:bg-white/5 rounded-full p-1.5 lg:hidden">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+
                 <div class="px-8 py-8 border-b border-gray-100 dark:border-white/5 flex justify-center items-center">
                     <img src="{{ asset('images/logo.png') }}" alt="Easykids Robotics Logo"
                         class="w-auto h-12 object-contain">
                 </div>
 
-                <nav class="flex-1 px-4 pt-6 pb-4 space-y-2">
+                {{-- 🚀 FIX: เพิ่ม @click ที่ nav เพื่อดักการกดลิงก์ทั้งหมดบนมือถือ --}}
+                <nav class="flex-1 px-4 pt-6 pb-4 space-y-2" @click="if(window.innerWidth < 1024) mobileSidebarOpen = false">
                     <div class="px-4 py-2 text-[10px] font-normal text-gray-400 uppercase tracking-[0.2em]">เมนูหลัก
                     </div>
 
@@ -141,7 +150,6 @@
                                 </div>
                                 <div
                                     class="w-10 h-10 rounded-md bg-gray-200 overflow-hidden ring-2 ring-blue-500/10 group-hover:ring-blue-500/30 transition-all shadow-sm">
-                                    {{-- 🚀 FIX: เปลี่ยนการเรียกรูปภาพมาเป็น Local Public Storage --}}
                                     @if (Auth::user()->avatar)
                                         @if (str_starts_with(Auth::user()->avatar, 'http'))
                                             <img src="{{ Auth::user()->avatar }}" class="w-full h-full object-cover" alt="{{ Auth::user()->name }}">
@@ -236,8 +244,8 @@
                 </button>
             </div>
 
-            {{-- Form Wrapper --}}
-            <form id="profile-update-form" method="post" action="{{ route('profile.update') }}"
+            {{-- 🚀 FIX: Form Wrapper (เติม enctype เพื่อรองรับไฟล์) --}}
+            <form id="profile-update-form" method="post" action="{{ route('profile.update') }}" enctype="multipart/form-data"
                 class="flex flex-col min-h-0 overflow-hidden">
                 @csrf
                 @method('patch')
@@ -245,7 +253,51 @@
                 {{-- Scrollable Body --}}
                 <div class="p-5 sm:p-6 md:p-8 overflow-y-auto custom-scrollbar space-y-6 sm:space-y-8">
 
-                    {{-- 0. ชื่อที่แสดงในระบบ --}}
+                    {{-- 🚀 0. อัปโหลดรูปโปรไฟล์ (พร้อม Live Preview) --}}
+                    <div class="flex items-center gap-4 p-4 bg-gray-50 dark:bg-white/5 rounded-2xl border border-gray-100 dark:border-white/5" 
+                         x-data="{ photoName: null, photoPreview: null }">
+                         
+                        {{-- ส่วนแสดงรูปภาพ --}}
+                        <div class="w-16 h-16 rounded-full bg-white dark:bg-[#1a1a1a] border border-gray-200 dark:border-white/10 flex items-center justify-center overflow-hidden shrink-0 shadow-sm">
+                            
+                            {{-- ถัามีการเลือกรูปใหม่ ให้โชว์รูป Preview ที่อ่านได้จากเครื่อง --}}
+                            <template x-if="photoPreview">
+                                <img :src="photoPreview" alt="Preview" class="w-full h-full object-cover">
+                            </template>
+                            
+                            {{-- ถ้ายังไม่เลือกรูปใหม่ ให้โชว์รูปเดิมจากระบบ --}}
+                            <div x-show="!photoPreview" class="w-full h-full">
+                                @if(Auth::user()->avatar)
+                                    <img src="{{ Str::startsWith(Auth::user()->avatar, ['http://', 'https://']) ? Auth::user()->avatar : asset('storage/' . Auth::user()->avatar) }}" alt="Avatar" class="w-full h-full object-cover">
+                                @else
+                                    <img src="{{ asset('images/default-avatar.png') }}" alt="Default Avatar" class="w-full h-full object-cover opacity-50">
+                                @endif
+                            </div>
+                        </div>
+
+                        {{-- ส่วนปุ่มเลือกไฟล์ --}}
+                        <div class="flex-1 min-w-0">
+                            <label class="block text-xs sm:text-sm font-normal text-gray-700 dark:text-gray-300 mb-1">รูปโปรไฟล์ (ไม่บังคับ)</label>
+                            
+                            <input type="file" name="avatar" id="avatar_upload" accept="image/jpeg, image/png, image/jpg" class="hidden" 
+                                x-ref="avatar"
+                                @change="
+                                    photoName = $refs.avatar.files[0].name;
+                                    const reader = new FileReader();
+                                    reader.onload = (e) => { photoPreview = e.target.result; };
+                                    reader.readAsDataURL($refs.avatar.files[0]);
+                                ">
+                                
+                            <label for="avatar_upload" class="inline-flex items-center px-3 py-1.5 bg-white dark:bg-[#121212] border border-gray-200 dark:border-white/10 rounded-lg text-[11px] font-normal text-gray-600 dark:text-gray-300 cursor-pointer hover:border-blue-400 hover:text-blue-500 transition-colors shadow-sm">
+                                <i class="fas fa-camera mr-1.5"></i> เลือกรูปภาพ
+                            </label>
+                            
+                            <p class="text-[10px] text-blue-500 mt-1.5 truncate" x-show="photoName" x-text="photoName"></p>
+                            <p class="text-[10px] text-gray-400 mt-1" x-show="!photoName">JPG, PNG ขนาดไม่เกิน 2MB</p>
+                        </div>
+                    </div>
+
+                    {{-- 0.1 ชื่อที่แสดงในระบบ --}}
                     <div class="space-y-1.5">
                         <label
                             class="text-xs sm:text-sm font-normal text-gray-700 dark:text-gray-300">ชื่อที่แสดงในระบบ

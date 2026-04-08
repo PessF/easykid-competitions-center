@@ -28,6 +28,7 @@ protected $fillable = [
     'prefix_en',
     'first_name_en',
     'last_name_en',
+    'role',
     'birthday',
     'email_verified_at',
     'phone_number',
@@ -94,6 +95,16 @@ protected $fillable = [
     public function isAdmin(): bool
     {
         return $this->role === 'admin';
+    }
+
+    public function isStaff()
+    {
+        return $this->role === 'staff';
+    }
+
+    public function isAdminOrStaff()
+    {
+        return in_array($this->role, ['admin', 'staff']);
     }
 
     public function teams(): HasMany

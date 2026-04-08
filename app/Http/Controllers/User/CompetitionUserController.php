@@ -60,7 +60,6 @@ class CompetitionUserController extends Controller
         $user = auth()->user();
         $team = Team::select('id', 'user_id')->findOrFail($request->team_id);
         
-        // 🛠️ แก้ไข: เอา select() ออก ดึงข้อมูลมาทั้งหมดปกติเพื่อใช้ dynamic_status
         $competition = Competition::findOrFail($compId);
         
         if ($competition->dynamic_status !== 'open') {

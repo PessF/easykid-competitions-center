@@ -13,11 +13,12 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         //
         $middleware->alias([
-        'check.profile' => \App\Http\Middleware\CheckProfileSetup::class,
-        'admin' => \App\Http\Middleware\AdminMiddleWare::class,
-        'revalidate' => \App\Http\Middleware\PreventBackHistory::class,
-        'user_only' => \App\Http\Middleware\UserMiddleware::class,
-    ]);
+            'check.profile' => \App\Http\Middleware\CheckProfileSetup::class,
+            'admin' => \App\Http\Middleware\AdminMiddleWare::class,
+            'revalidate' => \App\Http\Middleware\PreventBackHistory::class,
+            'user_only' => \App\Http\Middleware\UserMiddleware::class,
+            'admin_or_staff' => \App\Http\Middleware\CheckAdminOrStaff::class, 
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

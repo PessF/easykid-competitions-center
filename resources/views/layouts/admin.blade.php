@@ -52,15 +52,17 @@
 
         {{-- 2. Sidebar --}}
         <aside :class="mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'"
-            class="fixed inset-y-0 left-0 z-50 w-64 flex-shrink-0 bg-white dark:bg-[#0f0f0f] border-r border-gray-100 dark:border-white/5 transition-transform duration-300 transform lg:static lg:translate-x-0 overflow-y-auto">
+            class="fixed inset-y-0 left-0 z-50 w-64 flex-shrink-0 bg-white dark:bg-[#0f0f0f] border-r border-gray-100 dark:border-white/5 transition-transform duration-300 transform -translate-x-full lg:static lg:translate-x-0 overflow-y-auto">
 
             @php
                 $pendingPaymentsCount = \App\Models\Registration::where('status', 'waiting_verify')->count();
+                // 🚀 เช็คสิทธิ์ User ปัจจุบัน
+                $userRole = Auth::user()->role ?? 'staff';
             @endphp
 
             <div class="flex items-center justify-between px-6 py-8">
                 <span class="text-xl font-semibold tracking-tighter text-black dark:text-white uppercase">
-                    Admin<span class="text-gray-400 pl-2">Panel</span>
+                    {{ $userRole === 'admin' ? 'Admin' : 'Staff' }}<span class="text-gray-400 pl-2">Panel</span>
                 </span>
                 <button @click="mobileSidebarOpen = false" class="lg:hidden text-gray-400 hover:text-gray-600">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -70,9 +72,11 @@
                 </button>
             </div>
 
-            <nav class="px-4 pb-4 space-y-1">
+            {{-- ดักจับการคลิกเมนูบนมือถือให้พับเก็บอัตโนมัติ --}}
+            <nav class="px-4 pb-4 space-y-1" @click="if(window.innerWidth < 1024) mobileSidebarOpen = false">
+                
                 {{-- =================================== --}}
-                {{-- 1. DASHBOARD --}}
+                {{-- 1. DASHBOARD (เห็นทั้ง Admin และ Staff) --}}
                 {{-- =================================== --}}
                 <div class="px-4 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">Main</div>
                 <x-admin-nav-link :href="route('admin.dashboard')" :active="request()->routeIs('admin.dashboard')">
@@ -81,65 +85,74 @@
                 </x-admin-nav-link>
 
                 {{-- =================================== --}}
-                {{-- 2. OPERATION (งานหลักแอดมิน) --}}
+                {{-- 2. OPERATION --}}
                 {{-- =================================== --}}
                 <div class="px-4 pt-6 pb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">Operation</div>
 
-                <x-admin-nav-link :href="route('admin.competitions.index')" :active="request()->routeIs('admin.competitions.*')">
-                    <i class="fas fa-trophy w-5 h-5 mr-3 flex items-center justify-center"></i>
-                    {{ __('จัดการงานแข่งขัน') }}
-                </x-admin-nav-link>
+                {{-- 🚀 เฉพาะ Admin ที่จัดการงานแข่งขันได้ --}}
+                @if($userRole === 'admin')
+                    <x-admin-nav-link :href="route('admin.competitions.index')" :active="request()->routeIs('admin.competitions.*')">
+                        <i class="fas fa-trophy w-5 h-5 mr-3 flex items-center justify-center"></i>
+                        {{ __('จัดการงานแข่งขัน') }}
+                    </x-admin-nav-link>
+                @endif
 
+                {{-- 🚀 ทั้ง Admin และ Staff สามารถดูรายชื่อการสมัคร (Teams) ได้ --}}
                 <x-admin-nav-link :href="route('admin.teams.index')" :active="request()->routeIs('admin.teams.*')">
                     <i class="fas fa-users w-5 h-5 mr-3 flex items-center justify-center"></i>
-                    {{ __('รายชื่อทีมผู้สมัคร') }}
+                    {{ __('รายชื่อการสมัคร') }}
                 </x-admin-nav-link>
 
-                <x-admin-nav-link :href="route('admin.payments.index')" :active="request()->routeIs('admin.payments.*')">
-                    <div class="flex items-center justify-between w-full">
-                        <div class="flex items-center">
-                            <i class="fas fa-file-invoice-dollar w-5 h-5 mr-3 flex items-center justify-center"></i>
-                            {{ __('ตรวจการชำระเงิน') }}
+                {{-- 🚀 เฉพาะ Admin ที่จัดการเรื่องเงิน (Payments) ได้ --}}
+                @if($userRole === 'admin')
+                    <x-admin-nav-link :href="route('admin.payments.index')" :active="request()->routeIs('admin.payments.*')">
+                        <div class="flex items-center justify-between w-full">
+                            <div class="flex items-center">
+                                <i class="fas fa-file-invoice-dollar w-5 h-5 mr-3 flex items-center justify-center"></i>
+                                {{ __('ตรวจการชำระเงิน') }}
+                            </div>
+                            @if ($pendingPaymentsCount > 0)
+                                <span
+                                    class="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 text-[10px] font-bold text-white bg-red-500 rounded-full shadow-sm animate-pulse-slow">
+                                    {{ $pendingPaymentsCount > 99 ? '99+' : $pendingPaymentsCount }}
+                                </span>
+                            @endif
                         </div>
-                        @if ($pendingPaymentsCount > 0)
-                            <span
-                                class="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 text-[10px] font-bold text-white bg-red-500 rounded-full shadow-sm animate-pulse-slow">
-                                {{ $pendingPaymentsCount > 99 ? '99+' : $pendingPaymentsCount }}
-                            </span>
-                        @endif
-                    </div>
-                </x-admin-nav-link>
+                    </x-admin-nav-link>
+                @endif
 
-                {{-- =================================== --}}
-                {{-- 3. MASTER DATA --}}
-                {{-- =================================== --}}
-                <div class="px-4 pt-6 pb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">Master Data
-                </div>
+                {{-- 🚀 ตรวจสอบสิทธิ์: แสดงเฉพาะ Admin เท่านั้น --}}
+                @if($userRole === 'admin')
+                    {{-- =================================== --}}
+                    {{-- 3. MASTER DATA --}}
+                    {{-- =================================== --}}
+                    <div class="px-4 pt-6 pb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">Master Data</div>
 
-                <x-admin-nav-link :href="route('admin.category-settings')" :active="request()->routeIs('admin.category-settings')">
-                    <i class="fas fa-tags w-5 h-5 mr-3 flex items-center justify-center"></i>
-                    {{ __('ตั้งค่าหมวดหมู่') }}
-                </x-admin-nav-link>
+                    <x-admin-nav-link :href="route('admin.category-settings')" :active="request()->routeIs('admin.category-settings')">
+                        <i class="fas fa-tags w-5 h-5 mr-3 flex items-center justify-center"></i>
+                        {{ __('ตั้งค่าหมวดหมู่') }}
+                    </x-admin-nav-link>
 
-                <x-admin-nav-link :href="route('admin.robot-models.index')" :active="request()->routeIs('admin.robot-models.index')">
-                    <i class="fas fa-robot w-5 h-5 mr-3 flex items-center justify-center"></i>
-                    {{ __('คลังแม่แบบหุ่นยนต์') }}
-                </x-admin-nav-link>
+                    <x-admin-nav-link :href="route('admin.robot-models.index')" :active="request()->routeIs('admin.robot-models.index')">
+                        <i class="fas fa-robot w-5 h-5 mr-3 flex items-center justify-center"></i>
+                        {{ __('คลังแม่แบบหุ่นยนต์') }}
+                    </x-admin-nav-link>
 
-                {{-- =================================== --}}
-                {{-- 4. SYSTEM --}}
-                {{-- =================================== --}}
-                <div class="px-4 pt-6 pb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">System</div>
+                    {{-- =================================== --}}
+                    {{-- 4. SYSTEM --}}
+                    {{-- =================================== --}}
+                    <div class="px-4 pt-6 pb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">System</div>
 
-                <x-admin-nav-link :href="route('admin.users.index')" :active="request()->routeIs('admin.users.*')">
-                    <i class="fas fa-user-cog w-5 h-5 mr-3 flex items-center justify-center"></i>
-                    {{ __('จัดการผู้ใช้งาน') }}
-                </x-admin-nav-link>
+                    <x-admin-nav-link :href="route('admin.users.index')" :active="request()->routeIs('admin.users.*')">
+                        <i class="fas fa-user-cog w-5 h-5 mr-3 flex items-center justify-center"></i>
+                        {{ __('จัดการผู้ใช้งาน') }}
+                    </x-admin-nav-link>
+                @endif
             </nav>
         </aside>
 
         {{-- 3. Main Content Area --}}
-        <div class="flex-1 flex flex-col overflow-hidden">
+        <div class="flex-1 flex flex-col overflow-hidden w-full transition-all duration-300">
             <header
                 class="flex items-center justify-between px-4 lg:px-8 py-4 bg-white dark:bg-[#0f0f0f] border-b border-gray-100 dark:border-white/5">
                 <div class="flex items-center">
@@ -160,8 +173,11 @@
                 <div class="flex items-center space-x-4 lg:space-x-6">
                     <div
                         class="hidden sm:flex flex-col items-end leading-none border-r border-gray-100 dark:border-white/10 pr-6 font-medium">
-                        <span class="text-sm font-bold dark:text-white">{{ Auth::user()->name }}</span>
-                        <span class="text-[12px] text-gray-400 uppercase tracking-tighter mt-1">Administrator</span>
+                        <span class="text-sm font-bold dark:text-white">{{ Auth::user()->name ?? 'User' }}</span>
+                        {{-- 🚀 แสดงตำแหน่งอิงตามสิทธิ์ผู้ใช้งาน --}}
+                        <span class="text-[12px] text-gray-400 uppercase tracking-tighter mt-1">
+                            {{ $userRole === 'admin' ? 'Administrator' : 'Staff' }}
+                        </span>
                     </div>
 
                     <form method="POST" action="{{ route('logout') }}">

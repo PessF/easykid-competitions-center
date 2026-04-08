@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\GameTypeController;
 use App\Http\Controllers\Admin\RobotModelController;
 use App\Http\Controllers\Admin\CompetitionController;
 use App\Http\Controllers\Admin\AdminPaymentController;
+use App\Http\Controllers\Admin\AdminTeamController;
 use App\Http\Controllers\Admin\CategorySettingController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\AdminController;
@@ -15,6 +16,7 @@ use App\Http\Controllers\Admin\CompetitionClassController;
 use App\Http\Controllers\User\TeamController; 
 use Illuminate\Support\Facades\Route;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
+
 use App\Http\Controllers\TicketVerificationController;
 
 /*
@@ -100,40 +102,49 @@ Route::middleware(['auth', 'verified', 'user_only', 'revalidate'])->group(functi
 });
 
 
-// --- กลุ่มที่ 3: สำหรับ ADMIN เท่านั้น ---
-Route::middleware(['auth', 'admin', 'revalidate'])->prefix('admin')->name('admin.')->group(function () {
+// --- กลุ่มที่ 3: สำหรับระบบหลังบ้าน (Admin และ Staff) ---
+// ด่านที่ 1: เปลี่ยนจาก admin เป็น admin_or_staff เพื่อให้ทีมงานเข้ามาในโซนนี้ได้
+Route::middleware(['auth', 'admin_or_staff', 'revalidate'])->prefix('admin')->name('admin.')->group(function () {
 
+    // โซนส่วนรวม: เข้าได้ทั้ง Admin และ Staff
     Route::get('/', function () {
         return redirect()->route('admin.dashboard');
     });
     
-    // Dashboard & Users
+    // Dashboard (ดูสถิติรวม)
     Route::get('/dashboard', [AdminController::class, 'index'])->name('dashboard');
-    Route::get('/users', [AdminController::class, 'manageUsers'])->name('users.index');
-
-    // Category Settings
-    Route::get('/category-settings', [CategorySettingController::class, 'index'])->name('category-settings');
-    Route::resource('game-types', GameTypeController::class)->except(['index', 'show']);
-    Route::resource('categories', CategoryController::class)->except(['index', 'show']);
     
-    // Robot Models
-    Route::get('/robot-models/{id}/image', [RobotModelController::class, 'showImage'])->name('robot-models.image');
-    Route::resource('robot-models', RobotModelController::class)->except(['show']);
+    // Teams (ดูรายชื่อทีมผู้สมัครทั้งหมดได้ แต่จะไม่มีปุ่มลบ)
+    Route::get('/teams', [AdminTeamController::class, 'index'])->name('teams.index');
 
-    // Competitions (งานแข่งขันหลัก)
-    Route::resource('competitions', CompetitionController::class);
+    // โซนหวงห้าม: ด่านที่ 2 เข้าได้เฉพาะ "Admin ตัวจริง" เท่านั้น!
+    Route::middleware(['admin'])->group(function () {
+        
+        // ระบบจัดการผู้ใช้งาน (User Management)
+        Route::get('/users', [AdminController::class, 'manageUsers'])->name('users.index');
+        Route::patch('/users/{id}/role', [AdminController::class, 'updateRole'])->name('users.updateRole'); // <-- เพิ่มตัวเปลี่ยนสิทธิ์
+        Route::delete('/users/{id}', [AdminController::class, 'destroyUser'])->name('users.destroy');
+        
+        // ลบทีม (Staff ดูได้ แต่กดลบผ่าน URL ไม่ได้ โดนดักตรงนี้)
+        Route::delete('/teams/{id}', [AdminTeamController::class, 'destroy'])->name('teams.destroy');
 
-    // Competition Classes (รายการย่อย)
-    Route::resource('competitions.classes', CompetitionClassController::class)->except(['show']);
+        // Category Settings & Game Rules
+        Route::get('/category-settings', [CategorySettingController::class, 'index'])->name('category-settings');
+        Route::resource('game-types', GameTypeController::class)->except(['index', 'show']);
+        Route::resource('categories', CategoryController::class)->except(['index', 'show']);
 
-    // Payments
-    Route::get('/payments/{id}/slip', [AdminPaymentController::class, 'slip'])->name('payments.slip');
-    Route::resource('payments', AdminPaymentController::class)->only(['index', 'update']);
+        // Robot Models
+        Route::get('/robot-models/{id}/image', [RobotModelController::class, 'showImage'])->name('robot-models.image');
+        Route::resource('robot-models', RobotModelController::class)->except(['show']);
 
-    // Teams & Matches (ฝั่ง Admin เอาไว้ดูภาพรวม)
-    Route::get('/teams', fn() => view('admin.teams.index'))->name('teams.index');
-    Route::get('/matches', fn() => view('admin.matches.index'))->name('matches.index');
+        // Competitions (งานแข่งขันหลักและรายการย่อย)
+        Route::resource('competitions', CompetitionController::class);
+        Route::resource('competitions.classes', CompetitionClassController::class)->except(['show']);
+
+        // Payments (ตรวจบิลการเงิน Admin อนุมัติเท่านั้น)
+        Route::get('/payments/{id}/slip', [AdminPaymentController::class, 'slip'])->name('payments.slip');
+        Route::resource('payments', AdminPaymentController::class)->only(['index', 'update']);
+    });
 });
-
 
 require __DIR__.'/auth.php';
