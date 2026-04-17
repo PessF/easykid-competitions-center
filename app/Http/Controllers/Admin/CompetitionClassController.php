@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Models\Competition;
 use App\Models\CompetitionClass;
 use App\Models\Category;
-use App\Models\RobotModel;
 use App\Models\GameType;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -37,10 +36,9 @@ class CompetitionClassController extends Controller
     {
         $classes = $competition->classes()->latest()->paginate(20);
         $categories = Category::limit(100)->get();
-        $robotModels = RobotModel::limit(100)->get();
         $gameTypes = GameType::limit(100)->get();
 
-        return view('admin.competitions.classes.index', compact('competition', 'classes', 'categories', 'robotModels', 'gameTypes'));
+        return view('admin.competitions.classes.index', compact('competition', 'classes', 'categories', 'gameTypes'));
     }
 
     public function store(Request $request, Competition $competition)
@@ -52,34 +50,21 @@ class CompetitionClassController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'entry_fee' => 'required|numeric|min:0',
-            // 🚀 เพิ่ม min_members และปรับ max_members ให้ต้องมากกว่าหรือเท่ากับ min
             'min_members' => 'required|integer|min:1',
             'max_members' => 'required|integer|min:1|gte:min_members',
             'max_teams' => 'nullable|integer|min:1',
             'rule_pdf' => 'nullable|mimes:pdf|max:51200',
             'game_type_name' => 'required|string|max:255',
-            'robot_name' => 'required|string|max:255',
             'robot_weight' => 'nullable|numeric|min:0',
-            'robot_image' => 'nullable|image|mimes:jpeg,png,jpg|max:5120',
-            'robot_model_id' => 'nullable|exists:robot_models,id',
-            'master_robot_image_url' => 'nullable|string', 
             'allowed_category' => 'required|string',
         ]);
 
         try {
             $rulePath = null;
-            // ใช้รูปจากแม่แบบเป็นค่าตั้งต้น
-            $robotImagePath = $request->master_robot_image_url; 
 
             if ($request->hasFile('rule_pdf')) {
                 if ($request->file('rule_pdf')->isValid()) {
                     $rulePath = $this->uploadClassFile($request->file('rule_pdf'), $competition->name, $request->name, 'rules', 'google');
-                }
-            }
-
-            if ($request->hasFile('robot_image')) {
-                if ($request->file('robot_image')->isValid()) {
-                    $robotImagePath = $this->uploadClassFile($request->file('robot_image'), $competition->name, $request->name, 'images', 'public');
                 }
             }
 
@@ -91,16 +76,18 @@ class CompetitionClassController extends Controller
                 'competition_id' => $competition->id,
                 'name' => $request->name,
                 'entry_fee' => $request->entry_fee,
-                // 🚀 เซฟข้อมูล min_members
                 'min_members' => $request->min_members,
                 'max_members' => $request->max_members,
                 'max_teams' => $request->max_teams,
                 'rules_url' => $rulePath, 
                 'game_type_name' => $request->game_type_name,
-                'robot_name' => $request->robot_name,
-                'robot_model_id' => $request->robot_model_id,
                 'robot_weight' => ($request->robot_weight > 0) ? $request->robot_weight : null, 
-                'robot_image_url' => $robotImagePath,
+                
+                // Set unused robot fields to null
+                'robot_name' => null,
+                'robot_model_id' => null,
+                'robot_image_url' => null,
+                
                 'allowed_categories' => $categoriesSnapshot, 
             ]);
 
@@ -127,18 +114,19 @@ class CompetitionClassController extends Controller
             'max_teams' => 'nullable|integer|min:1',
             'rule_pdf' => 'nullable|mimes:pdf|max:51200', 
             'game_type_name' => 'required|string|max:255',
-            'robot_name' => 'required|string|max:255',
             'robot_weight' => 'nullable|numeric|min:0',
-            'robot_image' => 'nullable|image|mimes:jpeg,png,jpg|max:5120',
-            'robot_model_id' => 'nullable|exists:robot_models,id',
             'allowed_category' => 'required|string', 
         ]);
 
         try {
-            // 🚀 ดึง min_members ออกมาอัปเดตด้วย
-            $data = $request->only(['name', 'entry_fee', 'min_members', 'max_members', 'max_teams', 'game_type_name', 'robot_name', 'robot_model_id']);
+            $data = $request->only(['name', 'entry_fee', 'min_members', 'max_members', 'max_teams', 'game_type_name']);
             
             $data['robot_weight'] = ($request->robot_weight > 0) ? $request->robot_weight : null;
+            
+            // Clean up unused robot fields in database
+            $data['robot_name'] = null;
+            $data['robot_model_id'] = null;
+            $data['robot_image_url'] = null;
             
             // จัดการไฟล์ PDF กติกา
             if ($request->hasFile('rule_pdf')) {
@@ -147,17 +135,6 @@ class CompetitionClassController extends Controller
                         Storage::disk('google')->delete($class->rules_url);
                     }
                     $data['rules_url'] = $this->uploadClassFile($request->file('rule_pdf'), $competition->name, $request->name, 'rules', 'google');
-                }
-            }
-
-            // จัดการรูปภาพหุ่นยนต์
-            if ($request->hasFile('robot_image')) {
-                if ($request->file('robot_image')->isValid()) {
-                    // ลบรูปเก่าทิ้ง (ยกเว้นรูปจาก URL ภายนอก)
-                    if ($class->robot_image_url && !str_starts_with($class->robot_image_url, 'http')) {
-                        Storage::disk('public')->delete($class->robot_image_url);
-                    }
-                    $data['robot_image_url'] = $this->uploadClassFile($request->file('robot_image'), $competition->name, $request->name, 'images', 'public');
                 }
             }
 
@@ -182,11 +159,9 @@ class CompetitionClassController extends Controller
                 Storage::disk('google')->delete($class->rules_url);
             }
             
-            if ($class->robot_image_url && !str_starts_with($class->robot_image_url, 'http')) {
-                Storage::disk('public')->delete($class->robot_image_url);
-            }
-
+            // ไม่ต้องสนใจรูปรถหุ่นยนต์แล้ว ลบเฉพาะ Model ก็พอ
             $class->delete();
+            
             return redirect()->back()->with('success', 'ลบรุ่นการแข่งขันเรียบร้อยแล้ว!');
         } catch (\Exception $e) {
             Log::error("Delete CompetitionClass Error: " . $e->getMessage());

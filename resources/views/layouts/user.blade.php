@@ -43,42 +43,38 @@
     </style>
 </head>
 
-<body
-    class="font-sans antialiased bg-[#f8fafc] dark:bg-[#0a0a0a] text-gray-900 leading-relaxed transition-colors duration-300"
-    x-data="{ mobileSidebarOpen: false }">
+<body class="font-sans antialiased bg-[#0a0a0a] text-gray-200 leading-relaxed" x-data="{ mobileSidebarOpen: false }">
 
     <div class="flex h-screen overflow-hidden">
         {{-- 1. Backdrop สำหรับมือถือ --}}
         <div x-show="mobileSidebarOpen" @click="mobileSidebarOpen = false"
-            class="fixed inset-0 z-40 bg-black/50 lg:hidden transition-opacity" style="display: none;"></div>
+            class="fixed inset-0 z-40 bg-black/70 lg:hidden transition-opacity" style="display: none;"></div>
 
         {{-- 2. Sidebar --}}
-        {{-- 🚀 FIX: เติม -translate-x-full บังคับซ่อนบนมือถือตั้งแต่จังหวะโหลด HTML --}}
         <aside :class="mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'"
-            class="fixed inset-y-0 left-0 z-50 w-72 bg-white dark:bg-[#0f0f0f] border-r border-gray-100 dark:border-white/5 transition-transform duration-300 transform -translate-x-full lg:static lg:translate-x-0 overflow-y-auto shadow-2xl lg:shadow-none">
+            class="fixed inset-y-0 left-0 z-50 w-72 bg-[#0f0f0f] border-r border-white/5 transition-transform duration-300 transform -translate-x-full lg:static lg:translate-x-0 overflow-y-auto shadow-2xl lg:shadow-none">
 
             <div class="flex flex-col h-full relative">
                 {{-- ปุ่มปิด Sidebar สำหรับมือถือ (ซ่อนในจอใหญ่) --}}
-                <button @click="mobileSidebarOpen = false" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors bg-gray-50 dark:bg-white/5 rounded-full p-1.5 lg:hidden">
+                <button @click="mobileSidebarOpen = false" class="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors bg-white/5 rounded-full p-1.5 lg:hidden">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                     </svg>
                 </button>
 
-                <div class="px-8 py-8 border-b border-gray-100 dark:border-white/5 flex justify-center items-center">
+                <div class="px-8 py-8 border-b border-white/5 flex justify-center items-center">
                     <img src="{{ asset('images/logo.png') }}" alt="Easykids Robotics Logo"
                         class="w-auto h-12 object-contain">
                 </div>
 
-                {{-- 🚀 FIX: เพิ่ม @click ที่ nav เพื่อดักการกดลิงก์ทั้งหมดบนมือถือ --}}
                 <nav class="flex-1 px-4 pt-6 pb-4 space-y-2" @click="if(window.innerWidth < 1024) mobileSidebarOpen = false">
-                    <div class="px-4 py-2 text-[10px] font-normal text-gray-400 uppercase tracking-[0.2em]">เมนูหลัก
+                    <div class="px-4 py-2 text-[10px] font-normal text-gray-500 uppercase tracking-[0.2em]">เมนูหลัก
                     </div>
 
                     @php $isDashboard = request()->routeIs('user.dashboard'); @endphp
                     <a href="{{ route('user.dashboard') }}"
                         class="flex items-center px-4 py-3 text-sm rounded-xl transition-all duration-300 
-                              {{ $isDashboard ? 'text-blue-600 bg-blue-50 dark:bg-blue-500/10 dark:text-blue-400 font-normal' : 'font-normal text-gray-500 hover:text-gray-900 hover:bg-gray-50 dark:text-gray-400 dark:hover:text-white dark:hover:bg-white/5' }}">
+                              {{ $isDashboard ? 'text-blue-400 bg-blue-500/10 font-normal' : 'font-normal text-gray-400 hover:text-white hover:bg-white/5' }}">
                         <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
@@ -89,7 +85,7 @@
                     @php $isTeams = request()->routeIs('user.teams.*'); @endphp
                     <a href="{{ route('user.teams.index') }}"
                         class="flex items-center px-4 py-3 text-sm rounded-xl transition-all duration-300 
-                              {{ $isTeams ? 'text-blue-600 bg-blue-50 dark:bg-blue-500/10 dark:text-blue-400 font-normal' : 'font-normal text-gray-500 hover:text-gray-900 hover:bg-gray-50 dark:text-gray-400 dark:hover:text-white dark:hover:bg-white/5' }}">
+                              {{ $isTeams ? 'text-blue-400 bg-blue-500/10 font-normal' : 'font-normal text-gray-400 hover:text-white hover:bg-white/5' }}">
                         <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13.732 4c-.76-1.01-1.93-1.42-3.232-1.42s-2.472.41-3.232 1.42" />
@@ -105,7 +101,7 @@
                     @endphp
                     <a href="{{ route('user.registrations') }}"
                         class="flex items-center justify-between px-4 py-3 text-sm rounded-xl transition-all duration-300 
-                              {{ $isRegistrations ? 'text-blue-600 bg-blue-50 dark:bg-blue-500/10 dark:text-blue-400 font-normal' : 'font-normal text-gray-500 hover:text-gray-900 hover:bg-gray-50 dark:text-gray-400 dark:hover:text-white dark:hover:bg-white/5' }}">
+                              {{ $isRegistrations ? 'text-blue-400 bg-blue-500/10 font-normal' : 'font-normal text-gray-400 hover:text-white hover:bg-white/5' }}">
                         <div class="flex items-center">
                             <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -126,9 +122,9 @@
 
         <div class="flex-1 flex flex-col overflow-hidden">
             <header
-                class="flex items-center justify-between px-6 lg:px-10 py-4 bg-white/80 dark:bg-[#0f0f0f]/80 backdrop-blur-md border-b border-gray-100 dark:border-white/5 sticky top-0 z-30">
+                class="flex items-center justify-between px-6 lg:px-10 py-4 bg-[#0f0f0f]/80 backdrop-blur-md border-b border-white/5 sticky top-0 z-30">
                 <button @click="mobileSidebarOpen = true"
-                    class="lg:hidden text-gray-500 hover:text-gray-700 focus:outline-none">
+                    class="lg:hidden text-gray-400 hover:text-white focus:outline-none">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M4 6h16M4 12h16M4 18h16" />
@@ -141,7 +137,7 @@
                             <button class="flex items-center space-x-3 focus:outline-none group">
                                 <div class="text-right hidden sm:block">
                                     <p
-                                        class="text-sm font-normal dark:text-white leading-none group-hover:text-blue-600 transition-colors">
+                                        class="text-sm font-normal text-white leading-none group-hover:text-blue-400 transition-colors">
                                         {{ Auth::user()->name }}
                                     </p>
                                     <p class="text-[10px] text-blue-500 font-normal uppercase tracking-wider mt-1">
@@ -149,7 +145,7 @@
                                     </p>
                                 </div>
                                 <div
-                                    class="w-10 h-10 rounded-md bg-gray-200 overflow-hidden ring-2 ring-blue-500/10 group-hover:ring-blue-500/30 transition-all shadow-sm">
+                                    class="w-10 h-10 rounded-md bg-[#1a1a1a] overflow-hidden ring-2 ring-blue-500/10 group-hover:ring-blue-500/30 transition-all shadow-sm">
                                     @if (Auth::user()->avatar)
                                         @if (str_starts_with(Auth::user()->avatar, 'http'))
                                             <img src="{{ Auth::user()->avatar }}" class="w-full h-full object-cover" alt="{{ Auth::user()->name }}">
@@ -157,10 +153,10 @@
                                             <img src="{{ asset('storage/' . Auth::user()->avatar) }}" class="w-full h-full object-cover" alt="{{ Auth::user()->name }}">
                                         @endif
                                     @else
-                                        <img src="{{ asset('images/default-avatar.png') }}" class="w-full h-full object-cover" alt="{{ Auth::user()->name }}">
+                                        <img src="{{ asset('images/default-avatar.png') }}" class="w-full h-full object-cover opacity-70" alt="{{ Auth::user()->name }}">
                                     @endif
                                 </div>
-                                <svg class="fill-current h-4 w-4 text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300 transition-colors"
+                                <svg class="fill-current h-4 w-4 text-gray-500 group-hover:text-gray-300 transition-colors"
                                     xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
                                     <path fill-rule="evenodd"
                                         d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
@@ -170,8 +166,9 @@
                         </x-slot>
 
                         <x-slot name="content">
+                            {{-- 🚀 แก้ไข Hover ให้เป็น Dark Mode --}}
                             <button @click.prevent="$dispatch('open-modal', 'profile-edit-modal')"
-                                class="block w-full px-4 py-2 text-start text-sm leading-5 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition duration-150 ease-in-out font-normal">
+                                class="block w-full px-4 py-2 text-start text-sm leading-5 hover:bg-white/5 transition duration-150 ease-in-out font-normal text-gray-300 hover:text-white">
                                 โปรไฟล์ของฉัน
                             </button>
 
@@ -179,7 +176,7 @@
                                 @csrf
                                 <x-dropdown-link :href="route('logout')"
                                     onclick="event.preventDefault(); this.closest('form').submit();"
-                                    class="text-red-600 font-normal hover:bg-red-50">
+                                    class="text-red-400 font-normal hover:bg-red-500/10 hover:text-red-300">
                                     {{ __('ออกจากระบบ') }}
                                 </x-dropdown-link>
                             </form>
@@ -193,19 +190,18 @@
                     {{ $slot }}
                 </div>
 
-                <footer class="mt-auto py-5 px-6 lg:px-8 border-t border-gray-100 dark:border-white/5 bg-transparent">
+                <footer class="mt-auto py-5 px-6 lg:px-8 border-t border-white/5 bg-transparent">
                     <div class="flex flex-col md:flex-row items-center justify-between gap-4">
-                        <p class="text-xs font-normal text-gray-500 dark:text-gray-400">&copy; {{ date('Y') }}
+                        <p class="text-xs font-normal text-gray-500">&copy; {{ date('Y') }}
                             Easykids Robotics. All rights reserved.</p>
                         <div
-                            class="flex items-center space-x-6 text-xs font-normal text-gray-500 dark:text-gray-400">
+                            class="flex items-center space-x-6 text-xs font-normal text-gray-500">
                             <a href="{{ route('privacy.policy') }}"
-                                class="hover:text-blue-600 transition-colors">Privacy Policy</a>
+                                class="hover:text-blue-400 transition-colors">Privacy Policy</a>
                             <a href="{{ route('terms.service') }}"
-                                class="hover:text-blue-600 transition-colors">Terms
-                                of Service</a>
+                                class="hover:text-blue-400 transition-colors">Terms of Service</a>
                             <a href="https://www.easykidsrobotics.com/contact-us/"
-                                class="hover:text-blue-600 transition-colors">ติดต่อเรา</a>
+                                class="hover:text-blue-400 transition-colors">ติดต่อเรา</a>
                         </div>
                     </div>
                 </footer>
@@ -215,28 +211,28 @@
 
     {{-- Profile Edit Modal --}}
     <x-modal name="profile-edit-modal" focusable>
-        <div class="bg-white dark:bg-[#121212] flex flex-col max-h-[90vh] rounded-2xl overflow-hidden shadow-2xl">
+        <div class="bg-[#121212] flex flex-col max-h-[90vh] rounded-2xl overflow-hidden shadow-2xl border border-white/10">
 
             {{-- Sticky Header --}}
             <div
-                class="flex items-center justify-between p-5 sm:p-6 md:p-8 pb-4 border-b border-gray-100 dark:border-white/5 shrink-0 z-10 bg-white dark:bg-[#121212]">
+                class="flex items-center justify-between p-5 sm:p-6 md:p-8 pb-4 border-b border-white/5 shrink-0 z-10 bg-[#121212]">
                 <div class="flex items-center gap-3 md:gap-4">
                     <div
-                        class="w-10 h-10 sm:w-12 sm:h-12 bg-blue-50 dark:bg-blue-900/30 rounded-xl flex items-center justify-center text-blue-600 dark:text-blue-400 shrink-0">
+                        class="w-10 h-10 sm:w-12 sm:h-12 bg-blue-900/30 rounded-xl flex items-center justify-center text-blue-400 shrink-0">
                         <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                         </svg>
                     </div>
                     <div>
-                        <h2 class="text-lg sm:text-xl font-normal text-gray-900 dark:text-white leading-tight">
+                        <h2 class="text-lg sm:text-xl font-normal text-white leading-tight">
                             จัดการโปรไฟล์</h2>
-                        <p class="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 mt-0.5 font-normal">
+                        <p class="text-[10px] sm:text-xs text-gray-400 mt-0.5 font-normal">
                             อัปเดตข้อมูลส่วนตัวสำหรับการแข่งขัน</p>
                     </div>
                 </div>
                 <button @click="$dispatch('close-modal', 'profile-edit-modal')"
-                    class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors p-2 rounded-xl hover:bg-gray-50 dark:hover:bg-white/5 focus:outline-none focus:ring-2 focus:ring-gray-200">
+                    class="text-gray-500 hover:text-white transition-colors p-2 rounded-xl hover:bg-white/5 focus:outline-none focus:ring-2 focus:ring-gray-700">
                     <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M6 18L18 6M6 6l12 12" />
@@ -244,7 +240,6 @@
                 </button>
             </div>
 
-            {{-- 🚀 FIX: Form Wrapper (เติม enctype เพื่อรองรับไฟล์) --}}
             <form id="profile-update-form" method="post" action="{{ route('profile.update') }}" enctype="multipart/form-data"
                 class="flex flex-col min-h-0 overflow-hidden">
                 @csrf
@@ -253,19 +248,16 @@
                 {{-- Scrollable Body --}}
                 <div class="p-5 sm:p-6 md:p-8 overflow-y-auto custom-scrollbar space-y-6 sm:space-y-8">
 
-                    {{-- 🚀 0. อัปโหลดรูปโปรไฟล์ (พร้อม Live Preview) --}}
-                    <div class="flex items-center gap-4 p-4 bg-gray-50 dark:bg-white/5 rounded-2xl border border-gray-100 dark:border-white/5" 
+                    {{-- 0. อัปโหลดรูปโปรไฟล์ (พร้อม Live Preview) --}}
+                    <div class="flex items-center gap-4 p-4 bg-white/5 rounded-2xl border border-white/5" 
                          x-data="{ photoName: null, photoPreview: null }">
                          
                         {{-- ส่วนแสดงรูปภาพ --}}
-                        <div class="w-16 h-16 rounded-full bg-white dark:bg-[#1a1a1a] border border-gray-200 dark:border-white/10 flex items-center justify-center overflow-hidden shrink-0 shadow-sm">
-                            
-                            {{-- ถัามีการเลือกรูปใหม่ ให้โชว์รูป Preview ที่อ่านได้จากเครื่อง --}}
+                        <div class="w-16 h-16 rounded-full bg-[#1a1a1a] border border-white/10 flex items-center justify-center overflow-hidden shrink-0 shadow-sm">
                             <template x-if="photoPreview">
                                 <img :src="photoPreview" alt="Preview" class="w-full h-full object-cover">
                             </template>
                             
-                            {{-- ถ้ายังไม่เลือกรูปใหม่ ให้โชว์รูปเดิมจากระบบ --}}
                             <div x-show="!photoPreview" class="w-full h-full">
                                 @if(Auth::user()->avatar)
                                     <img src="{{ Str::startsWith(Auth::user()->avatar, ['http://', 'https://']) ? Auth::user()->avatar : asset('storage/' . Auth::user()->avatar) }}" alt="Avatar" class="w-full h-full object-cover">
@@ -277,7 +269,7 @@
 
                         {{-- ส่วนปุ่มเลือกไฟล์ --}}
                         <div class="flex-1 min-w-0">
-                            <label class="block text-xs sm:text-sm font-normal text-gray-700 dark:text-gray-300 mb-1">รูปโปรไฟล์ (ไม่บังคับ)</label>
+                            <label class="block text-xs sm:text-sm font-normal text-gray-300 mb-1">รูปโปรไฟล์ (ไม่บังคับ)</label>
                             
                             <input type="file" name="avatar" id="avatar_upload" accept="image/jpeg, image/png, image/jpg" class="hidden" 
                                 x-ref="avatar"
@@ -288,47 +280,45 @@
                                     reader.readAsDataURL($refs.avatar.files[0]);
                                 ">
                                 
-                            <label for="avatar_upload" class="inline-flex items-center px-3 py-1.5 bg-white dark:bg-[#121212] border border-gray-200 dark:border-white/10 rounded-lg text-[11px] font-normal text-gray-600 dark:text-gray-300 cursor-pointer hover:border-blue-400 hover:text-blue-500 transition-colors shadow-sm">
+                            <label for="avatar_upload" class="inline-flex items-center px-3 py-1.5 bg-[#1a1a1a] border border-white/10 rounded-lg text-[11px] font-normal text-gray-300 cursor-pointer hover:border-blue-500 hover:text-blue-400 transition-colors shadow-sm">
                                 <i class="fas fa-camera mr-1.5"></i> เลือกรูปภาพ
                             </label>
                             
-                            <p class="text-[10px] text-blue-500 mt-1.5 truncate" x-show="photoName" x-text="photoName"></p>
-                            <p class="text-[10px] text-gray-400 mt-1" x-show="!photoName">JPG, PNG ขนาดไม่เกิน 2MB</p>
+                            <p class="text-[10px] text-blue-400 mt-1.5 truncate" x-show="photoName" x-text="photoName"></p>
+                            <p class="text-[10px] text-gray-500 mt-1" x-show="!photoName">JPG, PNG ขนาดไม่เกิน 2MB</p>
                         </div>
                     </div>
 
                     {{-- 0.1 ชื่อที่แสดงในระบบ --}}
                     <div class="space-y-1.5">
                         <label
-                            class="text-xs sm:text-sm font-normal text-gray-700 dark:text-gray-300">ชื่อที่แสดงในระบบ
+                            class="text-xs sm:text-sm font-normal text-gray-300">ชื่อที่แสดงในระบบ
                             (Display Name) <span class="text-red-500">*</span></label>
                         <input name="name" type="text" value="{{ old('name', Auth::user()->name) }}" required
-                            class="w-full px-4 py-2.5 sm:py-3 bg-white dark:bg-black border {{ $errors->has('name') ? 'border-red-500' : 'border-gray-200 dark:border-white/10' }} rounded-xl focus:ring-2 focus:ring-blue-500/50 outline-none transition-all text-sm dark:text-white shadow-sm font-normal">
+                            class="w-full px-4 py-2.5 sm:py-3 bg-black border {{ $errors->has('name') ? 'border-red-500' : 'border-white/10' }} rounded-xl focus:ring-2 focus:ring-blue-500/50 outline-none transition-all text-sm text-white shadow-sm font-normal">
                         @error('name')
-                            <span class="text-[10px] font-normal text-red-500">{{ $message }}</span>
+                            <span class="text-[10px] font-normal text-red-400">{{ $message }}</span>
                         @enderror
                     </div>
 
                     {{-- 1. ข้อมูลภาษาไทย --}}
-                    <div
-                        class="p-4 sm:p-5 bg-gray-50 dark:bg-white/5 rounded-2xl border border-gray-100 dark:border-white/5">
-                        <h3
-                            class="text-[10px] sm:text-xs font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest mb-3 sm:mb-4 flex items-center gap-2">
-                            <span class="w-1.5 h-1.5 bg-blue-600 rounded-sm"></span> ข้อมูลภาษาไทย
+                    <div class="p-4 sm:p-5 bg-white/5 rounded-2xl border border-white/5">
+                        <h3 class="text-[10px] sm:text-xs font-normal text-blue-400 uppercase tracking-widest mb-3 sm:mb-4 flex items-center gap-2">
+                            <span class="w-1.5 h-1.5 bg-blue-500 rounded-sm"></span> ข้อมูลภาษาไทย
                         </h3>
 
                         <div class="grid grid-cols-12 gap-3 sm:gap-4">
                             {{-- Prefix TH --}}
                             <div class="col-span-5 sm:col-span-3 md:col-span-3 lg:col-span-3 space-y-1.5">
-                                <label class="text-[10px] sm:text-xs font-normal text-gray-500">คำนำหน้า</label>
+                                <label class="text-[10px] sm:text-xs font-normal text-gray-400">คำนำหน้า</label>
                                 <div x-data="{ open: false, selected: '{{ old('prefix_th', Auth::user()->prefix_th) }}', placeholder: 'เลือก' }" class="relative" @click.away="open = false">
                                     <input type="hidden" name="prefix_th" x-model="selected">
                                     <button @click="open = !open" type="button"
-                                        class="w-full px-3 sm:px-4 py-2.5 bg-white dark:bg-black border {{ $errors->has('prefix_th') ? 'border-red-500' : 'border-gray-200 dark:border-white/10' }} rounded-xl focus:ring-2 focus:ring-blue-500/50 outline-none transition-all text-xs sm:text-sm dark:text-white flex justify-between items-center text-left font-normal">
+                                        class="w-full px-3 sm:px-4 py-2.5 bg-black border {{ $errors->has('prefix_th') ? 'border-red-500' : 'border-white/10' }} rounded-xl focus:ring-2 focus:ring-blue-500/50 outline-none transition-all text-xs sm:text-sm text-white flex justify-between items-center text-left font-normal">
                                         <span x-text="selected || placeholder"
-                                            :class="{ 'text-gray-400 dark:text-gray-500': !selected }"
+                                            :class="{ 'text-gray-500': !selected }"
                                             class="truncate mr-2"></span>
-                                        <svg class="w-4 h-4 text-gray-400 transition-transform duration-200 shrink-0"
+                                        <svg class="w-4 h-4 text-gray-500 transition-transform duration-200 shrink-0"
                                             :class="{ 'rotate-180': open }" fill="none" stroke="currentColor"
                                             viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -336,14 +326,13 @@
                                         </svg>
                                     </button>
                                     <div x-show="open" x-transition.opacity.duration.200ms
-                                        class="absolute z-50 min-w-[160px] w-full mt-1 bg-white dark:bg-[#1a1a1a] border border-gray-100 dark:border-white/10 rounded-xl shadow-lg py-1.5 max-h-56 overflow-y-auto custom-scrollbar"
+                                        class="absolute z-50 min-w-[160px] w-full mt-1 bg-[#1a1a1a] border border-white/10 rounded-xl shadow-lg py-1.5 max-h-56 overflow-y-auto custom-scrollbar"
                                         style="display: none;">
                                         <template x-for="item in ['เด็กชาย', 'เด็กหญิง', 'นาย', 'นางสาว', 'นาง']">
                                             <div @click="selected = item; open = false"
-                                                class="px-4 py-3 text-xs sm:text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5 cursor-pointer transition-colors"
+                                                class="px-4 py-3 text-xs sm:text-sm text-gray-300 hover:bg-white/5 cursor-pointer transition-colors"
                                                 :class="{
-                                                    'bg-blue-50/80 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 font-normal': selected ===
-                                                        item
+                                                    'bg-blue-500/10 text-blue-400 font-normal': selected === item
                                                 }">
                                                 <span x-text="item"></span>
                                             </div>
@@ -354,42 +343,40 @@
 
                             {{-- ชื่อจริง --}}
                             <div class="col-span-7 sm:col-span-4 md:col-span-5 lg:col-span-4 space-y-1.5">
-                                <label class="text-[10px] sm:text-xs font-normal text-gray-500">ชื่อจริง</label>
+                                <label class="text-[10px] sm:text-xs font-normal text-gray-400">ชื่อจริง</label>
                                 <input name="first_name_th" type="text"
                                     value="{{ old('first_name_th', Auth::user()->first_name_th) }}"
-                                    class="w-full px-3 sm:px-4 py-2.5 bg-white dark:bg-black border {{ $errors->has('first_name_th') ? 'border-red-500' : 'border-gray-200 dark:border-white/10' }} rounded-xl focus:ring-2 focus:ring-blue-500/50 outline-none transition-all text-xs sm:text-sm dark:text-white font-normal">
+                                    class="w-full px-3 sm:px-4 py-2.5 bg-black border {{ $errors->has('first_name_th') ? 'border-red-500' : 'border-white/10' }} rounded-xl focus:ring-2 focus:ring-blue-500/50 outline-none transition-all text-xs sm:text-sm text-white font-normal">
                             </div>
 
                             {{-- นามสกุล --}}
                             <div class="col-span-12 sm:col-span-5 md:col-span-4 lg:col-span-5 space-y-1.5">
-                                <label class="text-[10px] sm:text-xs font-normal text-gray-500">นามสกุล</label>
+                                <label class="text-[10px] sm:text-xs font-normal text-gray-400">นามสกุล</label>
                                 <input name="last_name_th" type="text"
                                     value="{{ old('last_name_th', Auth::user()->last_name_th) }}"
-                                    class="w-full px-3 sm:px-4 py-2.5 bg-white dark:bg-black border {{ $errors->has('last_name_th') ? 'border-red-500' : 'border-gray-200 dark:border-white/10' }} rounded-xl focus:ring-2 focus:ring-blue-500/50 outline-none transition-all text-xs sm:text-sm dark:text-white font-normal">
+                                    class="w-full px-3 sm:px-4 py-2.5 bg-black border {{ $errors->has('last_name_th') ? 'border-red-500' : 'border-white/10' }} rounded-xl focus:ring-2 focus:ring-blue-500/50 outline-none transition-all text-xs sm:text-sm text-white font-normal">
                             </div>
                         </div>
                     </div>
 
                     {{-- 2. ข้อมูลภาษาอังกฤษ --}}
-                    <div
-                        class="p-4 sm:p-5 bg-gray-50 dark:bg-white/5 rounded-2xl border border-gray-100 dark:border-white/5">
-                        <h3
-                            class="text-[10px] sm:text-xs font-normal text-indigo-600 dark:text-indigo-400 uppercase tracking-widest mb-3 sm:mb-4 flex items-center gap-2">
-                            <span class="w-1.5 h-1.5 bg-indigo-600 rounded-sm"></span> ข้อมูลภาษาอังกฤษ
+                    <div class="p-4 sm:p-5 bg-white/5 rounded-2xl border border-white/5">
+                        <h3 class="text-[10px] sm:text-xs font-normal text-indigo-400 uppercase tracking-widest mb-3 sm:mb-4 flex items-center gap-2">
+                            <span class="w-1.5 h-1.5 bg-indigo-500 rounded-sm"></span> ข้อมูลภาษาอังกฤษ
                         </h3>
                         <div class="grid grid-cols-12 gap-3 sm:gap-4">
 
                             {{-- Prefix EN --}}
                             <div class="col-span-5 sm:col-span-3 md:col-span-3 lg:col-span-3 space-y-1.5">
-                                <label class="text-[10px] sm:text-xs font-normal text-gray-500">Prefix</label>
+                                <label class="text-[10px] sm:text-xs font-normal text-gray-400">Prefix</label>
                                 <div x-data="{ open: false, selected: '{{ old('prefix_en', Auth::user()->prefix_en) }}', placeholder: 'Select' }" class="relative" @click.away="open = false">
                                     <input type="hidden" name="prefix_en" x-model="selected">
                                     <button @click="open = !open" type="button"
-                                        class="w-full px-3 sm:px-4 py-2.5 bg-white dark:bg-black border {{ $errors->has('prefix_en') ? 'border-red-500' : 'border-gray-200 dark:border-white/10' }} rounded-xl focus:ring-2 focus:ring-blue-500/50 outline-none transition-all text-xs sm:text-sm dark:text-white flex justify-between items-center text-left font-normal">
+                                        class="w-full px-3 sm:px-4 py-2.5 bg-black border {{ $errors->has('prefix_en') ? 'border-red-500' : 'border-white/10' }} rounded-xl focus:ring-2 focus:ring-blue-500/50 outline-none transition-all text-xs sm:text-sm text-white flex justify-between items-center text-left font-normal">
                                         <span x-text="selected || placeholder"
-                                            :class="{ 'text-gray-400 dark:text-gray-500': !selected }"
+                                            :class="{ 'text-gray-500': !selected }"
                                             class="truncate mr-2"></span>
-                                        <svg class="w-4 h-4 text-gray-400 transition-transform duration-200 shrink-0"
+                                        <svg class="w-4 h-4 text-gray-500 transition-transform duration-200 shrink-0"
                                             :class="{ 'rotate-180': open }" fill="none" stroke="currentColor"
                                             viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -397,14 +384,13 @@
                                         </svg>
                                     </button>
                                     <div x-show="open" x-transition.opacity.duration.200ms
-                                        class="absolute z-50 min-w-[160px] w-full mt-1 bg-white dark:bg-[#1a1a1a] border border-gray-100 dark:border-white/10 rounded-xl shadow-lg py-1.5 max-h-56 overflow-y-auto custom-scrollbar"
+                                        class="absolute z-50 min-w-[160px] w-full mt-1 bg-[#1a1a1a] border border-white/10 rounded-xl shadow-lg py-1.5 max-h-56 overflow-y-auto custom-scrollbar"
                                         style="display: none;">
                                         <template x-for="item in ['Master', 'Miss', 'Mr.', 'Ms.', 'Mrs.']">
                                             <div @click="selected = item; open = false"
-                                                class="px-4 py-3 text-xs sm:text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5 cursor-pointer transition-colors"
+                                                class="px-4 py-3 text-xs sm:text-sm text-gray-300 hover:bg-white/5 cursor-pointer transition-colors"
                                                 :class="{
-                                                    'bg-blue-50/80 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 font-normal': selected ===
-                                                        item
+                                                    'bg-blue-500/10 text-blue-400 font-normal': selected === item
                                                 }">
                                                 <span x-text="item"></span>
                                             </div>
@@ -415,18 +401,18 @@
 
                             {{-- First Name --}}
                             <div class="col-span-7 sm:col-span-4 md:col-span-5 lg:col-span-4 space-y-1.5">
-                                <label class="text-[10px] sm:text-xs font-normal text-gray-500">First Name</label>
+                                <label class="text-[10px] sm:text-xs font-normal text-gray-400">First Name</label>
                                 <input name="first_name_en" type="text"
                                     value="{{ old('first_name_en', Auth::user()->first_name_en) }}"
-                                    class="w-full px-3 sm:px-4 py-2.5 bg-white dark:bg-black border {{ $errors->has('first_name_en') ? 'border-red-500' : 'border-gray-200 dark:border-white/10' }} rounded-xl focus:ring-2 focus:ring-blue-500/50 outline-none transition-all text-xs sm:text-sm dark:text-white font-normal">
+                                    class="w-full px-3 sm:px-4 py-2.5 bg-black border {{ $errors->has('first_name_en') ? 'border-red-500' : 'border-white/10' }} rounded-xl focus:ring-2 focus:ring-blue-500/50 outline-none transition-all text-xs sm:text-sm text-white font-normal">
                             </div>
 
                             {{-- Last Name --}}
                             <div class="col-span-12 sm:col-span-5 md:col-span-4 lg:col-span-5 space-y-1.5">
-                                <label class="text-[10px] sm:text-xs font-normal text-gray-500">Last Name</label>
+                                <label class="text-[10px] sm:text-xs font-normal text-gray-400">Last Name</label>
                                 <input name="last_name_en" type="text"
                                     value="{{ old('last_name_en', Auth::user()->last_name_en) }}"
-                                    class="w-full px-3 sm:px-4 py-2.5 bg-white dark:bg-black border {{ $errors->has('last_name_en') ? 'border-red-500' : 'border-gray-200 dark:border-white/10' }} rounded-xl focus:ring-2 focus:ring-blue-500/50 outline-none transition-all text-xs sm:text-sm dark:text-white font-normal">
+                                    class="w-full px-3 sm:px-4 py-2.5 bg-black border {{ $errors->has('last_name_en') ? 'border-red-500' : 'border-white/10' }} rounded-xl focus:ring-2 focus:ring-blue-500/50 outline-none transition-all text-xs sm:text-sm text-white font-normal">
                             </div>
                         </div>
                     </div>
@@ -435,33 +421,31 @@
                     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-5 pt-2">
                         <div class="space-y-1.5">
                             <label
-                                class="text-[10px] sm:text-xs font-normal text-gray-700 dark:text-gray-300">วัน/เดือน/ปี
+                                class="text-[10px] sm:text-xs font-normal text-gray-300">วัน/เดือน/ปี
                                 เกิด (ค.ศ.)</label>
                             <input name="birthday" type="date"
                                 value="{{ old('birthday', Auth::user()->birthday ? \Carbon\Carbon::parse(Auth::user()->birthday)->format('Y-m-d') : '') }}"
-                                class="w-full px-4 py-2.5 bg-white dark:bg-black border {{ $errors->has('birthday') ? 'border-red-500' : 'border-gray-200 dark:border-white/10' }} rounded-xl focus:ring-2 focus:ring-blue-500/50 outline-none transition-all text-sm dark:text-white cursor-pointer [color-scheme:light] dark:[color-scheme:dark] font-normal">
+                                class="w-full px-4 py-2.5 bg-black border {{ $errors->has('birthday') ? 'border-red-500' : 'border-white/10' }} rounded-xl focus:ring-2 focus:ring-blue-500/50 outline-none transition-all text-sm text-white cursor-pointer [color-scheme:dark] font-normal">
                         </div>
                         <div class="space-y-1.5">
                             <label
-                                class="text-[10px] sm:text-xs font-normal text-gray-700 dark:text-gray-300">เบอร์โทรศัพท์</label>
+                                class="text-[10px] sm:text-xs font-normal text-gray-300">เบอร์โทรศัพท์</label>
                             <input name="phone_number" type="text"
                                 value="{{ old('phone_number', Auth::user()->phone_number) }}"
                                 placeholder="08XXXXXXXX"
-                                class="w-full px-4 py-2.5 bg-white dark:bg-black border {{ $errors->has('phone_number') ? 'border-red-500' : 'border-gray-200 dark:border-white/10' }} rounded-xl focus:ring-2 focus:ring-blue-500/50 outline-none transition-all text-sm dark:text-white font-normal">
+                                class="w-full px-4 py-2.5 bg-black border {{ $errors->has('phone_number') ? 'border-red-500' : 'border-white/10' }} rounded-xl focus:ring-2 focus:ring-blue-500/50 outline-none transition-all text-sm text-white font-normal placeholder-gray-600">
                         </div>
 
                         {{-- Shirt Size --}}
                         <div class="sm:col-span-2 md:col-span-1 space-y-1.5">
-                            <label
-                                class="text-[10px] sm:text-xs font-normal text-gray-700 dark:text-gray-300">ไซส์เสื้อ
-                                (Shirt Size)</label>
+                            <label class="text-[10px] sm:text-xs font-normal text-gray-300">ไซส์เสื้อ (Shirt Size)</label>
                             <div x-data="{ open: false, selected: '{{ old('shirt_size', Auth::user()->shirt_size) }}', placeholder: 'เลือกไซส์' }" class="relative" @click.away="open = false">
                                 <input type="hidden" name="shirt_size" x-model="selected">
                                 <button @click="open = !open" type="button"
-                                    class="w-full px-4 py-2.5 bg-white dark:bg-black border {{ $errors->has('shirt_size') ? 'border-red-500' : 'border-gray-200 dark:border-white/10' }} rounded-xl focus:ring-2 focus:ring-blue-500/50 outline-none transition-all text-sm dark:text-white flex justify-between items-center text-left font-normal">
+                                    class="w-full px-4 py-2.5 bg-black border {{ $errors->has('shirt_size') ? 'border-red-500' : 'border-white/10' }} rounded-xl focus:ring-2 focus:ring-blue-500/50 outline-none transition-all text-sm text-white flex justify-between items-center text-left font-normal">
                                     <span x-text="selected || placeholder"
-                                        :class="{ 'text-gray-400 dark:text-gray-500': !selected }"></span>
-                                    <svg class="w-4 h-4 text-gray-400 transition-transform duration-200"
+                                        :class="{ 'text-gray-500': !selected }"></span>
+                                    <svg class="w-4 h-4 text-gray-500 transition-transform duration-200"
                                         :class="{ 'rotate-180': open }" fill="none" stroke="currentColor"
                                         viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -469,14 +453,13 @@
                                     </svg>
                                 </button>
                                 <div x-show="open" x-transition.opacity.duration.200ms
-                                    class="absolute bottom-full mb-1 z-50 min-w-[160px] w-full bg-white dark:bg-[#1a1a1a] border border-gray-100 dark:border-white/10 rounded-xl shadow-lg py-1.5 max-h-56 overflow-y-auto custom-scrollbar"
+                                    class="absolute bottom-full mb-1 z-50 min-w-[160px] w-full bg-[#1a1a1a] border border-white/10 rounded-xl shadow-lg py-1.5 max-h-56 overflow-y-auto custom-scrollbar"
                                     style="display: none;">
                                     <template x-for="item in ['S', 'M', 'L', 'XL', '2XL', '3XL']">
                                         <div @click="selected = item; open = false"
-                                            class="px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5 cursor-pointer transition-colors"
+                                            class="px-4 py-3 text-sm text-gray-300 hover:bg-white/5 cursor-pointer transition-colors"
                                             :class="{
-                                                'bg-blue-50/80 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 font-normal': selected ===
-                                                    item
+                                                'bg-blue-500/10 text-blue-400 font-normal': selected === item
                                             }">
                                             <span x-text="item"></span>
                                         </div>
@@ -487,10 +470,8 @@
                     </div>
 
                     {{-- 4. ส่วนที่แก้ไขไม่ได้ (Email) --}}
-                    <div
-                        class="p-3 sm:p-4 bg-gray-50 dark:bg-white/5 rounded-xl border border-dashed border-gray-200 dark:border-white/10 mt-4">
-                        <label
-                            class="text-[10px] sm:text-xs font-normal text-gray-400 flex items-center gap-1.5 mb-1">
+                    <div class="p-3 sm:p-4 bg-white/5 rounded-xl border border-dashed border-white/10 mt-4">
+                        <label class="text-[10px] sm:text-xs font-normal text-gray-500 flex items-center gap-1.5 mb-1">
                             <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd"
                                     d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"
@@ -508,15 +489,14 @@
                 </div>
 
                 {{-- Sticky Footer Buttons --}}
-                <div
-                    class="p-5 sm:p-6 md:p-8 pt-4 border-t border-gray-100 dark:border-white/5 bg-white dark:bg-[#121212] shrink-0 z-10">
+                <div class="p-5 sm:p-6 md:p-8 pt-4 border-t border-white/5 bg-[#121212] shrink-0 z-10">
                     <div class="flex flex-col sm:flex-row items-center gap-3">
                         <button type="submit"
-                            class="w-full sm:w-auto flex-1 px-6 py-3.5 sm:py-3 bg-gray-900 dark:bg-white dark:text-black text-white text-sm font-normal rounded-xl hover:bg-blue-600 dark:hover:bg-blue-500 transition-all shadow-sm order-1 sm:order-none focus:ring-2 focus:ring-blue-500/50 outline-none">
+                            class="w-full sm:w-auto flex-1 px-6 py-3.5 sm:py-3 bg-white text-black text-sm font-normal rounded-xl hover:bg-gray-200 transition-all shadow-sm order-1 sm:order-none focus:ring-2 focus:ring-gray-400 outline-none">
                             บันทึกการเปลี่ยนแปลง
                         </button>
                         <button type="button" @click="$dispatch('close-modal', 'profile-edit-modal')"
-                            class="w-full sm:w-auto px-6 py-3.5 sm:py-3 bg-gray-100 dark:bg-white/5 text-gray-700 dark:text-gray-300 text-sm font-normal rounded-xl hover:bg-gray-200 dark:hover:bg-white/10 transition-all order-2 sm:order-none">
+                            class="w-full sm:w-auto px-6 py-3.5 sm:py-3 bg-white/5 text-gray-300 text-sm font-normal rounded-xl hover:bg-white/10 transition-all order-2 sm:order-none">
                             ยกเลิก
                         </button>
                     </div>
@@ -526,17 +506,17 @@
         </div>
     </x-modal>
 
-    {{-- 🚀 FIX: เติม addslashes() ป้องกัน JS ช็อก --}}
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const ToastConfig = {
-                background: '#ffffff',
-                confirmButtonColor: '#2563eb',
+                background: '#1a1a1a', // ปรับเป็นสีเข้ม
+                color: '#ffffff', // ให้ตัวหนังสือหลักเป็นสีขาว
+                confirmButtonColor: '#3b82f6',
                 customClass: {
-                    popup: 'rounded-2xl p-4 shadow-sm border border-gray-100',
-                    title: 'text-xl font-normal text-gray-800',
-                    htmlContainer: 'text-left',
+                    popup: 'rounded-2xl p-4 shadow-sm border border-white/10',
+                    title: 'text-xl font-normal text-white',
+                    htmlContainer: 'text-left text-gray-300',
                     confirmButton: 'rounded-lg px-8 py-2.5 font-normal text-sm transition-all hover:brightness-110'
                 },
                 buttonsStyling: true
@@ -573,9 +553,9 @@
                 let errorHtml = `
             <div class="mt-4 space-y-3">
                 @foreach ($errors->all() as $error)
-                    <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border-l-4 border-amber-500">
+                    <div class="flex items-center gap-3 p-3 bg-amber-500/10 rounded-lg border-l-4 border-amber-500">
                         <i class="fas fa-info-circle text-amber-500 text-xs"></i>
-                        <span class="text-xs text-gray-700 font-normal leading-tight">{!! addslashes($error) !!}</span>
+                        <span class="text-xs text-gray-300 font-normal leading-tight">{!! addslashes($error) !!}</span>
                     </div>
                 @endforeach
             </div>
@@ -600,23 +580,23 @@
             
             deleteButtons.forEach(button => {
                 button.addEventListener('click', function(e) {
-                    e.preventDefault(); // หยุดการส่งฟอร์มทันที
-                    const form = this.closest('form'); // หาฟอร์มที่ปุ่มนี้อยู่
+                    e.preventDefault(); 
+                    const form = this.closest('form'); 
                     
                     Swal.fire({
                         ...ToastConfig,
                         title: 'ยืนยันการลบคำขอ?',
                         text: "หากยกเลิกและลบไปแล้ว จะไม่สามารถกู้คืนกลับมาได้",
                         icon: 'warning',
-                        iconColor: '#ef4444', // สีแดงเตือนภัย
+                        iconColor: '#ef4444', 
                         showCancelButton: true,
                         confirmButtonColor: '#ef4444',
-                        cancelButtonColor: '#9ca3af', // สีเทาสำหรับปุ่มยกเลิก
+                        cancelButtonColor: '#4b5563', // สีเทาเข้ม
                         confirmButtonText: '<i class="fas fa-trash-alt mr-1.5"></i> ใช่, ยืนยันการลบ',
                         cancelButtonText: 'ยกเลิก'
                     }).then((result) => {
                         if (result.isConfirmed) {
-                            form.submit(); // ถ้ายืนยัน ให้ฟอร์มทำงานต่อ
+                            form.submit(); 
                         }
                     });
                 });

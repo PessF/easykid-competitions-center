@@ -13,7 +13,7 @@
 
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
-    <body class="font-sans antialiased bg-[#f8f9fa] dark:bg-[#050505] text-gray-900 leading-relaxed transition-colors duration-300">
+    <body class="font-sans antialiased bg-[#0a0a0a] text-gray-200 leading-relaxed transition-colors duration-300">
         
         <div class="min-h-screen flex flex-col justify-center items-center p-6">
             
@@ -22,7 +22,7 @@
             </div>
 
             <footer class="mt-8 text-center">
-                <p class="text-[10px] text-gray-400 font-light uppercase tracking-[0.2em]">
+                <p class="text-[10px] text-gray-500 font-light uppercase tracking-[0.2em]">
                     &copy; {{ date('Y') }} EasyKids Robotics. All rights reserved.
                 </p>
             </footer>

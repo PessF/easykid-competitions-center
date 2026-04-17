@@ -8,8 +8,8 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\User;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\View\View;
-use Illuminate\Support\Facades\Storage; // 🚀 เพิ่มสำหรับจัดการไฟล์
-use Illuminate\Support\Facades\Log; // 🚀 เพิ่มสำหรับเก็บ Error Log
+use Illuminate\Support\Facades\Storage; 
+use Illuminate\Support\Facades\Log; 
 
 class ProfileController extends Controller
 {
@@ -35,7 +35,7 @@ class ProfileController extends Controller
             'prefix_en'     => ['required', 'string', 'max:255'],
             'first_name_en' => ['required', 'string', 'max:255'],
             'last_name_en'  => ['required', 'string', 'max:255'],
-            'birthday'      => ['required', 'date', 'before:today'],
+            'birthday'      => ['nullable', 'date', 'before:today'],
             'phone_number'  => ['required', 'string', 'min:10'],
             'shirt_size'    => ['nullable', 'string', 'max:10'],
             'avatar'        => ['nullable', 'image', 'mimes:jpg,jpeg,png', 'max:2048'], // 🚀 กฎอัปโหลดรูป

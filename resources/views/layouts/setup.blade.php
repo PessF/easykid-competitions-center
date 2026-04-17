@@ -16,14 +16,13 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
-<body
-    class="font-sans antialiased bg-[#f8f9fa] dark:bg-[#050505] text-gray-900 leading-relaxed transition-colors duration-300">
+<body class="font-sans antialiased bg-[#0a0a0a] text-gray-200 leading-relaxed transition-colors duration-300">
 
     <div class="min-h-screen flex flex-col items-center p-6 py-12">
 
         <div class="mb-8 animate-in fade-in slide-in-from-top duration-700">
             <img src="{{ asset('images/logo.png') }}"
-                class="h-16 w-auto" alt="EasyKids Robotics">
+                class="h-16 w-auto filter brightness-110" alt="EasyKids Robotics">
         </div>
 
         <div class="w-full sm:max-w-[850px] animate-in fade-in duration-1000">
@@ -31,7 +30,7 @@
         </div>
 
         <footer class="mt-12 text-center">
-            <p class="text-[10px] text-gray-400 font-light uppercase tracking-[0.2em]">
+            <p class="text-[10px] text-gray-500 font-light uppercase tracking-[0.2em]">
                 &copy; {{ date('Y') }} EasyKids Robotics. All rights reserved.
             </p>
         </footer>

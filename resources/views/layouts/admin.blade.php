@@ -37,22 +37,20 @@
     </style>
 </head>
 
-<body
-    class="font-sans antialiased bg-gray-50 dark:bg-[#0a0a0a] text-gray-900 leading-relaxed transition-colors duration-300"
-    x-data="{ mobileSidebarOpen: false }">
+<body class="font-sans antialiased bg-[#0a0a0a] text-gray-200 leading-relaxed transition-colors duration-300" x-data="{ mobileSidebarOpen: false }">
 
     <div class="flex h-screen overflow-hidden">
 
         {{-- 1. Backdrop สำหรับมือถือ (คลิกส่วนมืดแล้วปิด Sidebar) --}}
         <div x-show="mobileSidebarOpen" @click="mobileSidebarOpen = false"
-            class="fixed inset-0 z-40 bg-black/50 lg:hidden transition-opacity duration-300"
+            class="fixed inset-0 z-40 bg-black/70 lg:hidden transition-opacity duration-300"
             x-transition:enter="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="opacity-100"
             x-transition:leave-end="opacity-0" style="display: none;">
         </div>
 
         {{-- 2. Sidebar --}}
         <aside :class="mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'"
-            class="fixed inset-y-0 left-0 z-50 w-64 flex-shrink-0 bg-white dark:bg-[#0f0f0f] border-r border-gray-100 dark:border-white/5 transition-transform duration-300 transform -translate-x-full lg:static lg:translate-x-0 overflow-y-auto">
+            class="fixed inset-y-0 left-0 z-50 w-64 flex-shrink-0 bg-[#0f0f0f] border-r border-white/5 transition-transform duration-300 transform -translate-x-full lg:static lg:translate-x-0 overflow-y-auto">
 
             @php
                 $pendingPaymentsCount = \App\Models\Registration::where('status', 'waiting_verify')->count();
@@ -61,10 +59,10 @@
             @endphp
 
             <div class="flex items-center justify-between px-6 py-8">
-                <span class="text-xl font-semibold tracking-tighter text-black dark:text-white uppercase">
-                    {{ $userRole === 'admin' ? 'Admin' : 'Staff' }}<span class="text-gray-400 pl-2">Panel</span>
+                <span class="text-xl font-semibold tracking-tighter text-white uppercase">
+                    {{ $userRole === 'admin' ? 'Admin' : 'Staff' }}<span class="text-gray-500 pl-2">Panel</span>
                 </span>
-                <button @click="mobileSidebarOpen = false" class="lg:hidden text-gray-400 hover:text-gray-600">
+                <button @click="mobileSidebarOpen = false" class="lg:hidden text-gray-500 hover:text-white">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M6 18L18 6M6 6l12 12" />
@@ -78,7 +76,7 @@
                 {{-- =================================== --}}
                 {{-- 1. DASHBOARD (เห็นทั้ง Admin และ Staff) --}}
                 {{-- =================================== --}}
-                <div class="px-4 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">Main</div>
+                <div class="px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">Main</div>
                 <x-admin-nav-link :href="route('admin.dashboard')" :active="request()->routeIs('admin.dashboard')">
                     <i class="fas fa-chart-pie w-5 h-5 mr-3 flex items-center justify-center"></i>
                     {{ __('Dashboard') }}
@@ -87,7 +85,7 @@
                 {{-- =================================== --}}
                 {{-- 2. OPERATION --}}
                 {{-- =================================== --}}
-                <div class="px-4 pt-6 pb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">Operation</div>
+                <div class="px-4 pt-6 pb-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">Operation</div>
 
                 {{-- 🚀 เฉพาะ Admin ที่จัดการงานแข่งขันได้ --}}
                 @if($userRole === 'admin')
@@ -126,22 +124,18 @@
                     {{-- =================================== --}}
                     {{-- 3. MASTER DATA --}}
                     {{-- =================================== --}}
-                    <div class="px-4 pt-6 pb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">Master Data</div>
+                    <div class="px-4 pt-6 pb-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">Master Data</div>
 
                     <x-admin-nav-link :href="route('admin.category-settings')" :active="request()->routeIs('admin.category-settings')">
                         <i class="fas fa-tags w-5 h-5 mr-3 flex items-center justify-center"></i>
                         {{ __('ตั้งค่าหมวดหมู่') }}
                     </x-admin-nav-link>
 
-                    <x-admin-nav-link :href="route('admin.robot-models.index')" :active="request()->routeIs('admin.robot-models.index')">
-                        <i class="fas fa-robot w-5 h-5 mr-3 flex items-center justify-center"></i>
-                        {{ __('คลังแม่แบบหุ่นยนต์') }}
-                    </x-admin-nav-link>
 
                     {{-- =================================== --}}
                     {{-- 4. SYSTEM --}}
                     {{-- =================================== --}}
-                    <div class="px-4 pt-6 pb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">System</div>
+                    <div class="px-4 pt-6 pb-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">System</div>
 
                     <x-admin-nav-link :href="route('admin.users.index')" :active="request()->routeIs('admin.users.*')">
                         <i class="fas fa-user-cog w-5 h-5 mr-3 flex items-center justify-center"></i>
@@ -154,9 +148,9 @@
         {{-- 3. Main Content Area --}}
         <div class="flex-1 flex flex-col overflow-hidden w-full transition-all duration-300">
             <header
-                class="flex items-center justify-between px-4 lg:px-8 py-4 bg-white dark:bg-[#0f0f0f] border-b border-gray-100 dark:border-white/5">
+                class="flex items-center justify-between px-4 lg:px-8 py-4 bg-[#0f0f0f] border-b border-white/5">
                 <div class="flex items-center">
-                    <button @click="mobileSidebarOpen = true" class="mr-4 text-gray-500 lg:hidden focus:outline-none">
+                    <button @click="mobileSidebarOpen = true" class="mr-4 text-gray-500 lg:hidden hover:text-white focus:outline-none">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M4 6h16M4 12h16M4 18h16" />
@@ -164,7 +158,7 @@
                     </button>
 
                     <div class="flex items-center">
-                        <div class="h-1.5 w-1.5 rounded-full bg-green-500 mr-2 animate-pulse"></div>
+                        <div class="h-1.5 w-1.5 rounded-full bg-emerald-500 mr-2 animate-pulse"></div>
                         <span class="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">System
                             Active</span>
                     </div>
@@ -172,10 +166,10 @@
 
                 <div class="flex items-center space-x-4 lg:space-x-6">
                     <div
-                        class="hidden sm:flex flex-col items-end leading-none border-r border-gray-100 dark:border-white/10 pr-6 font-medium">
-                        <span class="text-sm font-bold dark:text-white">{{ Auth::user()->name ?? 'User' }}</span>
+                        class="hidden sm:flex flex-col items-end leading-none border-r border-white/10 pr-6 font-medium">
+                        <span class="text-sm font-bold text-white">{{ Auth::user()->name ?? 'User' }}</span>
                         {{-- 🚀 แสดงตำแหน่งอิงตามสิทธิ์ผู้ใช้งาน --}}
-                        <span class="text-[12px] text-gray-400 uppercase tracking-tighter mt-1">
+                        <span class="text-[12px] text-gray-500 uppercase tracking-tighter mt-1">
                             {{ $userRole === 'admin' ? 'Administrator' : 'Staff' }}
                         </span>
                     </div>
@@ -183,11 +177,11 @@
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
                         <button type="submit"
-                            class="group flex items-center text-gray-400 hover:text-red-500 transition-colors duration-300">
+                            class="group flex items-center text-gray-400 hover:text-red-400 transition-colors duration-300">
                             <span
                                 class="hidden xs:inline text-xs font-bold uppercase tracking-widest mr-2">Logout</span>
                             <div
-                                class="p-2 rounded-lg bg-gray-50 dark:bg-white/5 group-hover:bg-red-50 dark:group-hover:bg-red-500/10 transition-colors duration-300">
+                                class="p-2 rounded-lg bg-white/5 group-hover:bg-red-500/10 transition-colors duration-300">
                                 <i
                                     class="fas fa-sign-out-alt w-4 h-4 transform group-hover:translate-x-1 transition-transform duration-300 flex items-center justify-center"></i>
                             </div>
@@ -196,7 +190,7 @@
                 </div>
             </header>
 
-            <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 dark:bg-[#0a0a0a] p-4 lg:p-8">
+            <main class="flex-1 overflow-x-hidden overflow-y-auto bg-[#0a0a0a] p-4 lg:p-8">
                 {{ $slot }}
             </main>
         </div>
@@ -208,13 +202,12 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // เช็คว่า User ใช้ Dark Mode อยู่หรือไม่
-            const isDark = document.documentElement.classList.contains('dark');
+            // บังคับโทนสีดำสำหรับ SweetAlert
             const swalConfig = {
-                background: isDark ? '#1a1a1a' : '#ffffff',
-                color: isDark ? '#ffffff' : '#111827',
+                background: '#1a1a1a',
+                color: '#ffffff',
                 customClass: {
-                    popup: 'rounded-2xl border border-gray-100 dark:border-gray-800 shadow-xl font-kanit',
+                    popup: 'rounded-2xl border border-white/10 shadow-xl font-kanit',
                     confirmButton: 'rounded-xl px-6 py-2.5 font-semibold tracking-wide',
                     cancelButton: 'rounded-xl px-6 py-2.5 font-semibold tracking-wide'
                 }
@@ -227,7 +220,7 @@
                     icon: 'success',
                     title: 'สำเร็จ!',
                     text: "{{ session('success') }}",
-                    confirmButtonColor: '#2563eb', // blue-600
+                    confirmButtonColor: '#3b82f6', // blue-500
                     timer: 2000,
                     showConfirmButton: false
                 });
@@ -247,7 +240,7 @@
 
             // 3. ตรวจจับ Validation Errors
             @if ($errors->any())
-                let errorHtml = '<ul class="text-sm text-red-500 text-left list-disc list-inside mt-3 space-y-1">';
+                let errorHtml = '<ul class="text-sm text-red-400 text-left list-disc list-inside mt-3 space-y-1">';
                 @foreach ($errors->all() as $error)
                     errorHtml += '<li>{{ $error }}</li>';
                 @endforeach
@@ -257,7 +250,7 @@
                     ...swalConfig,
                     icon: 'warning',
                     title: 'ข้อมูลไม่ถูกต้อง ⚠️',
-                    html: '<p class="text-gray-600 dark:text-gray-400 text-sm mb-2 text-left">กรุณาตรวจสอบข้อมูลด้านล่างให้ถูกต้อง:</p>' +
+                    html: '<p class="text-gray-400 text-sm mb-2 text-left">กรุณาตรวจสอบข้อมูลด้านล่างให้ถูกต้อง:</p>' +
                         errorHtml,
                     confirmButtonColor: '#f59e0b', // amber-500
                     confirmButtonText: 'แก้ไขข้อมูล'
@@ -267,23 +260,21 @@
 
         /**
          * 🚀 GLOBAL Helper: สำหรับลบข้อมูล (เรียกใช้ได้ทุกหน้า)
-         * ตัวอย่างการใช้: <button onclick="confirmDelete('url/to/delete', 'ชื่อรายการ')">ลบ</button>
          */
         window.confirmDelete = function(url, name) {
-            const isDark = document.documentElement.classList.contains('dark');
             Swal.fire({
                 title: 'ยืนยันการลบ?',
                 text: `คุณกำลังจะลบ "${name}" ข้อมูลจะไม่สามารถกู้คืนได้!`,
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#ef4444',
-                cancelButtonColor: '#6b7280',
+                cancelButtonColor: '#374151',
                 confirmButtonText: 'ยืนยันการลบ',
                 cancelButtonText: 'ยกเลิก',
-                background: isDark ? '#1a1a1a' : '#ffffff',
-                color: isDark ? '#ffffff' : '#111827',
+                background: '#1a1a1a',
+                color: '#ffffff',
                 customClass: {
-                    popup: 'rounded-2xl border border-gray-100 dark:border-gray-800 shadow-xl font-kanit',
+                    popup: 'rounded-2xl border border-white/10 shadow-xl font-kanit',
                     confirmButton: 'rounded-xl px-6 py-2.5 font-semibold tracking-wide',
                     cancelButton: 'rounded-xl px-6 py-2.5 font-semibold tracking-wide'
                 }

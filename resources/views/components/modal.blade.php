@@ -20,10 +20,8 @@ $maxWidth = [
     x-data="{
         show: @js($show),
         focusables() {
-            // All focusable element types...
             let selector = 'a, button, input:not([type=\'hidden\']), textarea, select, details, [tabindex]:not([tabindex=\'-1\'])'
             return [...$el.querySelectorAll(selector)]
-                // All non-disabled elements...
                 .filter(el => ! el.hasAttribute('disabled'))
         },
         firstFocusable() { return this.focusables()[0] },
@@ -48,9 +46,11 @@ $maxWidth = [
     x-on:keydown.tab.prevent="$event.shiftKey || nextFocusable().focus()"
     x-on:keydown.shift.tab.prevent="prevFocusable().focus()"
     x-show="show"
-    class="fixed inset-0 overflow-y-auto px-4 py-6 sm:px-0 z-50"
-    style="display: {{ $show ? 'block' : 'none' }};"
+    {{-- 🚀 ลด padding บนมือถือให้เหลือน้อยที่สุด (p-2 หรือ p-3) เพื่อไม่ให้บีบพื้นที่ด้านใน --}}
+    class="fixed inset-0 overflow-y-auto p-2 sm:p-6 z-[100] flex items-center justify-center"
+    style="display: {{ $show ? 'flex' : 'none' }};"
 >
+    {{-- Background Overlay --}}
     <div
         x-show="show"
         class="fixed inset-0 transform transition-all"
@@ -62,18 +62,20 @@ $maxWidth = [
         x-transition:leave-start="opacity-100"
         x-transition:leave-end="opacity-0"
     >
-        <div class="absolute inset-0 bg-gray-500 dark:bg-gray-900 opacity-75"></div>
+        <div class="absolute inset-0 bg-black/80 backdrop-blur-sm"></div>
     </div>
 
+    {{-- Modal Content Box --}}
     <div
         x-show="show"
-        class="mb-6 bg-white dark:bg-gray-800 rounded-lg overflow-hidden shadow-xl transform transition-all sm:w-full {{ $maxWidth }} sm:mx-auto"
+        {{-- 🚀 พระเอกอยู่ตรงนี้: เพิ่ม `w-full` เพื่อบังคับให้มือถือกางกว้างสุด และแก้ไข shadow ให้ดาร์กขึ้น --}}
+        class="relative bg-[#121212] border border-white/10 rounded-2xl overflow-hidden shadow-2xl transform transition-all w-full {{ $maxWidth }} mx-auto z-10"
         x-transition:enter="ease-out duration-300"
-        x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+        x-transition:enter-start="opacity-0 translate-y-8 sm:translate-y-0 sm:scale-95"
         x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
         x-transition:leave="ease-in duration-200"
         x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
-        x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+        x-transition:leave-end="opacity-0 translate-y-8 sm:translate-y-0 sm:scale-95"
     >
         {{ $slot }}
     </div>

@@ -22,7 +22,6 @@ class CompetitionUserController extends Controller
     {
         $competitions = Competition::where('status', '!=', 'draft')
             ->with(['classes' => function($query) {
-                // 🚀 Optimize: โหลดเฉพาะคอลัมน์ที่จำเป็นสำหรับหน้า Index
                 $query->select('id', 'competition_id', 'name', 'entry_fee');
             }]) 
             ->withCount(['registrations' => function($query) {
@@ -40,10 +39,9 @@ class CompetitionUserController extends Controller
             ->where('status', '!=', 'draft') 
             ->findOrFail($id);
 
-        // 🚀 Optimize: โหลดเฉพาะชื่อทีมและสมาชิกที่จำเป็น
         $myTeams = auth()->user()->teams()
             ->select('id', 'user_id', 'name', 'school_name')
-            ->with(['members:id,team_id,first_name_th,last_name_th'])
+            ->with(['members:id,team_id,first_name_th,last_name_th,birth_date'])
             ->get();
 
         return view('user.show', compact('competition', 'myTeams'));
@@ -58,9 +56,11 @@ class CompetitionUserController extends Controller
         ]);
 
         $user = auth()->user();
-        $team = Team::select('id', 'user_id')->findOrFail($request->team_id);
+        // 🚀 โหลดความสัมพันธ์ members มาด้วยเพื่อใช้เช็คอายุ
+        $team = Team::with('members')->select('id', 'user_id')->findOrFail($request->team_id);
         
         $competition = Competition::findOrFail($compId);
+        $competitionClass = CompetitionClass::findOrFail($classId); 
         
         if ($competition->dynamic_status !== 'open') {
             return back()->with('error', 'ไม่อยู่ในช่วงเวลาที่เปิดรับสมัคร กรุณาตรวจสอบกำหนดการแข่งขันอีกครั้ง');
@@ -68,6 +68,40 @@ class CompetitionUserController extends Controller
 
         if ($team->user_id !== $user->id) {
             abort(403, 'Unauthorized action.');
+        }
+
+        // 🚀 1. Backend Validation: ตรวจสอบจำนวนสมาชิกในทีม
+        $memberCount = $team->members->count();
+        if ($memberCount < $competitionClass->min_members || $memberCount > $competitionClass->max_members) {
+            return back()->with('error', 'จำนวนสมาชิกในทีมไม่ตรงตามเงื่อนไขของรุ่นการแข่งขัน');
+        }
+
+        // 🚀 2. Backend Validation: ตรวจสอบอายุสมาชิกทุกคนในทีม (คำนวณเทียบกับ "วันแข่งขันจริง")
+        $categories = $competitionClass->allowed_categories ?? [];
+        if (!empty($categories)) {
+            $minAge = collect($categories)->min('min_age');
+            $maxAge = collect($categories)->max('max_age');
+            
+            // ใช้วันแข่งขันเป็นเกณฑ์ ถ้าไม่มีให้ใช้วันนี้
+            $baseDate = $competition->event_start_date ? Carbon::parse($competition->event_start_date) : now();
+            
+            foreach ($team->members as $member) {
+                if (empty($member->birth_date)) {
+                    return back()->with('error', 'ไม่สามารถสมัครได้: มีสมาชิกในทีมบางคนยังไม่ได้ระบุวัน/เดือน/ปีเกิด');
+                }
+                
+                // คำนวณอายุ ณ วันที่จัดการแข่งขัน (Event Date)
+                $birthDate = Carbon::parse($member->birth_date);
+                
+                // 🚀 ใช้ diffInYears แบบระบุพารามิเตอร์ที่สองเป็น false เพื่อความแม่นยำสูง ไม่ปัดเศษ
+                $ageAtEvent = $birthDate->diffInYears($baseDate, false);
+                $finalAge = floor($ageAtEvent);
+                
+                if ($finalAge < $minAge || $finalAge > $maxAge) {
+                    $eventName = $competition->event_start_date ? 'วันแข่งขัน (' . $baseDate->translatedFormat('d M Y') . ')' : 'วันนี้';
+                    return back()->with('error', "ไม่สามารถสมัครได้: มีสมาชิกในทีมอายุไม่เข้าเกณฑ์ที่กำหนด ({$minAge} - {$maxAge} ปี) ปัจจุบันอายุ {$finalAge} ปี ณ {$eventName}");
+                }
+            }
         }
 
         // 🚀 ลอจิกป้องกันการสมัครซ้ำ (เช็คจาก Status ที่กำลัง Active อยู่)
@@ -223,14 +257,14 @@ class CompetitionUserController extends Controller
             try {
                 Mail::to(auth()->user()->email)->send(new RegistrationSubmittedMail($transaction));
             } catch (\Exception $e) {
-                Log::error('ไม่สามารถส่งอีเมลยืนยันการชำระเงินได้: ' . $e->getMessage());
+                Log::error('ไม่สามารถส่งอีเมลยืนยันการชำระเงินได้');
             }
 
             return back()->with('success', "ส่งหลักฐานการชำระเงินเรียบร้อยแล้ว! รหัสบิล: {$txNo}");
 
         } catch (\Exception $e) {
             Log::error("Payment Group Upload Error: " . $e->getMessage());
-            return back()->with('error', 'เกิดข้อผิดพลาดในการอัปโหลดไฟล์: ' . $e->getMessage());
+            return back()->with('error', 'เกิดข้อผิดพลาดในการอัปโหลดไฟล์');
         }
     }
 

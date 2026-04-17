@@ -38,9 +38,9 @@ class ProfileSetupController extends Controller
             'prefix_en' => ['required', 'string', 'max:255'],
             'first_name_en' => ['required', 'string', 'max:255'],
             'last_name_en' => ['required', 'string', 'max:255'],
-            'birthday' => ['required', 'date', 'before:today'],
+            'birthday' => ['nullable', 'date', 'before:today'], 
             'phone_number' => ['required', 'string', 'min:10'],
-            'avatar' => ['nullable', 'image', 'mimes:jpg,jpeg,png', 'max:2048'], // ลิมิต 2MB
+            'avatar' => ['nullable', 'image', 'mimes:jpg,jpeg,png', 'max:2048'],
             'shirt_size' => ['nullable', 'string', 'max:10'],
         ];
 
@@ -86,7 +86,7 @@ class ProfileSetupController extends Controller
         $user->prefix_en = $validated['prefix_en'];
         $user->first_name_en = $validated['first_name_en'];
         $user->last_name_en = $validated['last_name_en'];
-        $user->birthday = $validated['birthday'];
+        $user->birthday = $validated['birthday'] ?? null; 
         $user->phone_number = $validated['phone_number'];
         $user->shirt_size = $validated['shirt_size'] ?? null;
         $user->has_setup_profile = true;
