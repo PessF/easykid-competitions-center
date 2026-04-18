@@ -98,6 +98,7 @@ class AdminPaymentController extends Controller
                     Log::error('Mail Error (Approve): ' . $e->getMessage());
                 }
 
+                // ซิงค์ข้อมูลลง Google Sheet หลังจาก Approve สำเร็จ
                 $this->syncToGoogleSheet($transaction);
 
                 return redirect()->back()->with('success', "อนุมัติบิล {$txNo} เรียบร้อยแล้ว");
@@ -143,21 +144,28 @@ class AdminPaymentController extends Controller
         foreach ($transaction->registrations as $registration) {
             try {
                 $fileName = $transaction->competition->name; 
-                $tabName = $registration->competitionClass->name;
+                
+                // 1. 🚀 โลจิก Sanitize ชื่อแท็บ (ห้ามมีอักขระพิเศษ และห้ามยาวเกิน 31 ตัว)
+                $rawTabName = $registration->competitionClass->name;
+                $cleanTabName = str_replace(['/', '*', ':', '?', '[', ']'], '-', $rawTabName);
+                $tabName = mb_substr($cleanTabName, 0, 31);
+                
                 $adminEmail = 'info@easykidsrobotics.com';
                 
-                $maxMembers = $registration->competitionClass->max_members ?? 2;
-$maxMembers = $registration->competitionClass->max_members ??
+                // ดึงค่า Max Members เพื่อใช้ล็อกจำนวนคอลัมน์
+                $maxMembers = (int) ($registration->competitionClass->max_members ?? 2);
+                
+                // 2. 🚀 สร้าง Headers แบบ Fixed Schema ตาม Max Members
                 $headers = [
                     'ประทับเวลา', 'อีเมลผู้ส่งสมัคร', 'รุ่นการแข่งขัน', 'ชื่อทีม (Team Name)', 'โรงเรียน / สถาบัน'
                 ];
 
                 for ($i = 1; $i <= $maxMembers; $i++) {
-                    $headers[] = "คำนำหน้าชื่อ - ผู้เข้าแข่งขันคนที่ $i";
-                    $headers[] = "ชื่อ–นามสกุล ผู้เข้าแข่งขันคนที่ $i (ภาษาไทย)";
-                    $headers[] = "ชื่อ–นามสกุล ผู้เข้าแข่งขันคนที่ $i (ภาษาอังกฤษ)";
-                    $headers[] = "ไซส์เสื้อคนที่ $i";
-                    $headers[] = "วัน/เดือน/ปีเกิดคนแข่ง $i";
+                    $headers[] = "คำนำหน้า (คนที่ $i)";
+                    $headers[] = "ชื่อ-นามสกุล (คนที่ $i) [TH]";
+                    $headers[] = "ชื่อ-นามสกุล (คนที่ $i) [EN]";
+                    $headers[] = "ไซส์เสื้อ (คนที่ $i)";
+                    $headers[] = "วัน/เดือน/ปีเกิด (คนที่ $i)";
                 }
 
                 $headers = array_merge($headers, [
@@ -166,18 +174,20 @@ $maxMembers = $registration->competitionClass->max_members ??
                     'เบอร์โทรศัพท์ (ผู้ส่งสมัคร)', 
                     'วัน/เดือน/ปีเกิด (ผู้ส่งสมัคร)', 
                     'ไซส์เสื้อ (ผู้ส่งสมัคร)',
-                    'หลักฐานการชำระเงิน (สลิปโอนเงิน)', 
-                    'สถานะ'
+                    'หลักฐานการชำระเงิน (ลิงก์สลิป)', 
+                    'สถานะการตรวจสอบ'
                 ]);
 
+                // 3. 🚀 เตรียมข้อมูลแถว (Row Data)
                 $rowData = [
                     Carbon::now('Asia/Bangkok')->format('d/m/Y H:i:s'), 
                     $registration->user->email ?? '-', 
-                    $tabName, 
+                    $rawTabName, 
                     $registration->team->name ?? '-', 
                     $registration->team->school_name ?? '-', 
                 ];
 
+                // วนลูปตามสมาชิก โดยอิงจากจำนวนสมาชิกสูงสุด (เพื่อไม่ให้คอลัมน์เลื่อน)
                 $members = $registration->team->members ?? collect();
                 for ($i = 0; $i < $maxMembers; $i++) {
                     $member = $members->get($i); 
@@ -185,34 +195,31 @@ $maxMembers = $registration->competitionClass->max_members ??
                     $rowData[] = $member ? (trim(($member->first_name_th ?? '') . ' ' . ($member->last_name_th ?? '')) ?: '-') : '-';
                     $rowData[] = $member ? (trim(($member->first_name_en ?? '') . ' ' . ($member->last_name_en ?? '')) ?: '-') : '-';
                     $rowData[] = $member ? ($member->shirt_size ?: '-') : '-';
-                    $rowData[] = ($member && $member->birth_date) ? Carbon::parse($member->birth_date)->format('d/m/Y') : '-';
+                    $rowData[] = ($member && !empty($member->birth_date)) ? Carbon::parse($member->birth_date)->format('d/m/Y') : '-';
                 }
 
+                // ข้อมูลผู้ส่งสมัคร (ใช้ Nullsafe ?-> และ ?? เพื่อความปลอดภัย)
                 $u = $transaction->user;
+                $rowData[] = $u ? ($u->first_name_th ?? $u->name ?? '-') : '-'; 
+                $rowData[] = $u?->last_name_th ?? '-'; 
+                $rowData[] = !empty($u?->phone_number) ? "'" . $u->phone_number : '-'; 
+                $rowData[] = !empty($u?->birthday) ? Carbon::parse($u->birthday)->format('d/m/Y') : '-'; 
+                $rowData[] = $u?->shirt_size ?? '-'; 
 
-                // ข้อมูลผู้ส่งสมัคร (ใส่ ' นำหน้าเบอร์โทรเพื่อกันเลข 0 หาย)
-                $rowData[] = $u ? trim(($u->prefix_th ?? '') . ' ' . ($u->first_name_th ?? $u->name ?? '-')) : '-'; 
-                $rowData[] = $u->last_name_th ?? '-'; 
-                $rowData[] = $u->phone_number ? "'" . $u->phone_number : '-'; 
-                $rowData[] = $u->birthday ? Carbon::parse($u->birthday)->format('d/m/Y') : '-'; 
-                $rowData[] = $u->shirt_size ?? '-'; 
+                // ลิงก์สลิป (เรียกผ่าน route เพื่อความปลอดภัย)
+                $rowData[] = route('admin.payments.slip', $transaction->id); 
+                $rowData[] = 'อนุมัติการสมัครเรียบร้อย';
 
-                try {
-                    $directDriveLink = Storage::disk('google_secure')->url($transaction->payment_slip_path);
-                } catch (\Exception $e) {
-                    $directDriveLink = '-'; 
-                }
-
-                $rowData[] = $directDriveLink; 
-                $rowData[] = 'อนุมัติการสมัคร';
-
+                // ยิงข้อมูลไปที่ Service
                 $sheetId = $sheetService->processAutomation($rowData, $headers, $fileName, $tabName, $folderId, $adminEmail);
 
+                // บันทึก Sheet ID ลง Competition (ถ้ายังไม่มี)
                 if (empty($transaction->competition->google_sheet_id)) {
                     $transaction->competition->update(['google_sheet_id' => $sheetId]);
                 }
                 
-                sleep(1); 
+                // หน่วงเวลาเล็กน้อยเพื่อเลี่ยง Rate Limit ของ Google API
+                usleep(500000); 
 
             } catch (\Exception $e) {
                 Log::error("Google Sheet Automation Error (Regis ID: {$registration->id}): " . $e->getMessage());
