@@ -40,6 +40,51 @@
                     setTimeout(() => { this.maps[mapId].invalidateSize(); }, 100);
                 }
             }, 500);
+        },
+        
+        // ==========================================
+        // ฟังก์ชันค้นหาสถานที่ (Nominatim OpenStreetMap)
+        // ==========================================
+        searchQueryAdd: '',
+        searchQueryEdit: '',
+        isSearching: false,
+        searchLocation(query, mapId, latInputId, lngInputId) {
+            if (!query) return;
+            this.isSearching = true;
+            
+            fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`)
+                .then(res => res.json())
+                .then(data => {
+                    this.isSearching = false;
+                    if (data && data.length > 0) {
+                        let lat = parseFloat(data[0].lat);
+                        let lng = parseFloat(data[0].lon);
+
+                        let latInput = document.getElementById(latInputId);
+                        let lngInput = document.getElementById(lngInputId);
+                        latInput.value = lat.toFixed(8);
+                        lngInput.value = lng.toFixed(8);
+                        latInput.dispatchEvent(new Event('change'));
+                        lngInput.dispatchEvent(new Event('change'));
+
+                        if (mapId === 'map-edit') {
+                            this.editComp.latitude = lat.toFixed(8);
+                            this.editComp.longitude = lng.toFixed(8);
+                        }
+
+                        if (this.maps[mapId]) {
+                            this.maps[mapId].setView([lat, lng], 15);
+                            this.markers[mapId].setLatLng([lat, lng]);
+                        }
+                    } else {
+                        alert('ไม่พบสถานที่ที่คุณค้นหา กรุณาลองใช้คำอื่นหรือระบุให้ชัดเจนขึ้นครับ');
+                    }
+                })
+                .catch(err => {
+                    this.isSearching = false;
+                    console.error('Error:', err);
+                    alert('เกิดข้อผิดพลาดในการค้นหาสถานที่');
+                });
         }
     }">
 
@@ -183,7 +228,7 @@
                             <div class="bg-[#0a0a0a] p-3 rounded-xl border border-white/5">
                                 <div class="flex items-center gap-1.5 mb-1 text-blue-400">
                                     <i class="far fa-calendar-plus text-xs"></i>
-                                    <span class="text-[10px] font-semibold uppercase tracking-wide">ช่วงรับสมัคร</span>
+                                    <span class="text-[10px] font-semibold uppercase tracking-wide">ช่วงเวลาเปิดรับสมัคร</span>
                                 </div>
                                 <div class="text-xs font-medium text-gray-300">
                                     @if ($comp->regis_start_date && $comp->regis_end_date)
@@ -198,7 +243,7 @@
                             <div class="bg-[#0a0a0a] p-3 rounded-xl border border-white/5">
                                 <div class="flex items-center gap-1.5 mb-1 text-purple-400">
                                     <i class="far fa-calendar-check text-xs"></i>
-                                    <span class="text-[10px] font-semibold uppercase tracking-wide">วันแข่งจริง</span>
+                                    <span class="text-[10px] font-semibold uppercase tracking-wide">วันแข่งขัน</span>
                                 </div>
                                 <div class="text-xs font-medium text-gray-300">
                                     @if ($comp->event_start_date && $comp->event_end_date)
@@ -215,7 +260,7 @@
                         <div class="flex items-center justify-between gap-3 pt-4 border-t border-white/5">
                             <a href="{{ route('admin.competitions.classes.index', $comp->id) }}"
                                 class="flex-1 flex items-center justify-center px-4 py-2.5 bg-white/5 hover:bg-blue-500/20 hover:text-blue-400 text-gray-300 rounded-xl text-sm font-normal transition-colors border border-transparent hover:border-blue-500/30">
-                                <i class="fas fa-list-ul mr-2"></i> จัดการคลาสแข่ง
+                                <i class="fas fa-list-ul mr-2"></i> รายการแข่งขัน/สมัคร
                             </a>
 
                             <div class="flex items-center gap-2">
@@ -231,7 +276,9 @@
                                         regis_end_date: '{{ $comp->regis_end_date ? \Carbon\Carbon::parse($comp->regis_end_date)->format('Y-m-d\TH:i') : '' }}',
                                         event_start_date: '{{ $comp->event_start_date ? \Carbon\Carbon::parse($comp->event_start_date)->format('Y-m-d') : '' }}',
                                         event_end_date: '{{ $comp->event_end_date ? \Carbon\Carbon::parse($comp->event_end_date)->format('Y-m-d') : '' }}'
-                                    }; $dispatch('open-modal', 'edit-competition'); initMap('map-edit', 'edit_lat', 'edit_lng', editComp.latitude, editComp.longitude)"
+                                    }; 
+                                    $dispatch('open-modal', 'edit-competition'); 
+                                    initMap('map-edit', 'edit_lat', 'edit_lng', editComp.latitude, editComp.longitude)"
                                     class="w-10 h-10 flex items-center justify-center text-blue-400 hover:bg-blue-500/10 rounded-xl transition-colors border border-transparent hover:border-blue-500/20" title="แก้ไข">
                                     <i class="fas fa-pen text-sm"></i>
                                 </button>
@@ -326,6 +373,20 @@
                                         <span>Lng: <span id="add_lng_display" class="font-mono text-blue-400">98.9853</span></span>
                                     </div>
                                 </div>
+                                
+                                <div class="mb-4 flex flex-col sm:flex-row gap-2">
+                                    <div class="relative flex-1 flex items-center">
+                                        <i class="fas fa-search absolute left-4 text-gray-500 text-xs sm:text-sm pointer-events-none"></i>
+                                        <input type="text" x-model="searchQueryAdd" @keydown.enter.prevent="searchLocation(searchQueryAdd, 'map-add', 'add_lat', 'add_lng')" placeholder="พิมพ์ชื่อสถานที่เพื่อค้นหา เช่น เชียงใหม่, ศูนย์สิริกิติ์..."
+                                            class="w-full pl-10 pr-4 py-2 sm:py-2.5 text-xs sm:text-sm border border-white/10 bg-[#121212] text-white rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all outline-none placeholder-gray-600">
+                                    </div>
+                                    <button type="button" @click="searchLocation(searchQueryAdd, 'map-add', 'add_lat', 'add_lng')"
+                                        class="px-4 py-2 sm:py-2.5 bg-[#1a1a1a] hover:bg-white/10 text-gray-300 text-xs sm:text-sm rounded-xl border border-white/10 transition-colors flex items-center justify-center shrink-0 disabled:opacity-50"
+                                        :disabled="isSearching">
+                                        <span x-show="!isSearching"><i class="fas fa-location-arrow mr-1.5"></i>ค้นหาสถานที่</span>
+                                        <span x-show="isSearching"><i class="fas fa-spinner fa-spin mr-1.5"></i>กำลังค้นหา...</span>
+                                    </button>
+                                </div>
                                 <div id="map-add" class="w-full h-64 rounded-xl border border-white/10 relative" style="z-index: 1; filter: brightness(0.9);"></div>
                                 <input type="hidden" name="latitude" id="add_lat" onchange="document.getElementById('add_lat_display').innerText = this.value">
                                 <input type="hidden" name="longitude" id="add_lng" onchange="document.getElementById('add_lng_display').innerText = this.value">
@@ -345,7 +406,7 @@
                                     class="w-full text-sm text-gray-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-[#1a1a1a] file:text-blue-400 hover:file:bg-white/10  file:border-white/10 transition-colors cursor-pointer">
                             </div>
 
-                            {{-- Registration Dates --}}
+                            {{-- Registration Dates (กลับเป็น Native HTML5) --}}
                             <div class="md:col-span-2 p-5 bg-[#1a1a1a] rounded-2xl grid grid-cols-1 md:grid-cols-2 gap-5 border border-white/5">
                                 <div class="md:col-span-2 flex items-center border-b border-white/5 pb-3">
                                     <i class="far fa-calendar-plus text-blue-500 mr-2 text-lg"></i>
@@ -363,7 +424,7 @@
                                 </div>
                             </div>
 
-                            {{-- Event Dates --}}
+                            {{-- Event Dates (กลับเป็น Native HTML5) --}}
                             <div class="md:col-span-2 p-5 bg-[#1a1a1a] rounded-2xl grid grid-cols-1 md:grid-cols-2 gap-5 border border-white/5">
                                 <div class="md:col-span-2 flex items-center border-b border-white/5 pb-3">
                                     <i class="far fa-calendar-check text-purple-500 mr-2 text-lg"></i>
@@ -457,6 +518,20 @@
                                         <span>Lng: <span id="edit_lng_display" class="font-mono text-yellow-500" x-text="editComp.longitude || '98.9853'"></span></span>
                                     </div>
                                 </div>
+
+                                <div class="mb-4 flex flex-col sm:flex-row gap-2">
+                                    <div class="relative flex-1 flex items-center">
+                                        <i class="fas fa-search absolute left-4 text-gray-500 text-xs sm:text-sm pointer-events-none"></i>
+                                        <input type="text" x-model="searchQueryEdit" @keydown.enter.prevent="searchLocation(searchQueryEdit, 'map-edit', 'edit_lat', 'edit_lng')" placeholder="พิมพ์ชื่อสถานที่เพื่อค้นหา เช่น เชียงใหม่, ศูนย์สิริกิติ์..."
+                                            class="w-full pl-10 pr-4 py-2 sm:py-2.5 text-xs sm:text-sm border border-white/10 bg-[#121212] text-white rounded-xl focus:ring-2 focus:ring-yellow-500/20 focus:border-yellow-500 transition-all outline-none placeholder-gray-600">
+                                    </div>
+                                    <button type="button" @click="searchLocation(searchQueryEdit, 'map-edit', 'edit_lat', 'edit_lng')"
+                                        class="px-4 py-2 sm:py-2.5 bg-[#1a1a1a] hover:bg-white/10 text-gray-300 text-xs sm:text-sm rounded-xl border border-white/10 transition-colors flex items-center justify-center shrink-0 disabled:opacity-50"
+                                        :disabled="isSearching">
+                                        <span x-show="!isSearching"><i class="fas fa-location-arrow mr-1.5"></i>ค้นหาสถานที่</span>
+                                        <span x-show="isSearching"><i class="fas fa-spinner fa-spin mr-1.5"></i>กำลังค้นหา...</span>
+                                    </button>
+                                </div>
                                 <div id="map-edit" class="w-full h-64 rounded-xl border border-white/10 relative" style="z-index: 1; filter: brightness(0.9);"></div>
                                 <input type="hidden" name="latitude" id="edit_lat" x-model="editComp.latitude" onchange="document.getElementById('edit_lat_display').innerText = this.value">
                                 <input type="hidden" name="longitude" id="edit_lng" x-model="editComp.longitude" onchange="document.getElementById('edit_lng_display').innerText = this.value">
@@ -476,7 +551,7 @@
                                 <input type="file" name="banner" accept="image/*" class="w-full text-sm text-gray-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-[#1a1a1a] file:text-yellow-500 hover:file:bg-white/10  file:border-white/10 transition-colors cursor-pointer">
                             </div>
 
-                            {{-- Registration Dates --}}
+                            {{-- Registration Dates (กลับเป็น Native HTML5) --}}
                             <div class="md:col-span-2 p-5 bg-[#1a1a1a] rounded-2xl grid grid-cols-1 md:grid-cols-2 gap-5 border border-white/5">
                                 <div class="md:col-span-2 flex items-center border-b border-white/5 pb-3">
                                     <i class="far fa-calendar-plus text-yellow-500 mr-2 text-lg"></i>
@@ -484,15 +559,17 @@
                                 </div>
                                 <div class="space-y-1.5">
                                     <label class="block text-xs font-semibold text-gray-400">วันเริ่มรับสมัคร</label>
-                                    <input type="datetime-local" name="regis_start_date" x-model="editComp.regis_start_date" class="w-full px-4 py-2.5 text-sm border-white/10 bg-[#0f0f0f] text-white rounded-xl focus:ring-2 focus:ring-yellow-500/20 outline-none [color-scheme:dark] cursor-pointer">
+                                    <input type="datetime-local" name="regis_start_date" x-model="editComp.regis_start_date" 
+                                        class="w-full px-4 py-2.5 text-sm border-white/10 bg-[#0f0f0f] text-white rounded-xl focus:ring-2 focus:ring-yellow-500/20 outline-none [color-scheme:dark] cursor-pointer">
                                 </div>
                                 <div class="space-y-1.5">
                                     <label class="block text-xs font-semibold text-gray-400">วันสิ้นสุดรับสมัคร</label>
-                                    <input type="datetime-local" name="regis_end_date" x-model="editComp.regis_end_date" class="w-full px-4 py-2.5 text-sm border-white/10 bg-[#0f0f0f] text-white rounded-xl focus:ring-2 focus:ring-yellow-500/20 outline-none [color-scheme:dark] cursor-pointer">
+                                    <input type="datetime-local" name="regis_end_date" x-model="editComp.regis_end_date" 
+                                        class="w-full px-4 py-2.5 text-sm border-white/10 bg-[#0f0f0f] text-white rounded-xl focus:ring-2 focus:ring-yellow-500/20 outline-none [color-scheme:dark] cursor-pointer">
                                 </div>
                             </div>
 
-                            {{-- Event Dates --}}
+                            {{-- Event Dates (กลับเป็น Native HTML5) --}}
                             <div class="md:col-span-2 p-5 bg-[#1a1a1a] rounded-2xl grid grid-cols-1 md:grid-cols-2 gap-5 border border-white/5">
                                 <div class="md:col-span-2 flex items-center border-b border-white/5 pb-3">
                                     <i class="far fa-calendar-check text-purple-500 mr-2 text-lg"></i>
@@ -500,11 +577,13 @@
                                 </div>
                                 <div class="space-y-1.5">
                                     <label class="block text-xs font-semibold text-gray-400">วันเริ่มงาน</label>
-                                    <input type="date" name="event_start_date" x-model="editComp.event_start_date" class="w-full px-4 py-2.5 text-sm border-white/10 bg-[#0f0f0f] text-white rounded-xl focus:ring-2 focus:ring-purple-500/20 outline-none [color-scheme:dark] cursor-pointer">
+                                    <input type="date" name="event_start_date" x-model="editComp.event_start_date" 
+                                        class="w-full px-4 py-2.5 text-sm border-white/10 bg-[#0f0f0f] text-white rounded-xl focus:ring-2 focus:ring-purple-500/20 outline-none [color-scheme:dark] cursor-pointer">
                                 </div>
                                 <div class="space-y-1.5">
                                     <label class="block text-xs font-semibold text-gray-400">วันจบงาน</label>
-                                    <input type="date" name="event_end_date" x-model="editComp.event_end_date" class="w-full px-4 py-2.5 text-sm border-white/10 bg-[#0f0f0f] text-white rounded-xl focus:ring-2 focus:ring-purple-500/20 outline-none [color-scheme:dark] cursor-pointer">
+                                    <input type="date" name="event_end_date" x-model="editComp.event_end_date" 
+                                        class="w-full px-4 py-2.5 text-sm border-white/10 bg-[#0f0f0f] text-white rounded-xl focus:ring-2 focus:ring-purple-500/20 outline-none [color-scheme:dark] cursor-pointer">
                                 </div>
                             </div>
                         </div>

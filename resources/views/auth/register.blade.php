@@ -15,26 +15,26 @@
 
         <div class="bg-[#121212] p-8 sm:p-10 rounded-2xl shadow-2xl border border-white/5">
             
-            <h2 class="text-xl font-medium text-center text-white mb-8 tracking-tight">สร้างบัญชีใหม่</h2>
+            <h2 class="text-xl font-medium text-center text-white mb-8 tracking-tight">ลงทะเบียนบัญชีผู้ใช้งานใหม่</h2>
 
             <form method="POST" action="{{ route('register') }}" class="space-y-4">
                 @csrf
 
                 <div>
-                    <input id="name" type="text" name="name" :value="old('name')" placeholder="ชื่อ" required autofocus autocomplete="name"
+                    <input id="name" type="text" name="name" :value="old('name')" placeholder="ชื่อ-นามสกุล" required autofocus autocomplete="name"
                         class="w-full px-5 py-3.5 rounded-xl border border-white/10 bg-[#0a0a0a] text-base font-light focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all text-white placeholder-gray-600">
                     <x-input-error :messages="$errors->get('name')" class="mt-1 ml-1 text-xs" />
                 </div>
 
                 <div>
-                    <input id="email" type="email" name="email" :value="old('email')" placeholder="อีเมล" required autocomplete="username"
+                    <input id="email" type="email" name="email" :value="old('email')" placeholder="ที่อยู่อีเมล" required autocomplete="username"
                         class="w-full px-5 py-3.5 rounded-xl border border-white/10 bg-[#0a0a0a] text-base font-light focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all text-white placeholder-gray-600">
                     <x-input-error :messages="$errors->get('email')" class="mt-1 ml-1 text-xs" />
                 </div>
 
                 <div class="space-y-2">
                     <div class="relative" x-data="{ show: false }">
-                        <input id="password" :type="show ? 'text' : 'password'" name="password" placeholder="รหัสผ่าน" required autocomplete="new-password"
+                        <input id="password" :type="show ? 'text' : 'password'" name="password" placeholder="กำหนดรหัสผ่าน" required autocomplete="new-password"
                             class="w-full px-5 py-3.5 rounded-xl border border-white/10 bg-[#0a0a0a] text-base font-light focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all text-white placeholder-gray-600">
                         
                         <button type="button" @click="show = !show" class="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-500 hover:text-white transition-colors">
@@ -58,7 +58,7 @@
                 </div>
 
                 <div class="relative" x-data="{ showConfirm: false }">
-                    <input id="password_confirmation" :type="showConfirm ? 'text' : 'password'" name="password_confirmation" placeholder="ยืนยันรหัสผ่าน" required autocomplete="new-password"
+                    <input id="password_confirmation" :type="showConfirm ? 'text' : 'password'" name="password_confirmation" placeholder="ยืนยันรหัสผ่านอีกครั้ง" required autocomplete="new-password"
                         class="w-full px-5 py-3.5 rounded-xl border border-white/10 bg-[#0a0a0a] text-base font-light focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all text-white placeholder-gray-600">
                     
                     <button type="button" @click="showConfirm = !showConfirm" class="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-500 hover:text-white transition-colors">
@@ -74,7 +74,7 @@
                 </div>
 
                 <button class="w-full bg-white text-black py-3.5 rounded-xl font-medium text-base tracking-wide transition-all hover:bg-gray-200 active:scale-[0.99] shadow-lg mt-2">
-                    สมัครสมาชิก
+                    ยืนยันการลงทะเบียน
                 </button>
             </form>
 
@@ -89,7 +89,7 @@
 
             <div class="text-center">
                 <p class="text-sm text-gray-500 font-medium">
-                    มีบัญชีอยู่แล้ว? 
+                    มีบัญชีผู้ใช้งานแล้วใช่หรือไม่? 
                     <a href="{{ route('login') }}" class="text-white font-medium hover:underline underline-offset-4 decoration-2 ml-1 transition-all">เข้าสู่ระบบ</a>
                 </p>
             </div>

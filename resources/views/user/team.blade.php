@@ -8,10 +8,10 @@
                 <div class="flex items-center gap-2 sm:gap-2.5 mb-1">
                     <div class="w-1 sm:w-1.5 h-6 sm:h-8 bg-blue-500 rounded-full"></div>
                     <h1 class="text-xl sm:text-3xl font-normal text-white tracking-tight">
-                        จัดการทีมของฉัน</h1>
+                        การจัดการข้อมูลทีม</h1>
                 </div>
                 <p class="text-xs sm:text-base font-normal text-gray-400 ml-3 sm:ml-4 pl-2 mt-0.5 sm:mt-1">
-                    สร้างและจัดการรายชื่อสมาชิกในทีมให้พร้อมสำหรับการแข่งขัน
+                    สร้างและบริหารจัดการข้อมูลทีมและรายชื่อสมาชิกเพื่อเตรียมความพร้อมสำหรับการแข่งขัน
                 </p>
             </div>
             <button @click="openCreateModal()"
@@ -35,9 +35,9 @@
             {{-- Table Header --}}
             <div class="hidden md:grid grid-cols-12 gap-4 px-6 py-4 bg-[#0a0a0a] border-b border-white/5 text-xs font-normal text-gray-400 uppercase tracking-wider">
                 <div class="col-span-4 lg:col-span-3">ข้อมูลทีม</div>
-                <div class="col-span-3 lg:col-span-4">โรงเรียน/สถาบัน</div>
-                <div class="col-span-3 pl-2">สมาชิกในทีม</div>
-                <div class="col-span-2 text-right pr-2">จัดการ</div>
+                <div class="col-span-3 lg:col-span-4">สถาบันการศึกษา</div>
+                <div class="col-span-3 pl-2">จำนวนสมาชิก</div>
+                <div class="col-span-2 text-right pr-2">การจัดการ</div>
             </div>
 
             {{-- Table Body --}}
@@ -77,7 +77,7 @@
                         {{-- 3. จำนวนสมาชิก --}}
                         <div class="hidden md:flex md:col-span-3 items-center gap-2 sm:gap-3">
                             <span class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-[#1a1a1a] border border-white/10 text-gray-300 text-xs font-normal rounded-lg shrink-0">
-                                <i class="fas fa-users text-blue-500"></i> {{ $team->members_count }} คน
+                                <i class="fas fa-users text-blue-500"></i> {{ $team->members_count }} ท่าน
                             </span>
                             
                             <div class="flex -space-x-2 shrink-0">
@@ -106,7 +106,7 @@
                                     @click="Swal.fire({
                                         icon: 'warning',
                                         title: 'ไม่สามารถแก้ไขข้อมูลได้',
-                                        text: 'เนื่องจากทีมนี้มีการลงทะเบียนสมัครแข่งขันอยู่ในระบบแล้ว เพื่อความถูกต้องของข้อมูลผู้เข้าแข่งขัน หากต้องการแก้ไขโปรดติดต่อเจ้าหน้าที่ครับ',
+                                        text: 'เนื่องจากทีมนี้ได้ดำเนินการลงทะเบียนเข้าร่วมการแข่งขันแล้ว เพื่อรักษาความถูกต้องของข้อมูล หากท่านต้องการแก้ไขโปรดติดต่อผู้ดูแลระบบ',
                                         confirmButtonColor: '#3b82f6',
                                         confirmButtonText: 'รับทราบ',
                                         background: '#1e1e1e',
@@ -120,8 +120,8 @@
                                 <button type="button" 
                                     @click="Swal.fire({
                                         icon: 'error',
-                                        title: 'ไม่สามารถลบทีมได้',
-                                        text: 'ขออภัยครับ ทีมนี้กำลังอยู่ระหว่างการดำเนินการแข่งขันหรือรอตรวจสอบ ไม่สามารถลบออกจากระบบได้ในขณะนี้',
+                                        title: 'ไม่สามารถลบข้อมูลทีมได้',
+                                        text: 'ขออภัย ข้อมูลทีมนี้อยู่ในระหว่างการดำเนินการหรือรอการตรวจสอบ จึงไม่สามารถลบออกจากระบบได้ในขณะนี้',
                                         confirmButtonColor: '#ef4444',
                                         confirmButtonText: 'ตกลง',
                                         background: '#1e1e1e',
@@ -139,7 +139,7 @@
                                 </button>
 
                                 <form action="{{ route('user.teams.destroy', $team->id) }}" method="POST"
-                                    onsubmit="return confirm('ยืนยันการลบทีมนี้? ข้อมูลสมาชิกในทีมจะถูกลบทั้งหมด')"
+                                    onsubmit="return confirm('ท่านยืนยันที่จะลบข้อมูลทีมนี้หรือไม่? ข้อมูลของสมาชิกทั้งหมดภายในทีมจะถูกลบออกจากระบบอย่างถาวร')"
                                     class="flex-1 md:flex-none flex">
                                     @csrf @method('DELETE')
                                     <button type="submit"
@@ -156,10 +156,10 @@
                         <div class="w-16 h-16 sm:w-20 sm:h-20 bg-[#1a1a1a] border border-white/5 rounded-full flex items-center justify-center mb-4 sm:mb-5">
                             <i class="fas fa-users-slash text-2xl sm:text-3xl text-gray-600"></i>
                         </div>
-                        <p class="text-sm sm:text-lg font-normal text-white mb-1.5">คุณยังไม่มีทีมในระบบ</p>
-                        <p class="text-[10px] sm:text-sm font-normal text-gray-500 mb-5 sm:mb-6">สร้างทีมแรกของคุณเพื่อเตรียมพร้อมสำหรับการแข่งขัน</p>
+                        <p class="text-sm sm:text-lg font-normal text-white mb-1.5">ท่านยังไม่มีข้อมูลทีมในระบบ</p>
+                        <p class="text-[10px] sm:text-sm font-normal text-gray-500 mb-5 sm:mb-6">โปรดสร้างข้อมูลทีมและเพิ่มรายชื่อสมาชิกเพื่อเตรียมความพร้อมสำหรับการแข่งขัน</p>
                         <button @click="openCreateModal()" class="inline-flex items-center gap-2 px-5 py-2 sm:px-6 sm:py-2.5 bg-blue-600 hover:bg-blue-500 text-white text-xs sm:text-sm font-normal rounded-lg sm:rounded-xl transition-colors shadow-sm focus:outline-none">
-                            <i class="fas fa-plus"></i> เริ่มสร้างทีมใหม่
+                            <i class="fas fa-plus"></i> สร้างข้อมูลทีมใหม่
                         </button>
                     </div>
                 @endforelse
@@ -183,8 +183,8 @@
                                 <i class="fas text-blue-400 text-sm sm:text-lg" :class="isEdit ? 'fa-pen' : 'fa-plus'"></i>
                             </div>
                             <div>
-                                <h2 class="text-base sm:text-xl font-normal text-white leading-tight" x-text="isEdit ? 'แก้ไขข้อมูลทีม' : 'สร้างทีมแข่งขันใหม่'"></h2>
-                                <p class="text-[9px] sm:text-sm font-normal text-gray-500 mt-0.5 sm:mt-1 line-clamp-1" x-text="isEdit ? 'อัปเดตข้อมูลทีมและรายชื่อสมาชิก' : 'กรอกข้อมูลทีมและเพิ่มสมาชิกลูกทีม'"></p>
+                                <h2 class="text-base sm:text-xl font-normal text-white leading-tight" x-text="isEdit ? 'แก้ไขข้อมูลทีม' : 'สร้างข้อมูลทีมใหม่'"></h2>
+                                <p class="text-[9px] sm:text-sm font-normal text-gray-500 mt-0.5 sm:mt-1 line-clamp-1" x-text="isEdit ? 'ปรับปรุงข้อมูลทีมและรายชื่อสมาชิก' : 'ระบุข้อมูลทีมและเพิ่มรายชื่อสมาชิก'"></p>
                             </div>
                         </div>
                         <button @click="$dispatch('close-modal', 'team-form-modal')" type="button" class="w-7 h-7 sm:w-10 sm:h-10 flex items-center justify-center text-gray-500 hover:text-red-400 hover:bg-white/5 rounded-lg sm:rounded-xl transition-colors focus:outline-none shrink-0">
@@ -205,16 +205,16 @@
                         <div class="bg-[#121212] rounded-xl sm:rounded-2xl border border-white/5 overflow-hidden shadow-sm">
                             <div class="px-4 py-2.5 sm:px-6 sm:py-4 border-b border-white/5 flex items-center gap-2 sm:gap-2.5 bg-[#1a1a1a]">
                                 <i class="fas fa-info-circle text-blue-500 text-sm sm:text-lg"></i>
-                                <h3 class="text-sm sm:text-lg font-normal text-white">ข้อมูลทีมพื้นฐาน</h3>
+                                <h3 class="text-sm sm:text-lg font-normal text-white">ข้อมูลพื้นฐานของทีม</h3>
                             </div>
                             <div class="p-4 sm:p-6 grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                                 <div class="space-y-1.5 sm:space-y-2">
                                     <label class="block text-[11px] sm:text-base font-normal text-gray-300">ชื่อทีม <span class="text-red-500">*</span></label>
-                                    <input type="text" name="name" x-model="teamData.name" required placeholder="เช่น หุ่นยนต์พิฆาต" class="w-full px-3 py-2 sm:px-4 sm:py-3.5 text-xs sm:text-base font-normal rounded-lg sm:rounded-xl border border-white/10 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/50 bg-[#0f0f0f] text-white transition-all outline-none placeholder-gray-600">
+                                    <input type="text" name="name" x-model="teamData.name" required placeholder="ตัวอย่าง: ทีมวิศวกรน้อย" class="w-full px-3 py-2 sm:px-4 sm:py-3.5 text-xs sm:text-base font-normal rounded-lg sm:rounded-xl border border-white/10 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/50 bg-[#0f0f0f] text-white transition-all outline-none placeholder-gray-600">
                                 </div>
                                 <div class="space-y-1.5 sm:space-y-2">
-                                    <label class="block text-[11px] sm:text-base font-normal text-gray-300">โรงเรียน/สถาบัน <span class="text-red-500">*</span></label>
-                                    <input type="text" name="school_name" x-model="teamData.school_name" required placeholder="เช่น โรงเรียนวิทยาศาสตร์" class="w-full px-3 py-2 sm:px-4 sm:py-3.5 text-xs sm:text-base font-normal rounded-lg sm:rounded-xl border border-white/10 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/50 bg-[#0f0f0f] text-white transition-all outline-none placeholder-gray-600">
+                                    <label class="block text-[11px] sm:text-base font-normal text-gray-300">สถาบันการศึกษา <span class="text-red-500">*</span></label>
+                                    <input type="text" name="school_name" x-model="teamData.school_name" required placeholder="ตัวอย่าง: โรงเรียนวิทยาศาสตร์" class="w-full px-3 py-2 sm:px-4 sm:py-3.5 text-xs sm:text-base font-normal rounded-lg sm:rounded-xl border border-white/10 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/50 bg-[#0f0f0f] text-white transition-all outline-none placeholder-gray-600">
                                 </div>
                             </div>
                         </div>
@@ -226,7 +226,7 @@
                                     <i class="fas fa-users text-blue-500 text-sm sm:text-xl"></i>
                                     <h3 class="text-sm sm:text-lg font-normal text-gray-200">รายชื่อสมาชิก</h3>
                                 </div>
-                                <span class="text-[10px] sm:text-sm font-normal text-blue-400 bg-blue-500/10 px-2 py-1 sm:px-3.5 sm:py-1.5 rounded-md sm:rounded-lg border border-blue-500/20" x-text="`จำนวน ${members.length} คน`"></span>
+                                <span class="text-[10px] sm:text-sm font-normal text-blue-400 bg-blue-500/10 px-2 py-1 sm:px-3.5 sm:py-1.5 rounded-md sm:rounded-lg border border-blue-500/20" x-text="`จำนวน ${members.length} ท่าน`"></span>
                             </div>
 
                             <template x-for="(member, index) in members" :key="member.id">
@@ -237,7 +237,7 @@
                                             <div class="w-6 h-6 sm:w-9 sm:h-9 rounded-md sm:rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center shrink-0">
                                                 <span class="text-xs sm:text-base font-normal text-blue-400" x-text="index + 1"></span>
                                             </div>
-                                            <span class="text-sm sm:text-lg font-normal text-white">ลูกทีมคนที่ <span x-text="index + 1"></span></span>
+                                            <span class="text-sm sm:text-lg font-normal text-white">สมาชิกท่านที่ <span x-text="index + 1"></span></span>
                                         </div>
                                         <button type="button" @click="removeMember(index)" x-show="members.length > 1" class="flex items-center gap-1 sm:gap-2 px-2 py-1 sm:px-3 sm:py-2 text-[10px] sm:text-sm font-normal text-gray-500 hover:text-red-400 bg-[#0a0a0a] hover:bg-red-500/10 border border-white/10 hover:border-red-500/30 rounded-md sm:rounded-xl transition-all focus:outline-none shadow-sm shrink-0">
                                             <i class="fas fa-trash-alt"></i> <span class="hidden sm:inline">ลบ</span>
@@ -254,10 +254,10 @@
                                             </p>
                                             <div class="grid grid-cols-12 gap-2.5 sm:gap-5">
                                                 <div class="col-span-12 md:col-span-3">
-                                                    <label class="block text-[10px] sm:text-sm font-normal text-gray-400 mb-1 sm:mb-2">คำนำหน้า <span class="text-red-500">*</span></label>
+                                                    <label class="block text-[10px] sm:text-sm font-normal text-gray-400 mb-1 sm:mb-2">คำนำหน้าชื่อ <span class="text-red-500">*</span></label>
                                                     <div x-data="{ open: false }" class="relative" @click.outside="open = false">
                                                         <button @click="open = !open" type="button" class="w-full px-3 py-2 sm:px-4 sm:py-3.5 bg-[#0f0f0f] border border-white/10 rounded-lg sm:rounded-xl text-xs sm:text-base font-normal text-left flex items-center justify-between focus:ring-1 focus:ring-blue-500/50 outline-none">
-                                                            <span x-text="member.prefix_th || 'เลือก...'" class="text-white"></span>
+                                                            <span x-text="member.prefix_th || 'โปรดระบุ...'" class="text-white"></span>
                                                             <i class="fas fa-chevron-down text-[10px] sm:text-sm text-gray-500 transition-transform duration-200" :class="open && 'rotate-180'"></i>
                                                         </button>
                                                         <div x-show="open" x-transition.opacity style="display:none" class="absolute z-[60] w-full mt-1 bg-[#1a1a1a] shadow-xl rounded-lg sm:rounded-xl border border-white/10 overflow-hidden">
@@ -269,7 +269,7 @@
                                                     </div>
                                                 </div>
                                                 <div class="col-span-12 sm:col-span-6 md:col-span-4">
-                                                    <label class="block text-[10px] sm:text-sm font-normal text-gray-400 mb-1 sm:mb-2">ชื่อจริง <span class="text-red-500">*</span></label>
+                                                    <label class="block text-[10px] sm:text-sm font-normal text-gray-400 mb-1 sm:mb-2">ชื่อ <span class="text-red-500">*</span></label>
                                                     <input type="text" :name="`members[${index}][first_name_th]`" x-model="member.first_name_th" required class="w-full px-3 py-2 sm:px-4 sm:py-3.5 text-xs sm:text-base font-normal rounded-lg sm:rounded-xl border border-white/10 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/50 bg-[#0f0f0f] text-white outline-none transition-all">
                                                 </div>
                                                 <div class="col-span-12 sm:col-span-6 md:col-span-5">
@@ -316,7 +316,7 @@
                                             <div class="grid grid-cols-12 gap-2.5 sm:gap-5">
                                                 <div class="col-span-12 sm:col-span-6">
                                                     <div class="flex justify-between items-end mb-1 sm:mb-2">
-                                                        <label class="block text-[10px] sm:text-sm font-normal text-gray-400">เดือน/วัน/ปีเกิด <span class="text-red-500">*</span></label>
+                                                        <label class="block text-[10px] sm:text-sm font-normal text-gray-400">เดือน/วัน/ปี/เกิด <span class="text-red-500">*</span></label>
                                                         <span x-show="member.birth_date" x-transition.opacity class="text-[9px] sm:text-xs font-normal text-amber-400 bg-amber-500/10 px-1.5 py-0.5 sm:px-2.5 sm:py-1 rounded-md border border-amber-500/20 shadow-sm" style="display: none;">
                                                             อายุ: <span x-text="calculateAge(member.birth_date)"></span> ปี
                                                         </span>
@@ -325,10 +325,10 @@
                                                     <input type="date" :name="`members[${index}][birth_date]`" x-model="member.birth_date" required class="w-full px-3 py-2 sm:px-4 sm:py-3.5 text-xs sm:text-base font-normal rounded-lg sm:rounded-xl border border-white/10 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/50 bg-[#0f0f0f] text-white outline-none transition-all [color-scheme:dark] cursor-pointer">
                                                 </div>
                                                 <div class="col-span-12 sm:col-span-6">
-                                                    <label class="block text-[10px] sm:text-sm font-normal text-gray-400 mb-1 sm:mb-2">ไซส์เสื้อ (Shirt Size) <span class="text-red-500">*</span></label>
+                                                    <label class="block text-[10px] sm:text-sm font-normal text-gray-400 mb-1 sm:mb-2">ขนาดเสื้อ (Shirt Size) <span class="text-red-500">*</span></label>
                                                     <div x-data="{ open: false }" class="relative" @click.outside="open = false">
                                                         <button @click="open = !open" type="button" class="w-full px-3 py-2 sm:px-4 sm:py-3.5 bg-[#0f0f0f] border border-white/10 rounded-lg sm:rounded-xl text-xs sm:text-base font-normal text-left flex items-center justify-between focus:ring-1 focus:ring-blue-500/50 outline-none">
-                                                            <span x-text="member.shirt_size || 'เลือกไซส์'" class="text-white"></span>
+                                                            <span x-text="member.shirt_size || 'โปรดระบุขนาด'" class="text-white"></span>
                                                             <i class="fas fa-chevron-down text-[10px] sm:text-sm text-gray-500 transition-transform duration-200" :class="open && 'rotate-180'"></i>
                                                         </button>
                                                         <div x-show="open" x-transition.opacity style="display:none" class="absolute z-[60] w-full mt-1 bg-[#1a1a1a] shadow-xl rounded-lg sm:rounded-xl border border-white/10 overflow-hidden">
@@ -353,7 +353,7 @@
                                     <div class="w-8 h-8 sm:w-12 sm:h-12 rounded-full bg-[#1a1a1a] shadow-sm border border-white/10 flex items-center justify-center group-hover:scale-110 transition-transform">
                                         <i class="fas fa-user-plus text-sm sm:text-xl"></i>
                                     </div>
-                                    <span class="text-xs sm:text-base font-normal">คลิกเพื่อเพิ่มลูกทีมคนต่อไป</span>
+                                    <span class="text-xs sm:text-base font-normal">เพิ่มรายชื่อสมาชิกท่านถัดไป</span>
                                 </button>
                             </div>
                         </div>
@@ -362,7 +362,7 @@
                     {{-- Modal Footer --}}
                     <div class="flex flex-col-reverse sm:flex-row items-center justify-between gap-3 sm:gap-4 px-4 py-3 sm:px-6 sm:py-5 border-t border-white/5 bg-[#121212] sticky bottom-0 z-50 shrink-0 rounded-b-2xl">
                         <p class="text-[10px] sm:text-sm font-normal text-gray-400 w-full sm:w-auto text-center sm:text-left">
-                            <i class="fas fa-asterisk text-red-400 mr-1 sm:mr-1.5"></i> ตรวจสอบข้อมูลให้ครบถ้วนก่อนบันทึก
+                            <i class="fas fa-asterisk text-red-400 mr-1 sm:mr-1.5"></i> กรุณาตรวจสอบความถูกต้องและครบถ้วนของข้อมูลก่อนบันทึก
                         </p>
                         <div class="flex flex-col-reverse sm:flex-row gap-2 sm:gap-3 w-full sm:w-auto">
                             <button type="button" @click="$dispatch('close-modal', 'team-form-modal')" class="w-full sm:w-auto px-4 sm:px-8 py-2 sm:py-3.5 text-xs sm:text-base font-normal text-gray-300 bg-[#1a1a1a] border border-white/10 rounded-lg sm:rounded-xl hover:bg-white/5 transition-colors focus:outline-none shadow-sm">
@@ -370,7 +370,7 @@
                             </button>
                             <button type="submit" class="w-full sm:w-auto px-6 sm:px-10 py-2 sm:py-3.5 bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white text-xs sm:text-base font-normal rounded-lg sm:rounded-xl shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-1.5 sm:gap-2.5 focus:outline-none">
                                 <i class="fas fa-save text-sm sm:text-lg"></i>
-                                <span x-text="isEdit ? 'บันทึกการแก้ไข' : 'บันทึกข้อมูลทีม'"></span>
+                                <span x-text="isEdit ? 'บันทึกการแก้ไข' : 'บันทึกข้อมูล'"></span>
                             </button>
                         </div>
                     </div>

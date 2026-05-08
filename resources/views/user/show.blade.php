@@ -16,7 +16,13 @@
             });
         $uniqueCategoriesData = $uniqueCategoriesData->values();
 
+        // 🚀 เตรียมข้อมูลเข้า Alpine.js
         $alpineClasses = $competition->classes->map(function ($c) {
+            $registrationsCount = $c->registrations_count ?? 0;
+            // เช็คว่ามีการจำกัดจำนวนทีมหรือไม่ (ถ้าไม่มี หรือเป็น 0 ให้ถือว่าไม่จำกัด)
+            $maxTeams = ($c->max_teams && $c->max_teams > 0) ? $c->max_teams : null;
+            $availableSlots = $maxTeams ? max(0, $maxTeams - $registrationsCount) : null;
+
             return [
                 'id' => $c->id,
                 'name' => $c->name,
@@ -29,6 +35,9 @@
                 'rules_url' => $c->rules_url,
                 'categories' => collect($c->allowed_categories)->pluck('name')->toArray(),
                 'categories_details' => $c->allowed_categories,
+                'max_teams' => $maxTeams,
+                'registrations_count' => $registrationsCount,
+                'available_slots' => $availableSlots, // จำนวนที่นั่งคงเหลือ
             ];
         });
     @endphp
@@ -51,7 +60,6 @@
             border-radius: 10px;
         }
 
-        /* เอาลูกศรแบบเดิมออก เปลี่ยนไปใช้ SVG ในปุ่มแทนแล้ว */
         .custom-select {
             appearance: none;
         }
@@ -69,7 +77,6 @@
         myTeams: {{ Js::from($myTeams ?? []) }},
         descExpanded: false,
 
-        // 🚀 ดึงวันแข่งขันจากฐานข้อมูล (ถ้าไม่มีให้ใช้วันนี้)
         eventStartDate: '{{ $competition->event_start_date ? \Carbon\Carbon::parse($competition->event_start_date)->format('Y-m-d') : '' }}',
     
         get filteredClasses() {
@@ -93,7 +100,6 @@
             document.body.style.overflow = '';
         },
     
-        // 🚀 ฟังก์ชันคำนวณอายุโดยใช้วันที่แข่งขันเป็นเกณฑ์ (แก้ Timezone Bug แล้ว)
         getAgeAtEvent(d) {
             if (!d) return 0;
             
@@ -103,7 +109,6 @@
                 baseDate = new Date(parts[0], parts[1] - 1, parts[2]);
             }
             
-            // ป้องกัน Bug วันที่ที่อาจติด Timezone มาจาก DB
             let dStr = d.split('T')[0]; 
             let bParts = dStr.split('-');
             let birthDate = new Date(bParts[0], bParts[1] - 1, bParts[2]);
@@ -125,8 +130,8 @@
     
             if (current < min || current > max) {
                 return min === max ?
-                    `ต้องมีสมาชิก ${max} คนพอดี` :
-                    `ต้องมีสมาชิก ${min}-${max} คน`;
+                    `ต้องมีจำนวนสมาชิก ${max} ท่านพอดี` :
+                    `ต้องมีจำนวนสมาชิก ${min}-${max} ท่าน`;
             }
     
             let cats = this.selectedClass.categories_details || [];
@@ -136,15 +141,13 @@
                 
                 for (let mb of team.members) {
                     if (!mb.birth_date) {
-                        return `มีสมาชิกระบุวันเกิดไม่ครบ`;
+                        return `ข้อมูลวันเกิดของสมาชิกไม่ครบถ้วน`;
                     }
                     
-                    // 🚀 คำนวณอายุ ณ วันที่แข่งจริง
                     let age = this.getAgeAtEvent(mb.birth_date);
                     
-                    // ถ้าอายุหลุดเกณฑ์แม้แต่คนเดียว ให้บล็อกทันที
                     if (age < minA || age > maxA) {
-                        return `อายุไม่เข้าเกณฑ์ (${minA}-${maxA} ปี ณ วันแข่ง)`;
+                        return `อายุไม่ผ่านเกณฑ์ที่กำหนด (${minA}-${maxA} ปี ณ วันจัดการแข่งขัน)`;
                     }
                 }
             }
@@ -171,7 +174,6 @@
             <div class="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a]/60 to-transparent">
             </div>
 
-            {{-- Top Nav --}}
             <div class="relative z-10 px-4 md:px-8 py-6 w-full max-w-7xl mx-auto flex items-center justify-between">
                 <a href="{{ route('user.dashboard') }}"
                     class="inline-flex items-center gap-2 text-sm text-gray-400 font-normal hover:text-white transition-colors drop-shadow-md">
@@ -179,19 +181,18 @@
                 </a>
             </div>
 
-            {{-- Title Area --}}
             <div class="relative z-10 px-4 md:px-8 w-full max-w-7xl mx-auto pb-6 md:pb-10">
                 <div class="flex flex-wrap items-center gap-2 mb-2.5">
                     @php
                         $statusMap = [
                             'open' => ['bg-emerald-500/10 text-emerald-400 border-emerald-500/20', 'เปิดรับสมัคร'],
-                            'coming_soon' => ['bg-amber-500/10 text-amber-400 border-amber-500/20', 'เร็วๆ นี้'],
+                            'coming_soon' => ['bg-amber-500/10 text-amber-400 border-amber-500/20', 'เตรียมเปิดรับสมัคร'],
                             'registration_closed' => ['bg-red-500/10 text-red-400 border-red-500/20', 'ปิดรับสมัคร'],
-                            'ongoing' => ['bg-blue-500/10 text-blue-400 border-blue-500/20', 'กำลังแข่งขัน'],
+                            'ongoing' => ['bg-blue-500/10 text-blue-400 border-blue-500/20', 'กำลังดำเนินการแข่งขัน'],
                         ];
                         $st = $statusMap[$competition->dynamic_status] ?? [
                             'bg-white/5 text-gray-400 border-white/10',
-                            'จบงาน',
+                            'สิ้นสุดการแข่งขัน',
                         ];
                     @endphp
                     <span class="px-2.5 py-1 text-[11px] font-normal rounded-md border {{ $st[0] }}">
@@ -200,7 +201,7 @@
                     <span
                         class="px-2.5 py-1 text-[11px] font-normal text-gray-300 bg-[#121212]/80 backdrop-blur-sm rounded-md border border-white/5">
                         <i class="fas fa-map-marker-alt mr-1 text-gray-500"></i>
-                        {{ $competition->location ?? 'รอประกาศ' }}
+                        {{ $competition->location ?? 'รอประกาศอย่างเป็นทางการ' }}
                     </span>
                 </div>
                 <h1 class="text-2xl md:text-4xl font-normal text-white drop-shadow-sm line-clamp-2">
@@ -219,23 +220,19 @@
                 <div
                     class="relative z-40 bg-[#141414] border border-white/5 rounded-2xl p-3 sm:p-4 shadow-sm flex flex-col md:flex-row gap-3">
 
-                    {{-- Search Input --}}
                     <div class="relative flex-1">
                         <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-500"></i>
-                        <input type="text" x-model="searchQuery" placeholder="ค้นหาชื่อรุ่นแข่งขัน..."
+                        <input type="text" x-model="searchQuery" placeholder="ค้นหารุ่นการแข่งขัน..."
                             class="w-full pl-11 pr-4 py-2.5 sm:py-3 bg-[#0a0a0a] border border-white/5 hover:border-white/10 focus:ring-1 focus:ring-blue-500/50 focus:border-blue-500 rounded-xl text-sm font-normal outline-none transition-colors text-white placeholder-gray-600">
                     </div>
 
-                    {{-- Custom Dropdown Filters --}}
                     <div class="flex flex-col sm:flex-row gap-3 shrink-0">
-
-                        {{-- Dropdown: ประเภทเกม --}}
                         <div x-data="{ open: false }" class="relative w-full sm:w-44" @click.outside="open = false">
                             <button @click="open = !open" type="button"
                                 class="w-full flex items-center justify-between px-4 py-2.5 sm:py-3 bg-[#0a0a0a] border hover:border-white/10 rounded-xl text-sm font-normal transition-colors"
                                 :class="open ? 'border-blue-500 text-blue-400' : 'border-white/5 text-gray-400'">
                                 <span class="truncate"
-                                    x-text="filterGameType === 'all' ? 'ทุกประเภทเกม' : filterGameType"></span>
+                                    x-text="filterGameType === 'all' ? 'ทุกประเภท' : filterGameType"></span>
                                 <i class="fas fa-chevron-down text-gray-600 text-[10px] transition-transform duration-200"
                                     :class="open ? 'rotate-180 text-blue-500' : ''"></i>
                             </button>
@@ -247,7 +244,7 @@
                                         class="w-full text-left px-4 py-2.5 text-sm transition-colors hover:bg-white/5"
                                         :class="filterGameType === 'all' ? 'text-blue-400 font-normal bg-blue-500/10' :
                                             'text-gray-400 hover:text-white'">
-                                        ทุกประเภทเกม
+                                        ทุกประเภท
                                     </button>
                                     @foreach ($uniqueGameTypes as $gt)
                                         <button @click="filterGameType = '{{ $gt }}'; open = false"
@@ -262,13 +259,12 @@
                             </div>
                         </div>
 
-                        {{-- Dropdown: หมวดหมู่อายุ --}}
                         <div x-data="{ open: false }" class="relative w-full sm:w-56" @click.outside="open = false">
                             <button @click="open = !open" type="button"
                                 class="w-full flex items-center justify-between px-4 py-2.5 sm:py-3 bg-[#0a0a0a] border hover:border-white/10 rounded-xl text-sm font-normal transition-colors"
                                 :class="open ? 'border-blue-500 text-blue-400' : 'border-white/5 text-gray-400'">
                                 <span class="truncate"
-                                    x-text="filterCategory === 'all' ? 'ทุกช่วงอายุ' : filterCategory"></span>
+                                    x-text="filterCategory === 'all' ? 'ทุกกลุ่มอายุ' : filterCategory"></span>
                                 <i class="fas fa-chevron-down text-gray-600 text-[10px] transition-transform duration-200"
                                     :class="open ? 'rotate-180 text-blue-500' : ''"></i>
                             </button>
@@ -280,7 +276,7 @@
                                         class="w-full text-left px-4 py-2.5 text-sm transition-colors hover:bg-white/5"
                                         :class="filterCategory === 'all' ? 'text-blue-400 font-normal bg-blue-500/10' :
                                             'text-gray-400 hover:text-white'">
-                                        ทุกช่วงอายุ
+                                        ทุกกลุ่มอายุ
                                     </button>
                                     @foreach ($uniqueCategoriesData as $cat)
                                         <button @click="filterCategory = '{{ $cat['name'] }}'; open = false"
@@ -289,9 +285,7 @@
                                                 'text-blue-400 font-normal bg-blue-500/10' :
                                                 'text-gray-400 hover:text-white'">
                                             <span>{{ $cat['name'] }}</span>
-                                            <span
-                                                class="text-[10px] opacity-50">({{ $cat['min_age'] }}-{{ $cat['max_age'] }}
-                                                ปี)</span>
+                                            <span class="text-[10px] opacity-50">({{ $cat['min_age'] }}-{{ $cat['max_age'] }} ปี)</span>
                                         </button>
                                     @endforeach
                                 </div>
@@ -304,7 +298,7 @@
                 {{-- 2.2 Results Header --}}
                 <div class="flex items-center justify-between px-1">
                     <p class="text-xs sm:text-sm font-normal text-gray-500">
-                        แสดงผล <span class="font-normal text-white" x-text="filteredClasses.length"></span> รายการ
+                        แสดงผลทั้งหมด <span class="font-normal text-white" x-text="filteredClasses.length"></span> รายการ
                     </p>
                 </div>
 
@@ -347,34 +341,62 @@
                                     <div class="flex items-center gap-1.5">
                                         <i class="fas fa-users opacity-60"></i>
                                         <span
-                                            x-text="cls.min_members === cls.max_members ? `สมาชิก ${cls.max_members} คน/ทีม` : `สมาชิก ${cls.min_members}-${cls.max_members} คน/ทีม`"></span>
+                                            x-text="cls.min_members === cls.max_members ? `จำนวนสมาชิก ${cls.max_members} ท่าน/ทีม` : `จำนวนสมาชิก ${cls.min_members}-${cls.max_members} ท่าน/ทีม`"></span>
+                                    </div>
+                                    
+                                    {{-- 🚀 แสดงโควต้าที่เหลือ (รองรับแบบไม่จำกัด) --}}
+                                    <div class="flex items-center gap-1.5">
+                                        <i class="fas fa-ticket-alt opacity-60" :class="(cls.max_teams && cls.available_slots <= 0) ? 'text-red-400' : ''"></i>
+                                        
+                                        {{-- แบบไม่จำกัดโควต้า --}}
+                                        <template x-if="!cls.max_teams">
+                                            <span>รับจำนวน: <span class="text-emerald-400">ไม่จำกัด</span></span>
+                                        </template>
+
+                                        {{-- แบบจำกัดโควต้าและยังเหลือ --}}
+                                        <template x-if="cls.max_teams && cls.available_slots > 0">
+                                            <span>เหลือ: <span class="text-emerald-400" x-text="cls.available_slots"></span> ที่นั่ง</span>
+                                        </template>
+
+                                        {{-- แบบเต็มแล้ว --}}
+                                        <template x-if="cls.max_teams && cls.available_slots <= 0">
+                                            <span class="text-red-400 font-normal">โควต้าเต็มแล้ว</span>
+                                        </template>
                                     </div>
                                 </div>
                             </div>
 
                             {{-- Price & Actions Section --}}
                             <div
-                                class="flex flex-row md:flex-col items-center md:items-end justify-between md:justify-center gap-3 md:w-36 border-t border-white/5 md:border-t-0 md:border-l pt-4 md:pt-0 md:pl-5 shrink-0 transition-colors">
+                                class="flex flex-col justify-end md:justify-center gap-3 md:w-40 border-t border-white/5 md:border-t-0 md:border-l pt-4 md:pt-0 md:pl-5 shrink-0 transition-colors">
 
                                 {{-- Price --}}
                                 <div class="text-left md:text-right w-full">
                                     <p class="text-[9px] sm:text-[10px] font-normal text-gray-500 mb-0.5 sm:mb-1">
-                                        ค่าสมัคร</p>
+                                        ค่าธรรมเนียมการสมัคร</p>
                                     <p class="text-lg sm:text-xl font-normal text-emerald-400 leading-none"
-                                        x-text="cls.entry_fee > 0 ? parseInt(cls.entry_fee).toLocaleString() + ' ฿' : 'ฟรี'">
+                                        x-text="cls.entry_fee > 0 ? parseInt(cls.entry_fee).toLocaleString() + ' ฿' : 'ไม่มีค่าใช้จ่าย'">
                                     </p>
                                 </div>
 
-                                {{-- Buttons --}}
-                                <div class="flex flex-row md:flex-col gap-2 w-full">
+                                {{-- Buttons (จัด Layout ใหม่ให้เรียงลงมาเสมอ เพื่อไม่ให้บีบกัน) --}}
+                                <div class="flex flex-col gap-2 w-full mt-2 sm:mt-0">
                                     @if ($competition->dynamic_status === 'open')
-                                        <button @click="openRegisterModal(cls)"
-                                            class="flex-[2] md:w-full py-2 sm:py-2.5 bg-blue-600 hover:bg-blue-500 text-white text-xs sm:text-sm font-normal rounded-xl transition-colors shadow-sm">
-                                            สมัครแข่ง
+                                        {{-- ปุ่มกดได้ปกติ กรณีที่นั่งยังไม่เต็ม หรือไม่ได้จำกัด max_teams --}}
+                                        <button x-show="!cls.max_teams || cls.available_slots > 0" 
+                                            @click="openRegisterModal(cls)"
+                                            class="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white text-md sm:text-sm font-normal rounded-xl transition-colors shadow-sm">
+                                            ลงทะเบียนแข่งขัน
+                                        </button>
+
+                                        {{-- 🚀 ปุ่มที่โดน Disable กรณียอดโควต้าเต็มแล้ว (กดไม่ได้) --}}
+                                        <button x-show="cls.max_teams && cls.available_slots <= 0" disabled
+                                            class="w-full py-2.5 bg-[#1a1a1a] text-red-400/80 text-xs sm:text-sm font-normal rounded-xl cursor-not-allowed border border-red-500/30">
+                                            โควต้าเต็มแล้ว
                                         </button>
                                     @else
                                         <button disabled
-                                            class="flex-[2] md:w-full py-2 sm:py-2.5 bg-[#0a0a0a] text-gray-600 text-xs font-normal rounded-xl cursor-not-allowed border border-white/5">
+                                            class="w-full py-2.5 bg-[#0a0a0a] text-gray-600 text-xs sm:text-sm font-normal rounded-xl cursor-not-allowed border border-white/5">
                                             ปิดรับสมัคร
                                         </button>
                                     @endif
@@ -382,9 +404,9 @@
                                     <template x-if="cls.rules_url">
                                         <a :href="`/competitions/{{ $competition->id }}/classes/${cls.id}/rule`"
                                             target="_blank"
-                                            class="flex-1 md:w-full flex items-center justify-center gap-1 sm:gap-1.5 py-2 sm:py-2.5 bg-[#1a1a1a] hover:bg-white/5 text-gray-300 hover:text-white text-[10px] sm:text-xs font-normal rounded-xl transition-colors border border-white/5 shrink-0"
-                                            title="อ่านกติกา">
-                                            <i class="far fa-file-pdf"></i> กติกา
+                                            class="w-full flex items-center justify-center gap-1.5 py-2.5 bg-[#1a1a1a] hover:bg-white/5 text-gray-300 hover:text-white text-[11px] sm:text-xs font-normal rounded-xl transition-colors border border-white/5 shrink-0"
+                                            title="อ่านระเบียบการ">
+                                            <i class="far fa-file-pdf text-red-400/80 text-sm"></i> กติกาการแข่งขัน
                                         </a>
                                     </template>
                                 </div>
@@ -397,10 +419,9 @@
                     <div x-show="filteredClasses.length === 0" style="display:none;"
                         class="text-center py-16 sm:py-20 bg-[#121212] border border-white/5 rounded-2xl shadow-sm">
                         <i class="far fa-folder-open text-3xl sm:text-4xl text-gray-700 mb-3 sm:mb-4"></i>
-                        <p class="text-xs sm:text-sm font-normal text-gray-400">ไม่พบรุ่นการแข่งขันตามเงื่อนไขที่ค้นหา
-                        </p>
+                        <p class="text-xs sm:text-sm font-normal text-gray-400">ไม่พบรุ่นการแข่งขันที่ตรงกับเงื่อนไขการค้นหา</p>
                         <button @click="searchQuery=''; filterGameType='all'; filterCategory='all'"
-                            class="mt-3 sm:mt-4 text-xs sm:text-sm font-normal text-blue-400 hover:text-blue-300 hover:underline">ล้างตัวกรองทั้งหมด</button>
+                            class="mt-3 sm:mt-4 text-xs sm:text-sm font-normal text-blue-400 hover:text-blue-300 hover:underline">ล้างเงื่อนไขการค้นหา</button>
                     </div>
                 </div>
             </div>
@@ -410,23 +431,19 @@
 
                 {{-- Date Timeline Card --}}
                 <div class="bg-[#121212] border border-white/5 rounded-2xl p-5 sm:p-6 shadow-sm">
-                    <h3
-                        class="text-xs sm:text-sm font-normal text-white mb-4 sm:mb-5 flex items-center gap-2 border-b border-white/5 pb-2.5 sm:pb-3">
-                        <i class="far fa-calendar text-blue-500"></i> กำหนดการ
+                    <h3 class="text-xs sm:text-sm font-normal text-white mb-4 sm:mb-5 flex items-center gap-2 border-b border-white/5 pb-2.5 sm:pb-3">
+                        <i class="far fa-calendar text-blue-500"></i> กำหนดการแข่งขัน
                     </h3>
                     <div class="space-y-4 sm:space-y-5">
                         <div class="flex gap-3 sm:gap-4">
-                            <div
-                                class="w-1.5 h-1.5 rounded-full bg-emerald-500 mt-1.5 sm:mt-2 shrink-0 shadow-[0_0_8px_rgba(16,185,129,0.6)]">
-                            </div>
+                            <div class="w-1.5 h-1.5 rounded-full bg-emerald-500 mt-1.5 sm:mt-2 shrink-0 shadow-[0_0_8px_rgba(16,185,129,0.6)]"></div>
                             <div>
-                                <p class="text-[10px] sm:text-xs font-normal text-gray-500 mb-0.5 sm:mb-1">เปิดรับสมัคร
-                                </p>
+                                <p class="text-[10px] sm:text-xs font-normal text-gray-500 mb-0.5 sm:mb-1">ระยะเวลารับสมัคร</p>
                                 <p class="text-xs sm:text-sm font-normal text-gray-200">
                                     @if ($competition->regis_start_date)
                                         {{ \Carbon\Carbon::parse($competition->regis_start_date)->translatedFormat('d M y') }}
                                     @else
-                                        รอประกาศ
+                                        รอประกาศอย่างเป็นทางการ
                                     @endif
                                     - <span class="text-red-400">
                                         @if ($competition->regis_end_date)
@@ -437,17 +454,14 @@
                             </div>
                         </div>
                         <div class="flex gap-3 sm:gap-4">
-                            <div
-                                class="w-1.5 h-1.5 rounded-full bg-blue-500 mt-1.5 sm:mt-2 shrink-0 shadow-[0_0_8px_rgba(59,130,246,0.6)]">
-                            </div>
+                            <div class="w-1.5 h-1.5 rounded-full bg-blue-500 mt-1.5 sm:mt-2 shrink-0 shadow-[0_0_8px_rgba(59,130,246,0.6)]"></div>
                             <div>
-                                <p class="text-[10px] sm:text-xs font-normal text-gray-500 mb-0.5 sm:mb-1">
-                                    วันแข่งขันจริง</p>
+                                <p class="text-[10px] sm:text-xs font-normal text-gray-500 mb-0.5 sm:mb-1">กำหนดการแข่งขัน</p>
                                 <p class="text-xs sm:text-sm font-normal text-gray-200">
                                     @if ($competition->event_start_date)
                                         {{ \Carbon\Carbon::parse($competition->event_start_date)->translatedFormat('d M y') }}
                                     @else
-                                        รอประกาศ
+                                        รอประกาศอย่างเป็นทางการ
                                     @endif
                                 </p>
                             </div>
@@ -458,11 +472,9 @@
                 {{-- Map Card --}}
                 <div class="bg-[#121212] border border-white/5 rounded-2xl overflow-hidden shadow-sm">
                     <div x-ref="mapEl" class="w-full h-40 sm:h-48 z-0 relative"></div>
-                    
                     <div class="p-4 sm:p-5 relative z-10">
-                        <p class="text-[10px] sm:text-xs font-normal text-gray-500 mb-1">สถานที่แข่งขัน</p>
-                        <p class="text-xs sm:text-sm font-normal text-white mb-3 sm:mb-4">{{ $competition->location }}
-                        </p>
+                        <p class="text-[10px] sm:text-xs font-normal text-gray-500 mb-1">สถานที่จัดการแข่งขัน</p>
+                        <p class="text-xs sm:text-sm font-normal text-white mb-3 sm:mb-4">{{ $competition->location ?? 'รอประกาศอย่างเป็นทางการ' }}</p>
                         <a href="https://www.google.com/maps/search/?api=1&query={{ $competition->latitude }},{{ $competition->longitude }}"
                             target="_blank"
                             class="flex items-center justify-center w-full py-2 sm:py-2.5 bg-[#1a1a1a] hover:bg-white/5 text-gray-300 hover:text-white rounded-xl text-xs sm:text-sm font-normal transition-colors border border-white/5 shadow-sm">
@@ -473,9 +485,8 @@
 
                 {{-- About Card --}}
                 <div class="bg-[#121212] border border-white/5 rounded-2xl p-5 sm:p-6 shadow-sm">
-                    <h3
-                        class="text-xs sm:text-sm font-normal text-white mb-3 flex items-center gap-2 border-b border-white/5 pb-2.5 sm:pb-3">
-                        <i class="fas fa-info-circle text-blue-500"></i> เกี่ยวกับงาน
+                    <h3 class="text-xs sm:text-sm font-normal text-white mb-3 flex items-center gap-2 border-b border-white/5 pb-2.5 sm:pb-3">
+                        <i class="fas fa-info-circle text-blue-500"></i> รายละเอียดการแข่งขัน
                     </h3>
                     <div class="text-[11px] sm:text-xs font-normal text-gray-400 leading-relaxed break-words overflow-hidden w-full"
                         :class="descExpanded ? '' : 'line-clamp-4'">
@@ -483,14 +494,14 @@
                     </div>
                     <button @click="descExpanded = !descExpanded"
                         class="mt-2 text-[10px] sm:text-xs font-normal text-blue-400 hover:text-blue-300 hover:underline focus:outline-none">
-                        <span x-text="descExpanded ? 'ซ่อนรายละเอียด' : 'อ่านเพิ่มเติม'"></span>
+                        <span x-text="descExpanded ? 'ซ่อนรายละเอียด' : 'อ่านรายละเอียดเพิ่มเติม'"></span>
                     </button>
                 </div>
 
             </div>
         </div>
 
-        {{-- ─── 3. CLEAN MODAL (แก้ไขให้ขึ้นตรงกลาง) ─── --}}
+        {{-- ─── 3. CLEAN MODAL ─── --}}
         <div x-show="isModalOpen" x-cloak style="display:none;"
             class="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6" x-transition.opacity>
 
@@ -502,85 +513,72 @@
                 x-transition:enter-end="opacity-100 scale-100 translate-y-0">
 
                 {{-- Header --}}
-                <div
-                    class="px-5 sm:px-6 py-4 sm:py-5 border-b border-white/5 flex justify-between items-center bg-[#0a0a0a] rounded-t-2xl sm:rounded-t-[2rem]">
+                <div class="px-5 sm:px-6 py-4 sm:py-5 border-b border-white/5 flex justify-between items-center bg-[#0a0a0a] rounded-t-2xl sm:rounded-t-[2rem]">
                     <div>
-                        <p class="text-[10px] sm:text-xs text-gray-500 font-normal mb-0.5 sm:mb-1">ยืนยันการสมัครรุ่น
-                        </p>
-                        <h3 class="text-base sm:text-lg font-normal text-white line-clamp-1"
-                            x-text="selectedClass ? selectedClass.name : ''"></h3>
+                        <p class="text-[10px] sm:text-xs text-gray-500 font-normal mb-0.5 sm:mb-1">ยืนยันการลงทะเบียนเข้าร่วมรุ่น</p>
+                        <h3 class="text-base sm:text-lg font-normal text-white line-clamp-1" x-text="selectedClass ? selectedClass.name : ''"></h3>
                     </div>
-                    <button @click="closeModal()"
-                        class="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-[#1a1a1a] border border-white/5 flex items-center justify-center text-gray-500 hover:text-white hover:bg-white/10 transition-colors shrink-0 focus:outline-none">
+                    <button @click="closeModal()" class="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-[#1a1a1a] border border-white/5 flex items-center justify-center text-gray-500 hover:text-white hover:bg-white/10 transition-colors shrink-0 focus:outline-none">
                         <i class="fas fa-times"></i>
                     </button>
                 </div>
 
                 {{-- Body --}}
                 <div class="p-5 sm:p-6 overflow-y-auto flex-1 custom-scrollbar">
+                    
+                    <div class="mb-4 p-3 bg-red-500/10 border border-red-500/20 rounded-xl flex items-start gap-2">
+                        <i class="fas fa-exclamation-triangle text-red-400 mt-0.5 text-xs"></i>
+                        <p class="text-[10px] sm:text-xs text-red-400/90 font-normal leading-relaxed">
+                            <strong>คำเตือน:</strong> ระบบจะนับโควต้าที่นั่งให้กับทีมที่ส่งหลักฐานการชำระเงินแล้วเท่านั้น กรุณารีบชำระเงินทันทีเพื่อรักษาสิทธิ์ของท่าน
+                        </p>
+                    </div>
+
                     <div x-show="myTeams.length > 0" class="space-y-3 sm:space-y-4">
-                        <p class="text-xs sm:text-sm font-normal text-gray-300 mb-2 sm:mb-3">เลือกทีมของคุณ</p>
+                        <p class="text-xs sm:text-sm font-normal text-gray-300 mb-2 sm:mb-3">โปรดเลือกทีมของท่าน</p>
 
                         <template x-for="team in myTeams" :key="team.id">
                             <label
-                                :class="isTeamEligible(team) ? (selectedTeamId == team.id ?
-                                        'border-blue-500/50 bg-blue-900/10' :
-                                        'border-white/10 hover:bg-[#1a1a1a]') :
-                                    'opacity-50 grayscale cursor-not-allowed bg-[#0a0a0a] border-white/5'"
+                                :class="isTeamEligible(team) ? (selectedTeamId == team.id ? 'border-blue-500/50 bg-blue-900/10' : 'border-white/10 hover:bg-[#1a1a1a]') : 'opacity-50 grayscale cursor-not-allowed bg-[#0a0a0a] border-white/5'"
                                 class="relative flex items-center p-3 sm:p-4 border rounded-xl sm:rounded-2xl cursor-pointer transition-all duration-200">
 
                                 <div class="w-4 h-4 sm:w-5 sm:h-5 rounded-full border flex items-center justify-center shrink-0 mr-3 sm:mr-4 transition-colors"
                                     :class="selectedTeamId == team.id ? 'border-blue-500 bg-blue-500' : 'border-gray-600'">
-                                    <i class="fas fa-check text-[8px] sm:text-[10px] text-white"
-                                        x-show="selectedTeamId == team.id"></i>
+                                    <i class="fas fa-check text-[8px] sm:text-[10px] text-white" x-show="selectedTeamId == team.id"></i>
                                 </div>
 
                                 <div class="flex-1 min-w-0">
-                                    <p class="font-normal text-white text-xs sm:text-sm truncate" x-text="team.name">
-                                    </p>
-                                    <p
-                                        class="text-[10px] sm:text-xs text-gray-500 font-normal mt-0.5 sm:mt-1 truncate">
-                                        <span x-text="team.members.length"></span> คน • <span
-                                            x-text="team.school_name"></span>
+                                    <p class="font-normal text-white text-xs sm:text-sm truncate" x-text="team.name"></p>
+                                    <p class="text-[10px] sm:text-xs text-gray-500 font-normal mt-0.5 sm:mt-1 truncate">
+                                        <span x-text="team.members.length"></span> ท่าน • <span x-text="team.school_name"></span>
                                     </p>
                                 </div>
 
-                                <div x-show="!isTeamEligible(team)"
-                                    class="text-[9px] sm:text-[10px] text-red-400 font-normal text-right ml-2 shrink-0">
+                                <div x-show="!isTeamEligible(team)" class="text-[9px] sm:text-[10px] text-red-400 font-normal text-right ml-2 shrink-0">
                                     <span x-text="getTeamError(team)"></span>
                                 </div>
 
-                                <input type="radio" name="team_id" :value="team.id" x-model="selectedTeamId"
-                                    class="hidden" :disabled="!isTeamEligible(team)">
+                                <input type="radio" name="team_id" :value="team.id" x-model="selectedTeamId" class="hidden" :disabled="!isTeamEligible(team)">
                             </label>
                         </template>
                     </div>
 
                     <div x-show="myTeams.length === 0" class="text-center py-8">
-                        <div
-                            class="w-14 h-14 sm:w-16 sm:h-16 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                        <div class="w-14 h-14 sm:w-16 sm:h-16 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
                             <i class="fas fa-users text-lg sm:text-xl"></i>
                         </div>
-                        <p class="font-normal text-white mb-1 text-sm sm:text-base">คุณยังไม่มีทีมในระบบ</p>
-                        <p class="text-[10px] sm:text-xs text-gray-500 mb-5 sm:mb-6">
-                            สร้างทีมและเพิ่มชื่อสมาชิกก่อนกดสมัครนะครับ</p>
-                        <a href="{{ route('user.teams.index') }}"
-                            class="px-5 py-2 sm:px-6 sm:py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs sm:text-sm font-normal transition-colors">ไปหน้าจัดการทีม</a>
+                        <p class="font-normal text-white mb-1 text-sm sm:text-base">ท่านยังไม่มีข้อมูลทีมในระบบ</p>
+                        <p class="text-[10px] sm:text-xs text-gray-500 mb-5 sm:mb-6">กรุณาสร้างทีมและเพิ่มรายชื่อสมาชิกก่อนดำเนินการลงทะเบียน</p>
+                        <a href="{{ route('user.teams.index') }}" class="px-5 py-2 sm:px-6 sm:py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs sm:text-sm font-normal transition-colors">ไปยังหน้าการจัดการทีม</a>
                     </div>
                 </div>
 
                 {{-- Footer --}}
-                <div
-                    class="px-5 sm:px-6 py-4 border-t border-white/5 bg-[#0a0a0a] rounded-b-2xl sm:rounded-b-[2rem] shrink-0">
-                    <form method="POST"
-                        :action="selectedClass ?
-                            `{{ url('competitions') }}/{{ $competition->id }}/classes/${selectedClass.id}/register` :
-                            '#'">
+                <div class="px-5 sm:px-6 py-4 border-t border-white/5 bg-[#0a0a0a] rounded-b-2xl sm:rounded-b-[2rem] shrink-0">
+                    <form method="POST" :action="selectedClass ? `{{ url('competitions') }}/{{ $competition->id }}/classes/${selectedClass.id}/register` : '#'">
                         @csrf
                         <input type="hidden" name="team_id" :value="selectedTeamId">
-                        <button type="submit" :disabled="!selectedTeamId"
-                            class="w-full py-2.5 sm:py-3 bg-blue-600 text-white rounded-xl text-xs sm:text-sm font-normal disabled:opacity-40 disabled:bg-[#1a1a1a] disabled:text-gray-500 disabled:cursor-not-allowed transition-colors hover:bg-blue-500 focus:outline-none">
-                            ดำเนินการสมัครแข่งขัน
+                        <button type="submit" :disabled="!selectedTeamId" class="w-full py-2.5 sm:py-3 bg-blue-600 text-white rounded-xl text-xs sm:text-sm font-normal disabled:opacity-40 disabled:bg-[#1a1a1a] disabled:text-gray-500 disabled:cursor-not-allowed transition-colors hover:bg-blue-500 focus:outline-none">
+                            ยืนยันการลงทะเบียน
                         </button>
                     </form>
                 </div>

@@ -35,7 +35,12 @@ class CompetitionUserController extends Controller
 
     public function show($id)
     {
-        $competition = Competition::with(['classes'])
+        $competition = Competition::with(['classes' => function($query) {
+                $query->withCount(['registrations' => function($q) {
+                    // 🚀 1. นับโควต้าเฉพาะคนที่จ่ายเงินแล้ว หรือรอตรวจสอบสลิปเท่านั้น
+                    $q->whereIn('status', ['waiting_verify', 'approved']);
+                }]);
+            }])
             ->where('status', '!=', 'draft') 
             ->findOrFail($id);
 
@@ -56,7 +61,6 @@ class CompetitionUserController extends Controller
         ]);
 
         $user = auth()->user();
-        // 🚀 โหลดความสัมพันธ์ members มาด้วยเพื่อใช้เช็คอายุ
         $team = Team::with('members')->select('id', 'user_id')->findOrFail($request->team_id);
         
         $competition = Competition::findOrFail($compId);
@@ -70,19 +74,18 @@ class CompetitionUserController extends Controller
             abort(403, 'Unauthorized action.');
         }
 
-        // 🚀 1. Backend Validation: ตรวจสอบจำนวนสมาชิกในทีม
+        // Backend Validation: ตรวจสอบจำนวนสมาชิกในทีม
         $memberCount = $team->members->count();
         if ($memberCount < $competitionClass->min_members || $memberCount > $competitionClass->max_members) {
             return back()->with('error', 'จำนวนสมาชิกในทีมไม่ตรงตามเงื่อนไขของรุ่นการแข่งขัน');
         }
 
-        // 🚀 2. Backend Validation: ตรวจสอบอายุสมาชิกทุกคนในทีม (คำนวณเทียบกับ "วันแข่งขันจริง")
+        // Backend Validation: ตรวจสอบอายุสมาชิกทุกคนในทีม (คำนวณเทียบกับ "วันแข่งขันจริง")
         $categories = $competitionClass->allowed_categories ?? [];
         if (!empty($categories)) {
             $minAge = collect($categories)->min('min_age');
             $maxAge = collect($categories)->max('max_age');
             
-            // ใช้วันแข่งขันเป็นเกณฑ์ ถ้าไม่มีให้ใช้วันนี้
             $baseDate = $competition->event_start_date ? Carbon::parse($competition->event_start_date) : now();
             
             foreach ($team->members as $member) {
@@ -90,10 +93,8 @@ class CompetitionUserController extends Controller
                     return back()->with('error', 'ไม่สามารถสมัครได้: มีสมาชิกในทีมบางคนยังไม่ได้ระบุวัน/เดือน/ปีเกิด');
                 }
                 
-                // คำนวณอายุ ณ วันที่จัดการแข่งขัน (Event Date)
                 $birthDate = Carbon::parse($member->birth_date);
                 
-                // 🚀 ใช้ diffInYears แบบระบุพารามิเตอร์ที่สองเป็น false เพื่อความแม่นยำสูง ไม่ปัดเศษ
                 $ageAtEvent = $birthDate->diffInYears($baseDate, false);
                 $finalAge = floor($ageAtEvent);
                 
@@ -104,7 +105,7 @@ class CompetitionUserController extends Controller
             }
         }
 
-        // 🚀 ลอจิกป้องกันการสมัครซ้ำ (เช็คจาก Status ที่กำลัง Active อยู่)
+        // ลอจิกป้องกันการสมัครซ้ำ 
         $alreadyRegistered = Registration::where('competition_class_id', $classId)
             ->where('team_id', $team->id)
             ->whereIn('status', ['pending_payment', 'waiting_verify', 'approved']) 
@@ -114,12 +115,26 @@ class CompetitionUserController extends Controller
             return back()->with('error', 'ทีมของคุณมีชื่ออยู่ในระบบการรับสมัครรุ่นนี้อยู่แล้ว (กำลังรอชำระเงิน / รอตรวจสอบ / หรืออนุมัติแล้ว)');
         }
 
-        // 🚀 ลอจิกการสร้างใบสมัคร และรันเลขที่ใบสมัครอย่างปลอดภัย (Lock Table)
+        // ลอจิกการสร้างใบสมัคร และรันเลขที่ใบสมัครอย่างปลอดภัย (Lock Table)
         DB::beginTransaction();
         try {
+            // 🚀 2. Lock Table ตรวจสอบโควต้า max_teams ก่อนรันเลขใบสมัคร
+            $lockedClass = CompetitionClass::lockForUpdate()->findOrFail($classId);
+            
+            if (!is_null($lockedClass->max_teams) && $lockedClass->max_teams > 0) {
+                // ดึงจำนวนทีมที่ "จ่ายเงินแล้ว หรือรอตรวจสอบ" เพื่อมาเช็คโควต้า
+                $currentRegistrations = Registration::where('competition_class_id', $classId)
+                    ->whereIn('status', ['waiting_verify', 'approved'])
+                    ->count();
+
+                if ($currentRegistrations >= $lockedClass->max_teams) {
+                    DB::rollBack();
+                    return back()->with('error', 'ไม่สามารถสมัครได้: รุ่นการแข่งขันนี้มีทีมจองสิทธิ์ (ชำระเงิน) เต็มจำนวนแล้ว');
+                }
+            }
+
             $datePrefix = now()->format('Ymd');
             
-            // ดึงใบสมัครล่าสุดของวันนี้ พร้อมล็อก Row ป้องกันการกดรัวๆ จนเลขซ้ำ
             $latestRegistration = Registration::whereDate('created_at', now()->toDateString())
                 ->lockForUpdate()
                 ->orderBy('id', 'desc')
@@ -146,8 +161,14 @@ class CompetitionUserController extends Controller
 
             DB::commit();
 
+            // 🚀 3. เพิ่มข้อความแจ้งเตือนกระตุ้นให้รีบจ่ายเงิน
+            $successMessage = "สมัครแข่งขันสำเร็จ!<br><br>";
+            $successMessage .= "รหัสใบสมัคร: <strong>{$regisNo}</strong><br>";
+            $successMessage .= "สถานะปัจจุบัน: เพิ่มลงตะกร้ารอชำระเงินแล้ว<br><br>";
+            $successMessage .= "<span style='color: red;'><strong>⚠️ คำเตือน:</strong> กรุณารีบชำระเงินเพื่อรักษาสิทธิ์ของคุณ เนื่องจากระบบจะนับโควต้าที่นั่งให้กับทีมที่แจ้งชำระเงินแล้วเท่านั้น หากโควต้าเต็มก่อนที่คุณจะชำระเงิน สิทธิ์ของคุณจะถูกยกเลิกทันที</span>";
+
             return redirect()->route('user.competitions.show', $compId)
-                ->with('success', "สมัครแข่งขันสำเร็จ!<br><br>รหัสใบสมัคร: <strong>{$regisNo}</strong><br>สถานะปัจจุบัน: เพิ่มลงตะกร้ารอชำระเงินแล้ว");
+                ->with('success', $successMessage);
 
         } catch (\Exception $e) {
             DB::rollBack();
@@ -158,7 +179,6 @@ class CompetitionUserController extends Controller
 
     public function myRegistrations()
     {
-        // 🚀 Optimize: ดึงข้อมูลแบบเจาะจงคอลัมน์ เพื่อลดขนาด Memory ตอนโหลดหน้าตะกร้า
         $registrations = Registration::with([
                 'competition:id,name', 
                 'competitionClass:id,name,entry_fee', 
@@ -204,7 +224,6 @@ class CompetitionUserController extends Controller
 
         $totalAmount = $registrations->sum(fn($reg) => $reg->competitionClass->entry_fee);
 
-        // 🚀 เก็บ ID ของบิลแม่ใบเก่าไว้ก่อน (กรณีที่เลือกจ่ายจากรายการที่โดน Reject)
         $oldTransactionIds = $registrations->pluck('payment_transaction_id')->filter()->unique();
 
         try {
@@ -223,7 +242,6 @@ class CompetitionUserController extends Controller
 
             if (!$path) throw new \Exception('ไม่สามารถบันทึกไฟล์ลงเซิร์ฟเวอร์ได้');
 
-            // 1. สร้าง "บิลแม่ใบใหม่"
             $transaction = PaymentTransaction::create([
                 'tx_no' => $txNo,
                 'user_id' => auth()->id(),
@@ -233,27 +251,22 @@ class CompetitionUserController extends Controller
                 'status' => 'waiting_verify'
             ]);
 
-            // 2. อัปเดต "ใบสมัครลูก" ให้ชี้ไปที่บิลใหม่
             Registration::whereIn('id', $registrations->pluck('id'))->update([
                 'payment_transaction_id' => $transaction->id,
                 'status' => 'waiting_verify'
             ]);
 
-            // 🚀 3. ทำลายบิลแม่ใบเก่าทิ้ง (ป้องกันแอดมินเห็นบิลผีที่โดน Reject ค้างในระบบ)
             if ($oldTransactionIds->isNotEmpty()) {
                 foreach ($oldTransactionIds as $oldId) {
                     $oldTx = PaymentTransaction::find($oldId);
-                    // ถ้าบิลเก่าไม่มีใบสมัครไหนผูกอยู่แล้ว ให้ลบทิ้งไปเลย
                     if ($oldTx && $oldTx->registrations()->count() === 0) {
                         $oldTx->delete();
                     }
                 }
             }
 
-            // โหลดความสัมพันธ์ที่จำเป็นให้บิลแม่ ก่อนส่งอีเมล
             $transaction->load(['competition', 'registrations.competitionClass', 'registrations.team.members', 'user']);
 
-            // ส่งอีเมลแจ้งเตือน
             try {
                 Mail::to(auth()->user()->email)->send(new RegistrationSubmittedMail($transaction));
             } catch (\Exception $e) {

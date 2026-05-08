@@ -11,7 +11,7 @@
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
         integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA=="
-        crossorigin="anonymous" referrerpolicy="no-referrer" />
+        cross crossorigin="anonymous" referrerpolicy="no-referrer" />
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <link rel="icon" href="{{ asset('images/favicon.png?v=' . time()) }}" type="image/png">
@@ -79,7 +79,7 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
                         </svg>
-                        ค้นหางานแข่งขัน
+                        ค้นหารายการแข่งขัน
                     </a>
 
                     @php $isTeams = request()->routeIs('user.teams.*'); @endphp
@@ -90,7 +90,7 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13.732 4c-.76-1.01-1.93-1.42-3.232-1.42s-2.472.41-3.232 1.42" />
                         </svg>
-                        จัดการทีมของฉัน
+                        การจัดการข้อมูลทีม
                     </a>
 
                     @php
@@ -107,7 +107,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                             </svg>
-                            ประวัติการสมัคร
+                            ประวัติการลงทะเบียน
                         </div>
                         @if ($pendingPaymentCount > 0)
                             <div
@@ -141,7 +141,7 @@
                                         {{ Auth::user()->name }}
                                     </p>
                                     <p class="text-[10px] text-blue-500 font-normal uppercase tracking-wider mt-1">
-                                        ผู้เข้าแข่งขัน
+                                        ผู้เข้าร่วมการแข่งขัน
                                     </p>
                                 </div>
                                 <div
@@ -169,7 +169,7 @@
                             {{-- 🚀 แก้ไข Hover ให้เป็น Dark Mode --}}
                             <button @click.prevent="$dispatch('open-modal', 'profile-edit-modal')"
                                 class="block w-full px-4 py-2 text-start text-sm leading-5 hover:bg-white/5 transition duration-150 ease-in-out font-normal text-gray-300 hover:text-white">
-                                โปรไฟล์ของฉัน
+                                ข้อมูลส่วนบุคคล
                             </button>
 
                             <form method="POST" action="{{ route('logout') }}">
@@ -226,9 +226,9 @@
                     </div>
                     <div>
                         <h2 class="text-lg sm:text-xl font-normal text-white leading-tight">
-                            จัดการโปรไฟล์</h2>
+                            การจัดการข้อมูลส่วนบุคคล</h2>
                         <p class="text-[10px] sm:text-xs text-gray-400 mt-0.5 font-normal">
-                            อัปเดตข้อมูลส่วนตัวสำหรับการแข่งขัน</p>
+                            ปรับปรุงข้อมูลส่วนบุคคลสำหรับการเข้าร่วมการแข่งขัน</p>
                     </div>
                 </div>
                 <button @click="$dispatch('close-modal', 'profile-edit-modal')"
@@ -269,7 +269,7 @@
 
                         {{-- ส่วนปุ่มเลือกไฟล์ --}}
                         <div class="flex-1 min-w-0">
-                            <label class="block text-xs sm:text-sm font-normal text-gray-300 mb-1">รูปโปรไฟล์ (ไม่บังคับ)</label>
+                            <label class="block text-xs sm:text-sm font-normal text-gray-300 mb-1">รูปภาพประจำตัว (ไม่บังคับ)</label>
                             
                             <input type="file" name="avatar" id="avatar_upload" accept="image/jpeg, image/png, image/jpg" class="hidden" 
                                 x-ref="avatar"
@@ -281,18 +281,18 @@
                                 ">
                                 
                             <label for="avatar_upload" class="inline-flex items-center px-3 py-1.5 bg-[#1a1a1a] border border-white/10 rounded-lg text-[11px] font-normal text-gray-300 cursor-pointer hover:border-blue-500 hover:text-blue-400 transition-colors shadow-sm">
-                                <i class="fas fa-camera mr-1.5"></i> เลือกรูปภาพ
+                                <i class="fas fa-camera mr-1.5"></i> อัปโหลดรูปภาพ
                             </label>
                             
                             <p class="text-[10px] text-blue-400 mt-1.5 truncate" x-show="photoName" x-text="photoName"></p>
-                            <p class="text-[10px] text-gray-500 mt-1" x-show="!photoName">JPG, PNG ขนาดไม่เกิน 2MB</p>
+                            <p class="text-[10px] text-gray-500 mt-1" x-show="!photoName">รองรับไฟล์ JPG, PNG ขนาดไม่เกิน 2MB</p>
                         </div>
                     </div>
 
                     {{-- 0.1 ชื่อที่แสดงในระบบ --}}
                     <div class="space-y-1.5">
                         <label
-                            class="text-xs sm:text-sm font-normal text-gray-300">ชื่อที่แสดงในระบบ
+                            class="text-xs sm:text-sm font-normal text-gray-300">ชื่อที่แสดงผลในระบบ
                             (Display Name) <span class="text-red-500">*</span></label>
                         <input name="name" type="text" value="{{ old('name', Auth::user()->name) }}" required
                             class="w-full px-4 py-2.5 sm:py-3 bg-black border {{ $errors->has('name') ? 'border-red-500' : 'border-white/10' }} rounded-xl focus:ring-2 focus:ring-blue-500/50 outline-none transition-all text-sm text-white shadow-sm font-normal">
@@ -310,8 +310,8 @@
                         <div class="grid grid-cols-12 gap-3 sm:gap-4">
                             {{-- Prefix TH --}}
                             <div class="col-span-5 sm:col-span-3 md:col-span-3 lg:col-span-3 space-y-1.5">
-                                <label class="text-[10px] sm:text-xs font-normal text-gray-400">คำนำหน้า</label>
-                                <div x-data="{ open: false, selected: '{{ old('prefix_th', Auth::user()->prefix_th) }}', placeholder: 'เลือก' }" class="relative" @click.away="open = false">
+                                <label class="text-[10px] sm:text-xs font-normal text-gray-400">คำนำหน้าชื่อ</label>
+                                <div x-data="{ open: false, selected: '{{ old('prefix_th', Auth::user()->prefix_th) }}', placeholder: 'โปรดระบุ' }" class="relative" @click.away="open = false">
                                     <input type="hidden" name="prefix_th" x-model="selected">
                                     <button @click="open = !open" type="button"
                                         class="w-full px-3 sm:px-4 py-2.5 bg-black border {{ $errors->has('prefix_th') ? 'border-red-500' : 'border-white/10' }} rounded-xl focus:ring-2 focus:ring-blue-500/50 outline-none transition-all text-xs sm:text-sm text-white flex justify-between items-center text-left font-normal">
@@ -343,7 +343,7 @@
 
                             {{-- ชื่อจริง --}}
                             <div class="col-span-7 sm:col-span-4 md:col-span-5 lg:col-span-4 space-y-1.5">
-                                <label class="text-[10px] sm:text-xs font-normal text-gray-400">ชื่อจริง</label>
+                                <label class="text-[10px] sm:text-xs font-normal text-gray-400">ชื่อ</label>
                                 <input name="first_name_th" type="text"
                                     value="{{ old('first_name_th', Auth::user()->first_name_th) }}"
                                     class="w-full px-3 sm:px-4 py-2.5 bg-black border {{ $errors->has('first_name_th') ? 'border-red-500' : 'border-white/10' }} rounded-xl focus:ring-2 focus:ring-blue-500/50 outline-none transition-all text-xs sm:text-sm text-white font-normal">
@@ -421,15 +421,14 @@
                     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-5 pt-2">
                         <div class="space-y-1.5">
                             <label
-                                class="text-[10px] sm:text-xs font-normal text-gray-300">วัน/เดือน/ปี
-                                เกิด (ค.ศ.)</label>
+                                class="text-[10px] sm:text-xs font-normal text-gray-300">วัน/เดือน/ปีเกิด (คริสต์ศักราช)</label>
                             <input name="birthday" type="date"
                                 value="{{ old('birthday', Auth::user()->birthday ? \Carbon\Carbon::parse(Auth::user()->birthday)->format('Y-m-d') : '') }}"
                                 class="w-full px-4 py-2.5 bg-black border {{ $errors->has('birthday') ? 'border-red-500' : 'border-white/10' }} rounded-xl focus:ring-2 focus:ring-blue-500/50 outline-none transition-all text-sm text-white cursor-pointer [color-scheme:dark] font-normal">
                         </div>
                         <div class="space-y-1.5">
                             <label
-                                class="text-[10px] sm:text-xs font-normal text-gray-300">เบอร์โทรศัพท์</label>
+                                class="text-[10px] sm:text-xs font-normal text-gray-300">หมายเลขโทรศัพท์ติดต่อ</label>
                             <input name="phone_number" type="text"
                                 value="{{ old('phone_number', Auth::user()->phone_number) }}"
                                 placeholder="08XXXXXXXX"
@@ -438,8 +437,8 @@
 
                         {{-- Shirt Size --}}
                         <div class="sm:col-span-2 md:col-span-1 space-y-1.5">
-                            <label class="text-[10px] sm:text-xs font-normal text-gray-300">ไซส์เสื้อ (Shirt Size)</label>
-                            <div x-data="{ open: false, selected: '{{ old('shirt_size', Auth::user()->shirt_size) }}', placeholder: 'เลือกไซส์' }" class="relative" @click.away="open = false">
+                            <label class="text-[10px] sm:text-xs font-normal text-gray-300">ขนาดเสื้อ (Shirt Size)</label>
+                            <div x-data="{ open: false, selected: '{{ old('shirt_size', Auth::user()->shirt_size) }}', placeholder: 'โปรดระบุขนาด' }" class="relative" @click.away="open = false">
                                 <input type="hidden" name="shirt_size" x-model="selected">
                                 <button @click="open = !open" type="button"
                                     class="w-full px-4 py-2.5 bg-black border {{ $errors->has('shirt_size') ? 'border-red-500' : 'border-white/10' }} rounded-xl focus:ring-2 focus:ring-blue-500/50 outline-none transition-all text-sm text-white flex justify-between items-center text-left font-normal">
@@ -477,7 +476,7 @@
                                     d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"
                                     clip-rule="evenodd" />
                             </svg>
-                            อีเมล (แก้ไขไม่ได้)
+                            อีเมล (ไม่สามารถแก้ไขข้อมูลได้)
                         </label>
                         <div class="text-xs sm:text-sm font-normal text-gray-400 italic px-1">
                             {{ Auth::user()->email }}</div>
@@ -493,7 +492,7 @@
                     <div class="flex flex-col sm:flex-row items-center gap-3">
                         <button type="submit"
                             class="w-full sm:w-auto flex-1 px-6 py-3.5 sm:py-3 bg-white text-black text-sm font-normal rounded-xl hover:bg-gray-200 transition-all shadow-sm order-1 sm:order-none focus:ring-2 focus:ring-gray-400 outline-none">
-                            บันทึกการเปลี่ยนแปลง
+                            บันทึกข้อมูล
                         </button>
                         <button type="button" @click="$dispatch('close-modal', 'profile-edit-modal')"
                             class="w-full sm:w-auto px-6 py-3.5 sm:py-3 bg-white/5 text-gray-300 text-sm font-normal rounded-xl hover:bg-white/10 transition-all order-2 sm:order-none">
@@ -529,7 +528,7 @@
                     icon: 'success',
                     iconColor: '#10b981',
                     title: 'สำเร็จ',
-                    html: `{!! addslashes(session('success') ?? 'บันทึกข้อมูลเรียบร้อยแล้ว') !!}`,
+                    html: `{!! addslashes(session('success') ?? 'บันทึกข้อมูลเสร็จสมบูรณ์') !!}`,
                     confirmButtonText: 'ตกลง',
                     confirmButtonColor: '#10b981',
                 });
@@ -567,7 +566,7 @@
                     iconColor: '#f59e0b',
                     title: 'พบข้อผิดพลาด',
                     html: `
-                <p class="text-gray-400 text-xs ml-1">กรุณาตรวจสอบข้อมูลตามรายการด้านล่าง:</p>
+                <p class="text-gray-400 text-xs ml-1">กรุณาตรวจสอบความถูกต้องของข้อมูลตามรายการด้านล่าง:</p>
                 ${errorHtml}
             `,
                     confirmButtonText: 'รับทราบ',
@@ -585,14 +584,14 @@
                     
                     Swal.fire({
                         ...ToastConfig,
-                        title: 'ยืนยันการลบคำขอ?',
-                        text: "หากยกเลิกและลบไปแล้ว จะไม่สามารถกู้คืนกลับมาได้",
+                        title: 'ยืนยันการทำรายการลบข้อมูล?',
+                        text: "หากดำเนินการลบข้อมูลแล้ว จะไม่สามารถกู้คืนข้อมูลดังกล่าวได้",
                         icon: 'warning',
                         iconColor: '#ef4444', 
                         showCancelButton: true,
                         confirmButtonColor: '#ef4444',
                         cancelButtonColor: '#4b5563', // สีเทาเข้ม
-                        confirmButtonText: '<i class="fas fa-trash-alt mr-1.5"></i> ใช่, ยืนยันการลบ',
+                        confirmButtonText: '<i class="fas fa-trash-alt mr-1.5"></i> ยืนยันการลบข้อมูล',
                         cancelButtonText: 'ยกเลิก'
                     }).then((result) => {
                         if (result.isConfirmed) {

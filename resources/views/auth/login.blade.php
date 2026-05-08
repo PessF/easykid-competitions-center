@@ -15,7 +15,7 @@
 
         <div class="bg-[#121212] p-8 sm:p-10 rounded-2xl shadow-2xl border border-white/5">
 
-            <h2 class="text-xl font-medium text-center text-white mb-8 tracking-tight">เข้าสู่ระบบ</h2>
+            <h2 class="text-xl font-medium text-center text-white mb-8 tracking-tight">เข้าสู่ระบบบัญชีผู้ใช้งาน</h2>
 
             @if (session('status'))
                 <div x-data="{ show: true }" x-init="setTimeout(() => show = false, 5000)" x-show="show"
@@ -28,7 +28,7 @@
                 @csrf
 
                 <div>
-                    <input type="email" name="email" :value="old('email')" placeholder="อีเมล" required autofocus
+                    <input type="email" name="email" :value="old('email')" placeholder="ที่อยู่อีเมล" required autofocus
                         class="w-full px-5 py-3.5 rounded-xl border border-white/10 bg-[#0a0a0a] text-base font-light focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all text-white placeholder-gray-600">
                     <x-input-error :messages="$errors->get('email')" class="mt-1 ml-1 text-xs" />
                 </div>
@@ -43,16 +43,16 @@
                     <label class="flex items-center cursor-pointer group">
                         <input type="checkbox" name="remember"
                             class="w-4 h-4 rounded border-gray-700 bg-[#0a0a0a] text-blue-500 focus:ring-0 focus:ring-offset-0 cursor-pointer">
-                        <span class="ml-2 text-sm text-gray-500 group-hover:text-gray-300 transition-colors">จำฉันไว้</span>
+                        <span class="ml-2 text-sm text-gray-500 group-hover:text-gray-300 transition-colors">จดจำข้อมูลผู้ใช้งาน</span>
                     </label>
                     @if (Route::has('password.request'))
                         <a href="{{ route('password.request') }}"
-                            class="text-sm text-gray-500 hover:text-white transition-colors font-medium">ลืมรหัสผ่าน?</a>
+                            class="text-sm text-gray-500 hover:text-white transition-colors font-medium">ลืมรหัสผ่านใช่หรือไม่?</a>
                     @endif
                 </div>
 
                 <button class="w-full bg-white text-black py-3.5 rounded-xl font-medium text-base tracking-wide transition-all hover:bg-gray-200 active:scale-[0.99] shadow-lg">
-                    เข้าสู่ระบบ
+                    ยืนยันการเข้าสู่ระบบ
                 </button>
             </form>
 
@@ -69,13 +69,13 @@
                 <a href="{{ route('auth.google') }}"
                     class="w-full flex items-center justify-center gap-3 py-3.5 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 transition-all text-sm font-semibold text-gray-300">
                     <img src="https://www.svgrepo.com/show/355037/google.svg" class="w-5 h-5">
-                    ดำเนินการต่อด้วย Google
+                    เข้าสู่ระบบด้วยบัญชี Google
                 </a>
 
                 <p class="text-center text-sm text-gray-500 font-medium pt-2">
-                    ยังไม่มีบัญชี?
+                    ยังไม่มีบัญชีผู้ใช้งานใช่หรือไม่?
                     <a href="{{ route('register') }}"
-                        class="text-white font-medium hover:underline underline-offset-4 decoration-2 ml-1 transition-all">สมัครสมาชิก</a>
+                        class="text-white font-medium hover:underline underline-offset-4 decoration-2 ml-1 transition-all">ลงทะเบียนบัญชีใหม่</a>
                 </p>
             </div>
         </div>

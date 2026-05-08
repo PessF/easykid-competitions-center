@@ -84,8 +84,7 @@ class CompetitionClassController extends Controller
                 'robot_weight' => ($request->robot_weight > 0) ? $request->robot_weight : null, 
                 
                 // Set unused robot fields to null
-                'robot_name' => null,
-                'robot_model_id' => null,
+                'robot_name' => '',
                 'robot_image_url' => null,
                 
                 'allowed_categories' => $categoriesSnapshot, 
@@ -94,48 +93,35 @@ class CompetitionClassController extends Controller
             return redirect()->back()->with('success', 'เพิ่มรุ่นการแข่งขันเรียบร้อยแล้ว!');
 
         } catch (\Exception $e) {
+    
+			//dd('เจอตัวการแล้ว! สาเหตุคือ: ', $e->getMessage());
             Log::error("Store CompetitionClass Error: " . $e->getMessage());
-            $safeError = str_replace(["'", '"'], "", $e->getMessage());
-            return back()->withInput()->withErrors(['error' => 'ระบบขัดข้อง: ' . $safeError]);
+            
+            return back()->withInput()->withErrors(['error' => 'ไม่สามารถบันทึกข้อมูลได้ กรุณาตรวจสอบความถูกต้องหรือติดต่อผู้ดูแลระบบ']);
         }
     }
 
+   
     public function update(Request $request, Competition $competition, CompetitionClass $class)
     {
-        if (empty($request->all()) && $request->server('CONTENT_LENGTH') > 0) {
-            return back()->withInput()->withErrors(['error' => 'ไฟล์มีขนาดใหญ่เกินไป']);
-        }
-
         $request->validate([
             'name' => 'required|string|max:255',
             'entry_fee' => 'required|numeric|min:0',
             'min_members' => 'required|integer|min:1',
             'max_members' => 'required|integer|min:1|gte:min_members',
-            'max_teams' => 'nullable|integer|min:1',
-            'rule_pdf' => 'nullable|mimes:pdf|max:51200', 
             'game_type_name' => 'required|string|max:255',
-            'robot_weight' => 'nullable|numeric|min:0',
             'allowed_category' => 'required|string', 
         ]);
 
         try {
             $data = $request->only(['name', 'entry_fee', 'min_members', 'max_members', 'max_teams', 'game_type_name']);
-            
             $data['robot_weight'] = ($request->robot_weight > 0) ? $request->robot_weight : null;
-            
-            // Clean up unused robot fields in database
-            $data['robot_name'] = null;
-            $data['robot_model_id'] = null;
-            $data['robot_image_url'] = null;
-            
-            // จัดการไฟล์ PDF กติกา
-            if ($request->hasFile('rule_pdf')) {
-                if ($request->file('rule_pdf')->isValid()) {
-                    if ($class->rules_url) {
-                        Storage::disk('google')->delete($class->rules_url);
-                    }
-                    $data['rules_url'] = $this->uploadClassFile($request->file('rule_pdf'), $competition->name, $request->name, 'rules', 'google');
+
+            if ($request->hasFile('rule_pdf') && $request->file('rule_pdf')->isValid()) {
+                if ($class->rules_url) {
+                    Storage::disk('google')->delete($class->rules_url);
                 }
+                $data['rules_url'] = $this->uploadClassFile($request->file('rule_pdf'), $competition->name, $request->name, 'rules', 'google');
             }
 
             $data['allowed_categories'] = Category::where('name', $request->allowed_category)
@@ -143,29 +129,13 @@ class CompetitionClassController extends Controller
                 ->toArray();
 
             $class->update($data);
+            
             return redirect()->back()->with('success', 'อัปเดตข้อมูลเรียบร้อยแล้ว!');
 
         } catch (\Exception $e) {
+            // 🚀 เก็บ Log เช่นกัน และตอบกลับด้วยข้อความเรียบง่าย
             Log::error("Update CompetitionClass Error: " . $e->getMessage());
-            $safeError = str_replace(["'", '"'], "", $e->getMessage());
-            return back()->withInput()->withErrors(['error' => 'ไม่สามารถแก้ไขได้: ' . $safeError]);
-        }
-    }
-
-    public function destroy(Competition $competition, CompetitionClass $class)
-    {
-        try {
-            if ($class->rules_url) {
-                Storage::disk('google')->delete($class->rules_url);
-            }
-            
-            // ไม่ต้องสนใจรูปรถหุ่นยนต์แล้ว ลบเฉพาะ Model ก็พอ
-            $class->delete();
-            
-            return redirect()->back()->with('success', 'ลบรุ่นการแข่งขันเรียบร้อยแล้ว!');
-        } catch (\Exception $e) {
-            Log::error("Delete CompetitionClass Error: " . $e->getMessage());
-            return back()->withErrors(['error' => 'ไม่สามารถลบได้: ' . $e->getMessage()]);
+            return back()->withInput()->withErrors(['error' => 'ไม่สามารถแก้ไขข้อมูลได้ กรุณาลองใหม่อีกครั้ง']);
         }
     }
 

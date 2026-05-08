@@ -27,11 +27,11 @@
                     {{-- Header --}}
                     <div class="mb-8 sm:mb-12">
                         <h2 class="text-2xl sm:text-3xl font-normal text-white tracking-tight">
-                            {{ __('ตั้งค่าข้อมูลส่วนตัว') }}
+                            {{ __('การตั้งค่าข้อมูลส่วนบุคคล') }}
                         </h2>
                         <div class="h-1 sm:h-1.5 w-12 sm:w-16 bg-blue-500 mt-2 sm:mt-3 rounded-full"></div>
                         <p class="mt-3 sm:mt-5 text-sm sm:text-base text-gray-400 font-light leading-relaxed">
-                            {{ __('กรุณาตรวจสอบข้อมูลให้ถูกต้อง เพื่อความปลอดภัยของบัญชีคุณ') }}
+                            {{ __('กรุณาตรวจสอบและกรอกข้อมูลให้ถูกต้องครบถ้วน เพื่อความปลอดภัยของบัญชีผู้ใช้งานของท่าน') }}
                         </p>
                     </div>
 
@@ -57,15 +57,15 @@
                             </div>
                             <div class="flex-1 text-center sm:text-left">
                                 <label
-                                    class="block text-sm sm:text-base font-normal text-white mb-2 sm:mb-3">{{ __('รูปโปรไฟล์ (ไม่บังคับ)') }}</label>
+                                    class="block text-sm sm:text-base font-normal text-white mb-2 sm:mb-3">{{ __('รูปภาพประจำตัว (ไม่บังคับ)') }}</label>
                                 <input type="file" name="avatar" id="avatar" accept="image/*"
                                     onchange="previewImage(event)" class="hidden">
                                 <button type="button" onclick="document.getElementById('avatar').click()"
                                     class="text-xs sm:text-sm font-medium py-2 px-4 sm:py-2.5 sm:px-6 bg-white/5 text-gray-300 rounded-xl hover:bg-white/10 hover:text-white transition-all border border-white/10">
-                                    <i class="fas fa-camera mr-1.5 sm:mr-2"></i>{{ __('เลือกรูปภาพ') }}
+                                    <i class="fas fa-camera mr-1.5 sm:mr-2"></i>{{ __('อัปโหลดรูปภาพ') }}
                                 </button>
                                 <p class="mt-2 sm:mt-3 text-[10px] sm:text-[11px] text-gray-500 uppercase tracking-widest">
-                                    {{ __('ขนาดแนะนำ 500x500 px (ไม่เกิน 2MB)') }}</p>
+                                    {{ __('ขนาดที่แนะนำ 500x500 พิกเซล (รองรับไฟล์ขนาดไม่เกิน 2MB)') }}</p>
                                 <x-input-error :messages="$errors->get('avatar')" class="mt-2 text-red-400 text-xs" />
                             </div>
                         </div>
@@ -80,7 +80,7 @@
                                 </h3>
                                 <div class="grid grid-cols-12 gap-3 sm:gap-4">
                                     <div class="col-span-12 sm:col-span-4 relative">
-                                        <label class="block font-medium text-xs text-gray-400 mb-1.5">{{ __('คำนำหน้า') }}</label>
+                                        <label class="block font-medium text-xs text-gray-400 mb-1.5">{{ __('คำนำหน้าชื่อ') }}</label>
                                         
                                         {{-- 🚀 Custom Dropdown: Prefix TH --}}
                                         <div x-data="{ 
@@ -93,7 +93,7 @@
                                                 { value: 'เด็กหญิง', label: 'เด็กหญิง' },
                                                 { value: 'เด็กชาย', label: 'เด็กชาย' }
                                             ],
-                                            get selectedLabel() { return this.options.find(o => o.value === this.selected)?.label || 'เลือกคำนำหน้า'; }
+                                            get selectedLabel() { return this.options.find(o => o.value === this.selected)?.label || 'โปรดระบุคำนำหน้าชื่อ'; }
                                         }" @click.outside="open = false" class="relative">
                                             <input type="hidden" name="prefix_th" x-model="selected">
                                             <button type="button" @click="open = !open" 
@@ -116,7 +116,7 @@
                                         </div>
                                     </div>
                                     <div class="col-span-12 sm:col-span-8">
-                                        <label for="first_name_th" class="block font-medium text-xs text-gray-400 mb-1.5">{{ __('ชื่อจริง') }}</label>
+                                        <label for="first_name_th" class="block font-medium text-xs text-gray-400 mb-1.5">{{ __('ชื่อ') }}</label>
                                         <input id="first_name_th" name="first_name_th" type="text" 
                                             class="block w-full bg-[#0a0a0a] border-white/10 text-white rounded-xl text-sm py-2.5 sm:py-3 px-3 sm:px-4 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                                             value="{{ old('first_name_th') }}" />
@@ -160,7 +160,7 @@
                                                 class="w-full flex items-center justify-between bg-[#0a0a0a] border border-white/10 text-white rounded-xl text-sm py-2.5 sm:py-3 px-3 sm:px-4 focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 transition-colors"
                                                 :class="open ? 'border-emerald-500 ring-1 ring-emerald-500' : ''">
                                                 <span x-text="selectedLabel"></span>
-                                                <svg :class="open ? 'rotate-180' : ''" class="w-3.5 h-3.5 text-gray-500 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                                                <svg :class="open ? 'rotate-180' : ''" class="w-3.5 h-3.5 text-gray-500 transition-transform duration-200 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                                             </button>
                                             <div x-show="open" x-transition.opacity.duration.200ms style="display: none;" 
                                                 class="absolute z-50 w-full mt-1.5 bg-[#1a1a1a] border border-white/10 rounded-xl shadow-xl py-1.5 overflow-hidden">
@@ -198,27 +198,26 @@
                             {{-- Row 1: Birthday & Phone --}}
                             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
                                 <div class="sm:col-span-1">
-                                    <label for="birthday" class="block font-medium text-xs text-gray-400 mb-1.5">{{ __('วัน/เดือน/ปี เกิด (ค.ศ.) - ไม่บังคับ') }}</label>
+                                    <label for="birthday" class="block font-medium text-xs text-gray-400 mb-1.5">{{ __('เดือน/วัน/ปีเกิด (คริสต์ศักราช) - ไม่บังคับ') }}</label>
                                     <input name="birthday" id="birthday" type="date" value="{{ old('birthday') }}"
                                         class="block w-full rounded-xl border border-white/10 bg-[#0a0a0a] text-white text-sm px-3 sm:px-4 py-2.5 sm:py-3 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-colors [color-scheme:dark]" />
                                     <x-input-error :messages="$errors->get('birthday')" class="mt-1 text-red-400 text-xs" />
                                 </div>
                                 <div class="sm:col-span-1">
-                                    <label for="phone_number" class="block font-medium text-xs text-gray-400 mb-1.5">{{ __('เบอร์โทรศัพท์') }}</label>
+                                    <label for="phone_number" class="block font-medium text-xs text-gray-400 mb-1.5">{{ __('หมายเลขโทรศัพท์ติดต่อ') }}</label>
                                     <input id="phone_number" name="phone_number" type="text" 
                                         class="block w-full bg-[#0a0a0a] border-white/10 text-white rounded-xl text-sm px-3 sm:px-4 py-2.5 sm:py-3 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-colors placeholder-gray-600"
                                         placeholder="08XXXXXXXX" value="{{ old('phone_number') }}" />
                                     <x-input-error :messages="$errors->get('phone_number')" class="mt-1 text-red-400 text-xs" />
-                                </div>
                                 <div class="sm:col-span-1 relative">
-                                    <label class="block font-medium text-xs text-gray-400 mb-1.5">{{ __('ไซส์เสื้อ (Shirt Size)') }}</label>
+                                    <label class="block font-medium text-xs text-gray-400 mb-1.5">{{ __('ขนาดเสื้อ (Shirt Size)') }}</label>
                                     
                                     {{-- 🚀 Custom Dropdown: Shirt Size --}}
                                     <div x-data="{ 
                                         open: false, 
                                         selected: '{{ old('shirt_size', '') }}',
                                         options: [
-                                            { value: '', label: 'เลือกไซส์ (เว้นได้)' },
+                                            { value: '', label: 'โปรดระบุขนาด (ไม่บังคับ)' },
                                             { value: 'S', label: 'S (รอบอก 34-36 นิ้ว)' },
                                             { value: 'M', label: 'M (รอบอก 36-38 นิ้ว)' },
                                             { value: 'L', label: 'L (รอบอก 38-40 นิ้ว)' },
@@ -226,7 +225,7 @@
                                             { value: '2XL', label: '2XL (รอบอก 42-44 นิ้ว)' },
                                             { value: '3XL', label: '3XL (รอบอก 44-46 นิ้ว)' }
                                         ],
-                                        get selectedLabel() { return this.options.find(o => o.value === this.selected)?.label || 'เลือกไซส์ (เว้นได้)'; }
+                                        get selectedLabel() { return this.options.find(o => o.value === this.selected)?.label || 'โปรดระบุขนาด (ไม่บังคับ)'; }
                                     }" @click.outside="open = false" class="relative">
                                         <input type="hidden" name="shirt_size" x-model="selected">
                                         <button type="button" @click="open = !open" 
@@ -256,23 +255,23 @@
                                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 animate-in slide-in-from-top-4 duration-700 p-5 sm:p-6 bg-[#0a0a0a] rounded-2xl border border-white/5">
                                     <div class="sm:col-span-2">
                                         <h3 class="text-xs font-normal text-yellow-500 uppercase tracking-[0.2em] flex items-center gap-2 mb-1.5">
-                                             {{ __('ตั้งค่ารหัสผ่านสำหรับการเข้าสู่ระบบครั้งถัดไป') }}
+                                             {{ __('การตั้งค่ารหัสผ่านสำหรับการเข้าสู่ระบบในครั้งถัดไป') }}
                                         </h3>
-                                        <p class="text-[10px] sm:text-[11px] text-gray-500">กรุณาตั้งรหัสผ่านเพื่อให้คุณสามารถเข้าสู่ระบบด้วยอีเมลในครั้งหน้าได้</p>
+                                        <p class="text-[10px] sm:text-[11px] text-gray-500">กรุณากำหนดรหัสผ่านเพื่อให้ท่านสามารถเข้าสู่ระบบด้วยอีเมลในครั้งถัดไป</p>
                                     </div>
                                     <div>
                                         <label for="password" class="block font-medium text-xs text-gray-400 mb-1.5">{{ __('กำหนดรหัสผ่านใหม่') }}</label>
                                         <input id="password" name="password" type="password"
                                             class="block w-full bg-[#121212] border-white/10 text-white rounded-xl text-sm px-3 sm:px-4 py-2.5 sm:py-3 focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500 transition-colors placeholder-gray-600" 
-                                            placeholder="อย่างน้อย 8 ตัวอักษร"
+                                            placeholder="ความยาวอย่างน้อย 8 ตัวอักษร"
                                             {{ is_null(auth()->user()->password) ? 'required' : '' }} />
                                         <x-input-error :messages="$errors->get('password')" class="mt-1 text-red-400 text-xs" />
                                     </div>
                                     <div>
-                                        <label for="password_confirmation" class="block font-medium text-xs text-gray-400 mb-1.5">{{ __('ยืนยันรหัสผ่านอีกครั้ง') }}</label>
+                                        <label for="password_confirmation" class="block font-medium text-xs text-gray-400 mb-1.5">{{ __('ยืนยันรหัสผ่านใหม่') }}</label>
                                         <input id="password_confirmation" name="password_confirmation" type="password" 
                                             class="block w-full bg-[#121212] border-white/10 text-white rounded-xl text-sm px-3 sm:px-4 py-2.5 sm:py-3 focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500 transition-colors placeholder-gray-600"
-                                            placeholder="กรอกรหัสผ่านอีกครั้ง" 
+                                            placeholder="กรอกรหัสผ่านใหม่อีกครั้ง" 
                                             {{ is_null(auth()->user()->password) ? 'required' : '' }} />
                                         <x-input-error :messages="$errors->get('password_confirmation')" class="mt-1 text-red-400 text-xs" />
                                     </div>
@@ -281,7 +280,7 @@
                                 <div class="p-4 sm:p-5 bg-blue-500/10 rounded-2xl border border-blue-500/20">
                                     <p class="text-xs sm:text-sm text-blue-400 flex items-center justify-center font-medium text-center">
                                         <i class="fas fa-check-circle mr-1.5 sm:mr-2 shrink-0"></i>
-                                        {{ __('บัญชีของคุณมีการตั้งรหัสผ่านเพื่อเข้าสู่ระบบเรียบร้อยแล้ว') }}
+                                        {{ __('บัญชีผู้ใช้งานของท่านได้ทำการตั้งค่ารหัสผ่านสำหรับการเข้าสู่ระบบเรียบร้อยแล้ว') }}
                                     </p>
                                 </div>
                             @endif

@@ -38,17 +38,17 @@
                 {{-- Details --}}
                 <div class="w-full space-y-2.5 sm:space-y-3 text-xs sm:text-sm border-t border-dashed border-white/10 pt-5 sm:pt-6">
                     <div class="flex justify-between items-start gap-4">
-                        <span class="text-gray-500 shrink-0">งานแข่งขัน</span>
+                        <span class="text-gray-500 shrink-0">รายการแข่งขัน</span>
                         <span
                             class="font-normal text-gray-200 text-right">{{ $registration->competition->name }}</span>
                     </div>
                     <div class="flex justify-between items-start gap-4">
-                        <span class="text-gray-500 shrink-0">รุ่น</span>
+                        <span class="text-gray-500 shrink-0">รุ่นการแข่งขัน</span>
                         <span
                             class="font-normal text-gray-200 text-right">{{ $registration->competitionClass->name }}</span>
                     </div>
                     <div class="flex justify-between items-start gap-4">
-                        <span class="text-gray-500 shrink-0">สถาบัน</span>
+                        <span class="text-gray-500 shrink-0">สถาบันการศึกษา</span>
                         <span
                             class="font-normal text-gray-200 text-right">{{ $registration->team->school_name ?? '-' }}</span>
                     </div>
@@ -58,7 +58,7 @@
                 <div class="w-full border-t border-dashed border-white/10 pt-4 sm:pt-5 mt-4 sm:mt-5">
                     <p
                         class="text-[10px] sm:text-[11px] font-normal text-gray-500 uppercase tracking-widest mb-2 sm:mb-3 text-center sm:text-left">
-                        สมาชิกในทีม:</p>
+                        รายชื่อสมาชิกในทีม:</p>
                     <div class="flex flex-wrap gap-1.5 justify-center sm:justify-start">
                         @foreach ($registration->team->members as $member)
                             <span
@@ -75,16 +75,16 @@
                 class="bg-[#0a0a0a] p-4 sm:p-5 text-center border-t border-white/5 print:hidden">
                 <button onclick="window.print()"
                     class="inline-flex items-center justify-center gap-2 bg-white hover:bg-gray-200 text-black px-5 py-2.5 sm:px-6 sm:py-3 rounded-xl text-xs sm:text-sm font-normal transition-colors shadow-lg w-full sm:w-auto focus:outline-none">
-                    <i class="fas fa-print"></i> พิมพ์บัตรนี้ / บันทึก PDF
+                    <i class="fas fa-print"></i> พิมพ์เอกสาร / บันทึกเป็น PDF
                 </button>
-                <p class="text-[9px] sm:text-[10px] text-gray-500 mt-2.5 sm:mt-3">โปรดนำบัตรนี้ไปแสดงที่จุดลงทะเบียนในวันแข่งขัน</p>
+                <p class="text-[9px] sm:text-[10px] text-gray-500 mt-2.5 sm:mt-3">กรุณานำเอกสารฉบับนี้มาแสดง ณ จุดลงทะเบียนในวันแข่งขัน</p>
             </div>
 
             {{-- โซนปุ่มเทสต์ (ซ่อนตอนปรินต์จริง) --}}
             <div class="mt-2 sm:mt-4 pb-4 sm:pb-6 text-center print:hidden">
                 <a href="{{ URL::signedRoute('verify.ticket', ['reg_no' => $registration->regis_no]) }}" target="_blank"
                     class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 bg-purple-500/10 text-purple-400 text-[10px] sm:text-xs font-normal rounded-lg hover:bg-purple-500/20 transition-colors border border-purple-500/20">
-                    <i class="fas fa-search"></i> จำลองการสแกน QR (คลิกเลย)
+                    <i class="fas fa-search"></i> ทดสอบระบบจำลองการตรวจสอบคิวอาร์โค้ด
                 </a>
             </div>
         </div>
@@ -118,7 +118,7 @@
                         <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400 shrink-0">
                             <i class="fas fa-info-circle text-sm sm:text-base"></i>
                         </div>
-                        <h3 class="text-sm sm:text-base font-normal text-white">คำแนะนำการลงทะเบียนหน้างาน</h3>
+                        <h3 class="text-sm sm:text-base font-normal text-white">ข้อปฏิบัติสำหรับการลงทะเบียนหน้างาน</h3>
                     </div>
                     <button @click="showModal = false" class="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-[#1a1a1a] border border-white/5 flex items-center justify-center text-gray-500 hover:text-white hover:bg-white/10 transition-colors shrink-0 focus:outline-none">
                         <i class="fas fa-times text-xs sm:text-sm"></i>
@@ -127,26 +127,26 @@
 
                 {{-- Modal Body --}}
                 <div class="p-5 sm:p-8 space-y-4 sm:space-y-5 text-gray-400 overflow-y-auto custom-scrollbar">
-                    <p class="text-xs sm:text-sm font-normal text-gray-300">เพื่อความรวดเร็วในการจุดลงทะเบียน ขอให้ทุกทีมเตรียมตัวดังนี้:</p>
+                    <p class="text-xs sm:text-sm font-normal text-gray-300">เพื่อความสะดวกรวดเร็วในการลงทะเบียน กรุณาเตรียมความพร้อมดังรายละเอียดต่อไปนี้:</p>
                     
                     <ul class="space-y-3 sm:space-y-4 font-normal">
                         <li class="flex items-start gap-2.5 sm:gap-3">
                             <span class="flex-shrink-0 w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 flex items-center justify-center text-[10px] sm:text-xs font-normal mt-0.5">1</span>
-                            <span class="text-xs sm:text-sm leading-relaxed"><span class="text-white">โชว์บัตรเดียว:</span> ให้ตัวแทนทีม 1 คน (ผู้เข้าแข่งขัน หรือ ครูที่ปรึกษา) เป็นผู้เตรียม E-Ticket นี้ให้เจ้าหน้าที่สแกน (เปิดจากมือถือหรือพิมพ์มาก็ได้)</span>
+                            <span class="text-xs sm:text-sm leading-relaxed"><span class="text-white">แสดงเอกสารการสมัคร:</span> ตัวแทนทีมจำนวน 1 ท่าน (ผู้เข้าแข่งขัน หรือ ครูที่ปรึกษา) โปรดเตรียม E-Ticket ฉบับนี้เพื่อแสดงต่อเจ้าหน้าที่ (สามารถแสดงผ่านหน้าจอโทรศัพท์มือถือ หรือเอกสารฉบับพิมพ์)</span>
                         </li>
                         <li class="flex items-start gap-2.5 sm:gap-3">
                             <span class="flex-shrink-0 w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 flex items-center justify-center text-[10px] sm:text-xs font-normal mt-0.5">2</span>
-                            <span class="text-xs sm:text-sm leading-relaxed"><span class="text-white">เตรียมเอกสาร:</span> สมาชิกในทีม <span class="text-white">ทุกคน</span> ต้องเตรียม <u>บัตรประชาชน</u> หรือ <u>บัตรนักเรียน/นักศึกษา</u> มาแสดงตัวต่อเจ้าหน้าที่เพื่อตรวจสอบสิทธิ์</span>
+                            <span class="text-xs sm:text-sm leading-relaxed"><span class="text-white">การยืนยันตัวตน:</span> สมาชิกในทีม<span class="text-white">ทุกคน</span>โปรดเตรียม <u>บัตรประจำตัวประชาชน</u> หรือ <u>บัตรประจำตัวนักเรียน/นักศึกษา</u> เพื่อแสดงต่อเจ้าหน้าที่สำหรับการตรวจสอบสิทธิ์</span>
                         </li>
                         <li class="flex items-start gap-2.5 sm:gap-3">
                             <span class="flex-shrink-0 w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 flex items-center justify-center text-[10px] sm:text-xs font-normal mt-0.5">3</span>
-                            <span class="text-xs sm:text-sm leading-relaxed"><span class="text-white">ตรวจหุ่นยนต์:</span> เตรียมหุ่นยนต์ที่ใช้แข่งขันมาให้คณะกรรมการตรวจสอบน้ำหนัก ขนาด และสเปค ให้ตรงตามกติกาของรุ่นนั้นๆ</span>
+                            <span class="text-xs sm:text-sm leading-relaxed"><span class="text-white">การตรวจสอบอุปกรณ์ (หุ่นยนต์):</span> โปรดนำหุ่นยนต์ที่ใช้ในการแข่งขันมาแสดงต่อคณะกรรมการ เพื่อตรวจสอบน้ำหนัก ขนาด และคุณสมบัติให้เป็นไปตามกติกาของรุ่นการแข่งขัน</span>
                         </li>
                     </ul>
 
                     <div class="mt-5 sm:mt-6 bg-amber-500/10 p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-amber-500/20">
                         <p class="text-[10px] sm:text-xs text-amber-400 font-normal leading-relaxed">
-                            <i class="fas fa-exclamation-triangle mr-1"></i> หากมีปัญหาใด ๆ กรูณาติดต่อเจ้าหน้าที่ที่จุดลงทะเบียน ขอให้ท่านจงมีแต่ความสุข ขอบคุณครับ/ค่ะ
+                            <i class="fas fa-exclamation-triangle mr-1"></i> หากมีข้อสงสัยหรือพบปัญหาประการใด กรุณาติดต่อเจ้าหน้าที่ ณ จุดลงทะเบียน ขอขอบพระคุณที่ให้ความร่วมมือ
                         </p>
                     </div>
                 </div>
@@ -154,7 +154,7 @@
                 {{-- Modal Footer --}}
                 <div class="bg-[#0a0a0a] p-4 sm:p-5 border-t border-white/5 flex justify-end shrink-0">
                     <button @click="showModal = false" class="px-5 sm:px-6 py-2 sm:py-2.5 bg-blue-600 hover:bg-blue-500 text-white text-xs sm:text-sm font-normal rounded-xl transition-colors w-full sm:w-auto shadow-sm focus:outline-none">
-                        รับทราบ
+                        รับทราบข้อปฏิบัติ
                     </button>
                 </div>
             </div>

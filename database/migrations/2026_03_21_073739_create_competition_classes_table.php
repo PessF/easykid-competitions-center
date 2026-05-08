@@ -27,7 +27,7 @@ return new class extends Migration
                 
                 // 3. โซน DATA SNAPSHOT (ปั๊มข้อมูลมาจาก Master Data)
                 $table->string('game_type_name'); 
-                $table->string('robot_name'); 
+                $table->string('robot_name')->nullable();; 
                 $table->decimal('robot_weight', 8, 2)->nullable(); 
                 $table->string('robot_image_url')->nullable();
                 

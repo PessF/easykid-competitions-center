@@ -5,8 +5,9 @@ namespace App\Providers;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Blade; 
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\URL; 
 use League\Flysystem\Filesystem;
-use Masbug\Flysystem\GoogleDriveAdapter; // แก้ตาม README แล้ว
+use Masbug\Flysystem\GoogleDriveAdapter;
 use Google\Client;
 
 class AppServiceProvider extends ServiceProvider
@@ -15,6 +16,11 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        
+        if (app()->environment('production') || env('APP_ENV') === 'production') {
+            URL::forceScheme('https');
+        }
+
         Blade::component('layouts.setup', 'setup-layout');
         Blade::component('layouts.admin', 'admin-layout');
         Blade::component('layouts.user', 'user-layout');

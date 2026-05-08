@@ -70,37 +70,30 @@
                         @endforeach
                     </div>
 
-                    {{-- Info Box --}}
-                    <div class="space-y-2 md:space-y-3 text-xs md:text-sm text-gray-400 mb-4 md:mb-6 bg-[#0a0a0a] p-3 md:p-4 rounded-lg md:rounded-xl border border-white/5 flex-1">
-                        <div class="flex justify-between items-center">
-                            <div class="flex items-center">
-                                <i class="fas fa-weight-hanging w-4 md:w-5 text-center mr-1.5 md:mr-2 text-gray-500"></i>
-                                <span>พิกัดน้ำหนัก:</span>
-                            </div>
-                            <span class="font-semibold text-white">{{ $class->robot_weight ? number_format($class->robot_weight, 2) . ' Kg.' : 'ไม่จำกัด' }}</span>
-                        </div>
-                        
-                        <div class="border-t border-white/5 my-1.5 md:my-2 pt-1.5 md:pt-2"></div>
-                        
-                        <div class="flex justify-between items-center">
-                            <div class="flex items-center">
-                                <i class="fas fa-coins w-4 md:w-5 text-center mr-1.5 md:mr-2 text-emerald-500"></i>
-                                <span>ค่าสมัคร:</span>
-                            </div>
-                            <span class="font-semibold text-emerald-400">
-                                {{ $class->entry_fee > 0 ? number_format($class->entry_fee) . ' บาท' : 'ฟรี' }}
-                            </span>
-                        </div>
-                        <div class="flex justify-between items-center mt-1">
-                            <div class="flex items-center">
-                                <i class="fas fa-users w-4 md:w-5 text-center mr-1.5 md:mr-2 text-blue-500"></i>
-                                <span>สมาชิก (คน/ทีม):</span>
-                            </div>
-                            <span class="font-semibold text-white">
-                                {{ $class->min_members == $class->max_members ? $class->max_members : $class->min_members . '-' . $class->max_members }} คน
-                            </span>
-                        </div>
-                    </div>
+			{{-- Info Box --}}
+			<div class="space-y-2 md:space-y-3 text-xs md:text-sm text-gray-400 mb-4 md:mb-6 bg-[#0a0a0a] p-3 md:p-4 rounded-lg md:rounded-xl border border-white/5 flex-1">
+
+				<div class="flex justify-between items-center mt-1">
+					<div class="flex items-center">
+						<i class="fas fa-users w-4 md:w-5 text-center mr-1.5 md:mr-2 text-blue-500"></i>
+						<span>สมาชิก (คน/ทีม):</span>
+					</div>
+					<span class="font-semibold text-white">
+						{{ $class->min_members == $class->max_members ? $class->max_members : $class->min_members . '-' . $class->max_members }} คน
+					</span>
+				</div>
+
+				{{-- โค้ดที่เพิ่มเข้ามาใหม่: จำนวนทีมที่รับ --}}
+				<div class="flex justify-between items-center mt-1">
+					<div class="flex items-center">
+						<i class="fas fa-trophy w-4 md:w-5 text-center mr-1.5 md:mr-2 text-yellow-500"></i>
+						<span>จำนวนทีมที่รับ:</span>
+					</div>
+					<span class="font-semibold text-yellow-400">
+						{{ $class->max_teams ? number_format($class->max_teams) . ' ทีม' : 'ไม่จำกัด' }}
+					</span>
+				</div>
+			</div>
 
                     {{-- Footer Actions --}}
                     <div class="mt-auto flex flex-col gap-2 md:gap-3">
@@ -109,7 +102,7 @@
                                 target="_blank"
                                 class="flex justify-center items-center py-2 md:py-2.5 text-xs md:text-sm font-semibold text-purple-400 bg-purple-500/10 hover:bg-purple-500/20 rounded-lg md:rounded-xl transition-colors border border-transparent hover:border-purple-500/30">
                                 <i class="fas fa-file-pdf mr-1.5 md:mr-2 text-sm md:text-lg"></i>
-                                ดูกติกาการแข่งขัน
+                                กติกาการแข่งขัน
                             </a>
                         @endif
 

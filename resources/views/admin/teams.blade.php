@@ -5,7 +5,7 @@
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div>
                 <h1 class="text-2xl font-normal tracking-tight text-white flex items-center">
-                    <i class="fas fa-users text-blue-500 mr-3"></i> รายชื่อการสมัครทั้งหมด
+                    <i class="fas fa-users text-blue-500 mr-3"></i> ข้อมูลผู้สมัครทั้งหมด
                 </h1>
                 <p class="text-sm text-gray-400 mt-1">
                     ระบบจัดการและค้นหาข้อมูลที่ส่งเข้าร่วมการแข่งขัน
@@ -146,12 +146,12 @@
                 <table class="w-full text-sm text-left text-gray-400">
                     <thead class="text-xs uppercase bg-[#0a0a0a] text-gray-400 border-b border-white/5">
                         <tr>
-                            <th scope="col" class="px-6 py-4 font-normal tracking-wide">รหัส / สถานะ</th>
-                            <th scope="col" class="px-6 py-4 font-normal tracking-wide">ข้อมูลทีม</th>
-                            <th scope="col" class="px-6 py-4 font-normal tracking-wide">งานแข่ง / รุ่น</th>
-                            <th scope="col" class="px-6 py-4 font-normal tracking-wide">ผู้ส่งสมัคร (ครู/ผู้ปกครอง)</th>
-                            <th scope="col" class="px-6 py-4 font-normal tracking-wide text-center">สมาชิก</th>
-                            <th scope="col" class="px-6 py-4 font-normal tracking-wide text-center">จัดการ</th>
+                            <th scope="col" class="px-6 py-4 font-normal tracking-wide">รหัส/สถานะ</th>
+                            <th scope="col" class="px-6 py-4 font-normal tracking-wide">ชื่อทีม/สถาบัน</th>
+                            <th scope="col" class="px-6 py-4 font-normal tracking-wide">รายการแข่งขัน/รุ่น</th>
+                            <th scope="col" class="px-6 py-4 font-normal tracking-wide">ผู้ควบคุมทีม/ผู้ปกครอง</th>
+                            <th scope="col" class="px-6 py-4 font-normal tracking-wide text-center">จำนวนสมาชิก</th>
+                            <th scope="col" class="px-6 py-4 font-normal tracking-wide text-center">จัดการทีม</th>
                         </tr>
                     </thead>
                     <tbody>

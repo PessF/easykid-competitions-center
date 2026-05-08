@@ -35,10 +35,10 @@
         <div class="mb-6 sm:mb-8">
             <div class="flex items-center gap-2.5 sm:gap-3 mb-1">
                 <div class="w-1.5 h-5 sm:h-6 bg-blue-500 rounded-full"></div>
-                <h1 class="text-xl sm:text-2xl font-normal text-white tracking-tight">ประวัติการสมัครแข่งขัน
+                <h1 class="text-xl sm:text-2xl font-normal text-white tracking-tight">ประวัติการลงทะเบียนเข้าร่วมการแข่งขัน
                 </h1>
             </div>
-            <p class="text-xs sm:text-sm text-gray-400 ml-3.5 sm:ml-4 pl-1 font-normal">รายการแข่งขันที่คุณได้ลงทะเบียนไว้ทั้งหมด</p>
+            <p class="text-xs sm:text-sm text-gray-400 ml-3.5 sm:ml-4 pl-1 font-normal">รายการแข่งขันที่ท่านได้ลงทะเบียนไว้ทั้งหมด</p>
         </div>
 
         @if ($registrations->isEmpty())
@@ -48,11 +48,11 @@
                     class="w-16 h-16 sm:w-20 sm:h-20 bg-[#1a1a1a] rounded-2xl sm:rounded-[1.5rem] flex items-center justify-center mb-4 sm:mb-5 border border-white/5">
                     <i class="fas fa-folder-open text-2xl sm:text-3xl text-blue-500/80"></i>
                 </div>
-                <h3 class="text-base sm:text-lg font-normal text-white mb-1.5 sm:mb-2">ยังไม่มีประวัติการสมัคร</h3>
-                <p class="text-xs sm:text-sm text-gray-500 mb-6 sm:mb-8 font-normal">คุณยังไม่ได้ลงทะเบียนเข้าร่วมการแข่งขันใดๆ</p>
+                <h3 class="text-base sm:text-lg font-normal text-white mb-1.5 sm:mb-2">ยังไม่มีประวัติการลงทะเบียน</h3>
+                <p class="text-xs sm:text-sm text-gray-500 mb-6 sm:mb-8 font-normal">ท่านยังไม่ได้ทำการลงทะเบียนเข้าร่วมการแข่งขันใดๆ</p>
                 <a href="{{ route('user.dashboard') }}"
                     class="inline-flex items-center gap-2 px-5 py-2.5 sm:px-6 sm:py-3 bg-blue-600 hover:bg-blue-500 text-white text-xs sm:text-sm font-normal rounded-xl sm:rounded-2xl transition-colors shadow-lg shadow-blue-500/20">
-                    <i class="fas fa-search text-[10px] sm:text-xs"></i> ค้นหางานแข่งขัน
+                    <i class="fas fa-search text-[10px] sm:text-xs"></i> ค้นหารายการแข่งขัน
                 </a>
             </div>
         @else
@@ -61,10 +61,10 @@
                 @php
                     $filterOptions = [
                         'all' => ['label' => 'ทั้งหมด', 'dot' => ''],
-                        'pending_payment' => ['label' => 'รอชำระเงิน', 'dot' => 'bg-red-500'],
-                        'waiting_verify' => ['label' => 'รอตรวจสอบ', 'dot' => 'bg-amber-500'],
-                        'approved' => ['label' => 'อนุมัติแล้ว', 'dot' => 'bg-emerald-500'],
-                        'rejected' => ['label' => 'ถูกปฏิเสธ/ยกเลิก', 'dot' => 'bg-gray-500'],
+                        'pending_payment' => ['label' => 'รอการชำระเงิน', 'dot' => 'bg-red-500'],
+                        'waiting_verify' => ['label' => 'รอตรวจสอบหลักฐาน', 'dot' => 'bg-amber-500'],
+                        'approved' => ['label' => 'ได้รับการอนุมัติ', 'dot' => 'bg-emerald-500'],
+                        'rejected' => ['label' => 'ไม่อนุมัติ / ยกเลิก', 'dot' => 'bg-gray-500'],
                     ];
                 @endphp
                 @foreach ($filterOptions as $val => $opt)
@@ -98,25 +98,25 @@
                             'pending_payment' => [
                                 'pill' => 'bg-red-500/10 text-red-400 border-red-500/20',
                                 'icon' => 'fa-file-invoice-dollar',
-                                'text' => 'รอชำระเงิน',
+                                'text' => 'รอการชำระเงิน',
                                 'strip' => 'bg-red-500',
                             ],
                             'waiting_verify' => [
                                 'pill' => 'bg-amber-500/10 text-amber-400 border-amber-500/20',
                                 'icon' => 'fa-hourglass-half',
-                                'text' => 'รอตรวจสอบสลิป',
+                                'text' => 'รอตรวจสอบหลักฐาน',
                                 'strip' => 'bg-amber-500',
                             ],
                             'approved' => [
                                 'pill' => 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
                                 'icon' => 'fa-check-circle',
-                                'text' => 'อนุมัติแล้ว',
+                                'text' => 'ได้รับการอนุมัติ',
                                 'strip' => 'bg-emerald-500',
                             ],
                             'rejected' => [
                                 'pill' => 'bg-white/5 text-gray-400 border-white/10',
                                 'icon' => 'fa-times-circle',
-                                'text' => 'ถูกปฏิเสธ/ยกเลิก',
+                                'text' => 'ไม่อนุมัติ / ยกเลิก',
                                 'strip' => 'bg-gray-600',
                             ],
                             default => [
@@ -219,7 +219,7 @@
                                         <p class="text-[9px] sm:text-[10px] font-normal mb-0 sm:mb-0.5 transition-colors duration-300"
                                             :class="selectedItems.includes({{ $regis->id }}) ?
                                                 'text-blue-400/70' : 'text-gray-500'">
-                                            ยอดที่ต้องชำระ</p>
+                                            ยอดชำระเงิน</p>
                                         <p class="text-lg sm:text-xl font-normal leading-none transition-colors duration-300"
                                             :class="selectedItems.includes({{ $regis->id }}) ?
                                                 'text-blue-400' :
@@ -236,7 +236,7 @@
                                             @method('DELETE')
                                             <button type="submit"
                                                 class="delete-btn flex items-center justify-center gap-1.5 sm:gap-2 px-3 py-2 sm:px-4 sm:py-2 bg-[#0a0a0a] hover:bg-red-500/10 text-gray-400 hover:text-red-400 text-[10px] sm:text-xs font-normal rounded-lg sm:rounded-xl border border-white/10 hover:border-red-500/30 transition-colors w-full focus:outline-none">
-                                                <i class="fas fa-trash-alt"></i> ยกเลิกใบสมัคร
+                                                <i class="fas fa-trash-alt"></i> ยกเลิกการลงทะเบียน
                                             </button>
                                         </form>
                                     </div>
@@ -246,25 +246,25 @@
                                             class="mt-1 sm:mt-2 p-2 sm:p-3 bg-red-500/10 rounded-lg sm:rounded-xl border border-red-500/20 text-left sm:text-right w-full sm:max-w-[200px]">
                                             <p
                                                 class="text-[9px] sm:text-[10px] font-normal text-red-400 uppercase tracking-wide mb-1 flex items-center sm:justify-end gap-1.5">
-                                                <i class="fas fa-exclamation-circle"></i> สาเหตุที่ถูกปฏิเสธ
+                                                <i class="fas fa-exclamation-circle"></i> สาเหตุที่ไม่อนุมัติ
                                             </p>
                                             <p
                                                 class="text-[10px] sm:text-xs text-gray-300 font-normal break-words overflow-hidden">
-                                                {{ $regis->paymentTransaction->reject_reason ?? 'เอกสารไม่ถูกต้อง กรุณาติดต่อแอดมิน' }}
+                                                {{ $regis->paymentTransaction->reject_reason ?? 'เอกสารไม่ถูกต้อง กรุณาติดต่อผู้ดูแลระบบ' }}
                                             </p>
                                         </div>
                                     @endif
                                 @elseif ($regis->status === 'waiting_verify')
                                     <div
                                         class="inline-flex items-center gap-1.5 sm:gap-2 px-3 py-2 sm:px-4 sm:py-2.5 bg-amber-500/10 text-amber-400 text-[10px] sm:text-xs font-normal rounded-lg sm:rounded-xl border border-amber-500/20 w-full sm:w-auto justify-center">
-                                        <i class="fas fa-hourglass-half animate-pulse"></i> กำลังรอตรวจสอบ
+                                        <i class="fas fa-hourglass-half animate-pulse"></i> อยู่ระหว่างการตรวจสอบ
                                     </div>
                                 @elseif ($regis->status === 'approved')
                                     <div class="flex flex-col sm:flex-row items-center gap-2 sm:gap-2.5 w-full sm:w-auto">
                                         @if (!empty($regis->checked_in_at))
                                             <div title="เช็คอินเมื่อ: {{ \Carbon\Carbon::parse($regis->checked_in_at)->format('H:i น.') }}"
                                                 class="inline-flex items-center justify-center gap-1.5 px-3 py-2 sm:px-4 sm:py-2.5 bg-blue-600 text-white text-[10px] sm:text-xs font-normal rounded-lg sm:rounded-xl shadow-sm w-full sm:w-auto cursor-default">
-                                                <i class="fas fa-user-check"></i> เข้างานแล้ว
+                                                <i class="fas fa-user-check"></i> ยืนยันการเข้าร่วมงานแล้ว
                                             </div>
                                         @endif
                                         <a href="{{ route('user.registrations.e-ticket', $regis->id) }}"
@@ -283,9 +283,9 @@
                     style="display:none"
                     class="py-12 sm:py-16 text-center bg-[#121212] rounded-2xl">
                     <i class="far fa-folder-open text-2xl sm:text-3xl text-gray-700 mb-2 sm:mb-3"></i>
-                    <p class="text-xs sm:text-sm font-normal text-gray-500 mb-2 sm:mb-3">ไม่พบรายการในสถานะที่คุณเลือก</p>
+                    <p class="text-xs sm:text-sm font-normal text-gray-500 mb-2 sm:mb-3">ไม่พบรายการในสถานะที่ท่านเลือก</p>
                     <button @click="filterStatus = 'all'"
-                        class="text-xs sm:text-sm font-normal text-blue-400 hover:text-blue-300 hover:underline focus:outline-none">ดูรายการทั้งหมด</button>
+                        class="text-xs sm:text-sm font-normal text-blue-400 hover:text-blue-300 hover:underline focus:outline-none">แสดงรายการทั้งหมด</button>
                 </div>
             </div>
         @endif
@@ -300,7 +300,7 @@
 
             <div class="max-w-4xl mx-auto flex items-center justify-between">
                 <div>
-                    <p class="text-[10px] sm:text-xs font-normal text-gray-400 mb-0.5">รวมบิลที่เลือก (<span
+                    <p class="text-[10px] sm:text-xs font-normal text-gray-400 mb-0.5">รวมรายการที่เลือก (<span
                             class="font-normal text-blue-400"
                             x-text="selectedItems.length"></span> รายการ)</p>
                     <p
@@ -342,7 +342,7 @@
                     <div
                         class="flex items-center justify-between px-5 sm:px-8 py-4 sm:py-5 shrink-0 border-b border-white/5 bg-[#0a0a0a]">
                         <div>
-                            <p class="text-[10px] sm:text-xs text-gray-500 font-normal mb-0.5">ชำระเงินค่าสมัครแบบรวมบิล</p>
+                            <p class="text-[10px] sm:text-xs text-gray-500 font-normal mb-0.5">การชำระเงินค่าลงทะเบียนแบบรวมรายการ</p>
                             <h2 class="text-base sm:text-lg font-normal text-white">รวม <span
                                     x-text="selectedItems.length" class="text-blue-400"></span> รายการ</h2>
                         </div>
@@ -372,9 +372,9 @@
                                         <i class="fas fa-gift text-2xl sm:text-3xl text-emerald-400"></i>
                                     </div>
                                     <h3 class="text-lg sm:text-xl font-normal text-white mb-1.5 sm:mb-2">
-                                        รายการทั้งหมดนี้ไม่มีค่าใช้จ่าย!</h3>
+                                        รายการทั้งหมดนี้ไม่มีค่าธรรมเนียมการลงทะเบียน</h3>
                                     <p class="text-xs sm:text-sm text-gray-500 font-normal">
-                                        กดยืนยันด้านล่างเพื่อส่งข้อมูลให้ทีมงานได้เลยครับ</p>
+                                        กรุณากดยืนยันด้านล่างเพื่อส่งข้อมูลให้แก่ผู้ดูแลระบบ</p>
                                 </div>
                             </template>
 
@@ -386,7 +386,7 @@
                                     <div class="md:w-64 shrink-0 flex flex-col items-center justify-center">
                                         <p
                                             class="text-[9px] sm:text-[10px] font-normal text-gray-500 uppercase tracking-widest mb-1.5 sm:mb-2">
-                                            ยอดที่ต้องชำระสุทธิ</p>
+                                            ยอดสุทธิที่ต้องชำระ</p>
                                         <p
                                             class="text-2xl sm:text-3xl font-normal text-blue-400 leading-none mb-5 sm:mb-6">
                                             <span x-text="new Intl.NumberFormat('th-TH').format(totalFee)"></span><span
@@ -400,7 +400,7 @@
                                                 class="w-full h-auto object-contain rounded-lg sm:rounded-xl">
                                         </div>
                                         <p class="text-[10px] sm:text-xs font-normal text-gray-500 mt-3 sm:mt-4 flex items-center gap-1.5"><i
-                                                class="fas fa-qrcode"></i> สแกนเพื่อจ่าย</p>
+                                                class="fas fa-qrcode"></i> สแกนเพื่อชำระเงิน</p>
                                     </div>
 
                                     {{-- ── RIGHT: Bank + Slip ── --}}
@@ -411,7 +411,7 @@
                                         <div class="mb-5 sm:mb-6">
                                             <p
                                                 class="text-[9px] sm:text-[10px] font-normal text-gray-500 uppercase tracking-widest mb-2.5 sm:mb-3">
-                                                <i class="fas fa-university mr-1"></i> หรือโอนเข้าบัญชี
+                                                <i class="fas fa-university mr-1"></i> หรือโอนเงินผ่านบัญชีธนาคาร
                                             </p>
                                             <div
                                                 class="bg-[#1a1a1a] border border-white/5 rounded-xl sm:rounded-2xl p-3 sm:p-4 flex items-center justify-between gap-3 sm:gap-4 shadow-sm">
@@ -445,7 +445,7 @@
                                         {{-- Upload slip --}}
                                         <div class="flex-1 flex flex-col">
                                             <p class="text-xs sm:text-sm font-normal text-white mb-1.5 sm:mb-2">
-                                                แนบสลิปยืนยัน <span class="text-red-500">*</span></p>
+                                                แนบหลักฐานการชำระเงิน <span class="text-red-500">*</span></p>
 
                                             <div class="relative flex-1 min-h-[120px] sm:min-h-[140px] rounded-xl sm:rounded-2xl border border-dashed transition-all cursor-pointer bg-[#0f0f0f] flex items-center justify-center overflow-hidden group shadow-sm"
                                                 :class="slipPreview ? 'border-emerald-500/50' :
@@ -466,7 +466,7 @@
                                                             class="fas fa-image text-gray-500 group-hover:text-blue-400 transition-colors text-sm sm:text-base"></i>
                                                     </div>
                                                     <p class="text-[10px] sm:text-xs font-normal text-gray-500">
-                                                        คลิกหรือลากไฟล์สลิปมาวาง</p>
+                                                        คลิกหรือลากไฟล์หลักฐานมาวางบริเวณนี้</p>
                                                 </div>
 
                                                 <div x-show="slipPreview" style="display:none"
@@ -477,7 +477,7 @@
                                                         class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-lg sm:rounded-xl backdrop-blur-sm">
                                                         <span
                                                             class="text-white text-[10px] sm:text-xs font-normal bg-black/80 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full border border-white/10"><i
-                                                                class="fas fa-sync-alt mr-1"></i> เปลี่ยนรูป</span>
+                                                                class="fas fa-sync-alt mr-1"></i> เปลี่ยนรูปภาพ</span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -491,8 +491,8 @@
                         {{-- 🚀 ข้อความแจ้งเตือนที่เพิ่มเข้ามาใหม่ --}}
                         <div class="px-5 sm:px-8 pb-2">
                             <p class="text-[10px] sm:text-xs text-amber-400 bg-amber-500/10 p-3 sm:p-4 rounded-xl border border-amber-500/20 leading-relaxed">
-                                <i class="fas fa-exclamation-triangle mr-1.5"></i> <strong>กรุณาตรวจสอบรายชื่อสมาชิกและทีมให้เรียบร้อยก่อนยืนยันการสมัคร</strong><br>
-                                <span class="opacity-80 pl-4 sm:pl-5 block mt-0.5">เราจะถือว่าท่านได้ทำการตรวจสอบข้อมูลแล้ว เตรียมตัวให้พร้อมจนกว่าจะถึงวันแข่ง ขอท่านจงพบแต่ความสุขความเจริญ 🏆</span>
+                                <i class="fas fa-exclamation-triangle mr-1.5"></i> <strong>กรุณาตรวจสอบข้อมูลสมาชิกและชื่อทีมให้ถูกต้องก่อนยืนยันการลงทะเบียน</strong><br>
+                                <span class="opacity-80 pl-4 sm:pl-5 block mt-0.5">เมื่อท่านกดยืนยัน ระบบจะถือว่าท่านได้ตรวจสอบความถูกต้องของข้อมูลทั้งหมดแล้ว ขอให้ทุกทีมเตรียมความพร้อมสำหรับการแข่งขัน และขออวยพรให้ท่านประสบความสำเร็จ 🏆</span>
                             </p>
                         </div>
 
@@ -505,7 +505,7 @@
                             </button>
                             <button type="submit"
                                 class="flex-[2] py-2.5 sm:py-3.5 bg-blue-600 hover:bg-blue-500 text-white text-xs sm:text-sm font-normal rounded-xl sm:rounded-2xl transition-colors focus:outline-none">
-                                <span x-text="totalFee > 0 ? 'ยืนยันและส่งหลักฐาน' : 'ยืนยันรายการ'"></span>
+                                <span x-text="totalFee > 0 ? 'ยืนยันและส่งหลักฐานการชำระเงิน' : 'ยืนยันการลงทะเบียน'"></span>
                             </button>
                         </div>
                     </form>

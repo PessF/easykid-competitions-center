@@ -91,14 +91,14 @@
                 @if($userRole === 'admin')
                     <x-admin-nav-link :href="route('admin.competitions.index')" :active="request()->routeIs('admin.competitions.*')">
                         <i class="fas fa-trophy w-5 h-5 mr-3 flex items-center justify-center"></i>
-                        {{ __('จัดการงานแข่งขัน') }}
+                        {{ __('การจัดการข้อมูลการแข่งขัน') }}
                     </x-admin-nav-link>
                 @endif
 
                 {{-- 🚀 ทั้ง Admin และ Staff สามารถดูรายชื่อการสมัคร (Teams) ได้ --}}
                 <x-admin-nav-link :href="route('admin.teams.index')" :active="request()->routeIs('admin.teams.*')">
                     <i class="fas fa-users w-5 h-5 mr-3 flex items-center justify-center"></i>
-                    {{ __('รายชื่อการสมัคร') }}
+                    {{ __('ตรวจสอบรายชื่อผู้ลงทะเบียน') }}
                 </x-admin-nav-link>
 
                 {{-- 🚀 เฉพาะ Admin ที่จัดการเรื่องเงิน (Payments) ได้ --}}
@@ -107,7 +107,7 @@
                         <div class="flex items-center justify-between w-full">
                             <div class="flex items-center">
                                 <i class="fas fa-file-invoice-dollar w-5 h-5 mr-3 flex items-center justify-center"></i>
-                                {{ __('ตรวจการชำระเงิน') }}
+                                {{ __('ตรวจสอบการชำระเงิน') }}
                             </div>
                             @if ($pendingPaymentsCount > 0)
                                 <span
@@ -128,7 +128,7 @@
 
                     <x-admin-nav-link :href="route('admin.category-settings')" :active="request()->routeIs('admin.category-settings')">
                         <i class="fas fa-tags w-5 h-5 mr-3 flex items-center justify-center"></i>
-                        {{ __('ตั้งค่าหมวดหมู่') }}
+                        {{ __('การตั้งค่าหมวดหมู่') }}
                     </x-admin-nav-link>
 
 
@@ -139,7 +139,7 @@
 
                     <x-admin-nav-link :href="route('admin.users.index')" :active="request()->routeIs('admin.users.*')">
                         <i class="fas fa-user-cog w-5 h-5 mr-3 flex items-center justify-center"></i>
-                        {{ __('จัดการผู้ใช้งาน') }}
+                        {{ __('การจัดการบัญชีผู้ใช้งาน') }}
                     </x-admin-nav-link>
                 @endif
             </nav>
@@ -218,7 +218,7 @@
                 Swal.fire({
                     ...swalConfig,
                     icon: 'success',
-                    title: 'สำเร็จ!',
+                    title: 'ดำเนินการสำเร็จ',
                     text: "{{ session('success') }}",
                     confirmButtonColor: '#3b82f6', // blue-500
                     timer: 2000,
@@ -249,11 +249,11 @@
                 Swal.fire({
                     ...swalConfig,
                     icon: 'warning',
-                    title: 'ข้อมูลไม่ถูกต้อง ⚠️',
-                    html: '<p class="text-gray-400 text-sm mb-2 text-left">กรุณาตรวจสอบข้อมูลด้านล่างให้ถูกต้อง:</p>' +
+                    title: 'พบข้อผิดพลาดของข้อมูล',
+                    html: '<p class="text-gray-400 text-sm mb-2 text-left">กรุณาตรวจสอบและแก้ไขข้อมูลให้ถูกต้องตามรายการดังต่อไปนี้:</p>' +
                         errorHtml,
                     confirmButtonColor: '#f59e0b', // amber-500
-                    confirmButtonText: 'แก้ไขข้อมูล'
+                    confirmButtonText: 'กลับไปแก้ไขข้อมูล'
                 });
             @endif
         });
@@ -263,13 +263,13 @@
          */
         window.confirmDelete = function(url, name) {
             Swal.fire({
-                title: 'ยืนยันการลบ?',
-                text: `คุณกำลังจะลบ "${name}" ข้อมูลจะไม่สามารถกู้คืนได้!`,
+                title: 'ยืนยันการทำรายการลบข้อมูล?',
+                text: `ท่านกำลังดำเนินการลบข้อมูล "${name}" หากดำเนินการลบแล้ว จะไม่สามารถกู้คืนข้อมูลดังกล่าวได้`,
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#ef4444',
                 cancelButtonColor: '#374151',
-                confirmButtonText: 'ยืนยันการลบ',
+                confirmButtonText: 'ยืนยันการลบข้อมูล',
                 cancelButtonText: 'ยกเลิก',
                 background: '#1a1a1a',
                 color: '#ffffff',

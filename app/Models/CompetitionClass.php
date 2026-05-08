@@ -9,9 +9,9 @@ class CompetitionClass extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
+protected $fillable = [
         'competition_id', 'name', 'entry_fee','min_members', 'max_teams','max_members',
-        'rules_url', 'game_type_name', 'robot_name', 'robot_weight', 
+        'rules_url', 'game_type_name', 'robot_name', 'robot_weight',
         'robot_image_url', 'allowed_categories'
     ];
 
@@ -26,4 +26,9 @@ class CompetitionClass extends Model
     {
         return $this->belongsTo(Competition::class);
     }
+	
+	public function registrations()
+{
+    return $this->hasMany(Registration::class, 'competition_class_id');
+}
 }

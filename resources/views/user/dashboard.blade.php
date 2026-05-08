@@ -1,5 +1,5 @@
 <x-user-layout>
-    <x-slot name="title">ค้นหางานแข่งขัน | Easykids</x-slot>
+    <x-slot name="title">ค้นหารายการแข่งขัน | Easykids</x-slot>
 
     {{-- 🚀 รวมศูนย์ประมวลผล: คิดคำนวณทุกอย่างให้เสร็จตั้งแต่ฝั่ง Server เพื่อป้องกันบั๊ก UI --}}
     @php
@@ -10,7 +10,7 @@
             'draft' => [
                 'bg' => 'bg-white/5 text-gray-400 border-white/10 backdrop-blur-sm',
                 'icon' => 'fa-file-alt',
-                'label' => 'ร่างงาน (ซ่อน)',
+                'label' => 'ฉบับร่าง (ซ่อน)',
             ],
             'published' => [
                 'bg' => 'bg-indigo-500/20 text-indigo-400 border-indigo-500/30',
@@ -20,7 +20,7 @@
             'coming_soon' => [
                 'bg' => 'bg-amber-500/20 text-amber-400 border-amber-500/30',
                 'icon' => 'fa-clock',
-                'label' => 'เร็วๆ นี้',
+                'label' => 'เตรียมเปิดรับสมัคร',
             ],
             'open' => [
                 'bg' => 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30 animate-pulse',
@@ -35,17 +35,17 @@
             'ongoing' => [
                 'bg' => 'bg-blue-500/20 text-blue-400 border-blue-500/30',
                 'icon' => 'fa-play-circle',
-                'label' => 'กำลังแข่งขัน',
+                'label' => 'กำลังดำเนินการแข่งขัน',
             ],
             'ended' => [
                 'bg' => 'bg-[#1a1a1a] text-gray-500 border-white/5',
                 'icon' => 'fa-flag-checkered',
-                'label' => 'จบการแข่งขัน',
+                'label' => 'สิ้นสุดการแข่งขัน',
             ],
             'cancelled' => [
                 'bg' => 'bg-red-500/20 text-red-400 border-red-500/30',
                 'icon' => 'fa-ban',
-                'label' => 'ยกเลิกงานแข่ง',
+                'label' => 'ยกเลิกการแข่งขัน',
             ],
         ];
 
@@ -93,14 +93,14 @@
                 $daysLeft = floor($diffHours / 24);
 
                 if ($daysLeft > 0 && $daysLeft <= 14) {
-                    $timeLeftText = "เหลือ {$daysLeft} วัน";
+                    $timeLeftText = "เหลือเวลา {$daysLeft} วัน";
                     $showWarning = true;
                 } elseif ($daysLeft == 0 && $diffHours > 0) {
-                    $timeLeftText = "เหลือ {$diffHours} ชม.";
+                    $timeLeftText = "เหลือเวลา {$diffHours} ชั่วโมง";
                     $showWarning = true;
                 } elseif ($daysLeft == 0 && $diffHours == 0 && $diffMinutes >= 0) {
                     $m = $diffMinutes == 0 ? 1 : $diffMinutes; // กันเหลือ 0 นาที
-                    $timeLeftText = "เหลือ {$m} นาที!";
+                    $timeLeftText = "เหลือเวลา {$m} นาที";
                     $showWarning = true;
                     $isUrgent = true;
                 }
@@ -158,8 +158,8 @@
                         Competition</span>
                 </div>
                 <h1 class="text-xl sm:text-4xl font-normal text-white leading-tight tracking-tight mb-2">
-                    พร้อมที่จะท้าทายหรือยัง?</h1>
-                <p class="text-gray-400 text-sm font-normal">สร้างทีมของคุณ แล้วพาน้องๆ ไปสู่ชัยชนะได้เลย</p>
+                    ค้นหาและลงทะเบียนเข้าร่วมการแข่งขัน</h1>
+                <p class="text-gray-400 text-sm font-normal">ตรวจสอบรายการแข่งขันที่เปิดรับสมัคร และจัดการทีมของคุณได้ที่นี่</p>
             </div>
         </div>
 
@@ -170,7 +170,7 @@
 
                 {{-- Text Search --}}
                 <i class="fas fa-search text-gray-500 text-sm shrink-0"></i>
-                <input type="text" x-model="search" placeholder="ค้นหาชื่อการแข่งขัน..."
+                <input type="text" x-model="search" placeholder="ค้นหารายการแข่งขัน..."
                     class="min-w-0 flex-1 h-full bg-transparent border-none focus:ring-0 outline-none text-sm text-gray-200 placeholder-gray-600 font-normal">
 
                 <button x-show="search !== ''" @click="search = ''" x-cloak type="button"
@@ -186,10 +186,10 @@
                     options: {
                         'all': 'ทุกสถานะ',
                         'open': 'เปิดรับสมัคร',
-                        'coming_soon': 'เร็วๆ นี้',
+                        'coming_soon': 'เตรียมเปิดรับสมัคร',
                         'registration_closed': 'ปิดรับสมัคร',
-                        'ongoing': 'กำลังแข่งขัน',
-                        'ended': 'จบการแข่งขัน'
+                        'ongoing': 'กำลังดำเนินการแข่งขัน',
+                        'ended': 'สิ้นสุดการแข่งขัน'
                     }
                 }" class="relative shrink-0 flex items-center h-full"
                     @click.outside="open = false">
@@ -204,7 +204,7 @@
 
                     {{-- กล่อง Dropdown ที่กางออกมา --}}
                     <div x-show="open" x-transition.opacity.duration.200ms style="display: none;"
-                        class="absolute top-full right-0 mt-3 w-44 bg-[#1a1a1a] border border-white/10 rounded-xl overflow-hidden z-[60] py-1.5 font-kanit shadow-2xl">
+                        class="absolute top-full right-0 mt-3 w-48 bg-[#1a1a1a] border border-white/10 rounded-xl overflow-hidden z-[60] py-1.5 font-kanit shadow-2xl">
 
                         <template x-for="(label, val) in options" :key="val">
                             <button @click="filterStatus = val; open = false" type="button"
@@ -298,7 +298,7 @@
                         <div class="flex items-center gap-1.5 mb-2">
                             <i class="fas fa-map-marker-alt text-red-500 text-[10px] shrink-0"></i>
                             <span
-                                class="text-[11px] font-normal text-gray-400 uppercase tracking-wide truncate">{{ $comp->location ?: 'รอประกาศสถานที่' }}</span>
+                                class="text-[11px] font-normal text-gray-400 uppercase tracking-wide truncate">{{ $comp->location ?: 'รอประกาศสถานที่อย่างเป็นทางการ' }}</span>
                         </div>
 
                         {{-- Title --}}
@@ -316,7 +316,7 @@
                                 <div class="min-w-0 flex items-center gap-2">
                                     <p
                                         class="text-[10px] font-normal text-emerald-500 uppercase tracking-wider shrink-0">
-                                        รับสมัคร</p>
+                                        ระยะเวลารับสมัคร</p>
                                     <div class="h-3 w-px bg-emerald-500/20"></div>
                                     <p class="text-xs font-normal text-gray-300 truncate">
                                         @if ($comp->regis_start_date && $comp->regis_end_date)
@@ -324,7 +324,7 @@
                                             <span class="text-gray-600 mx-0.5">—</span> <span
                                                 class="text-red-400">{{ \Carbon\Carbon::parse($comp->regis_end_date)->translatedFormat('d M y') }}</span>
                                         @else
-                                            <span class="text-gray-500">รอประกาศกำหนดการ</span>
+                                            <span class="text-gray-500">รอกำหนดการอย่างเป็นทางการ</span>
                                         @endif
                                     </p>
                                 </div>
@@ -337,7 +337,7 @@
                                 <div class="min-w-0 flex items-center gap-2">
                                     <p
                                         class="text-[10px] font-normal text-blue-500 uppercase tracking-wider shrink-0">
-                                        แข่งขัน</p>
+                                        กำหนดการแข่งขัน</p>
                                     <div class="h-3 w-px bg-blue-500/20"></div>
                                     <p class="text-xs font-normal text-gray-300 truncate">
                                         @if ($comp->event_start_date)
@@ -347,7 +347,7 @@
                                                 {{ \Carbon\Carbon::parse($comp->event_end_date)->translatedFormat('d M y') }}
                                             @endif
                                         @else
-                                            <span class="text-gray-500">รอประกาศกำหนดการ</span>
+                                            <span class="text-gray-500">รอกำหนดการอย่างเป็นทางการ</span>
                                         @endif
                                     </p>
                                 </div>
@@ -360,7 +360,7 @@
                                 <div
                                     class="flex items-center justify-center gap-2 text-sm text-gray-500 font-normal bg-[#1a1a1a] px-4 py-2.5 rounded-xl border border-white/5 w-full text-center">
                                     <i class="fas fa-info-circle shrink-0"></i>
-                                    <span>หากต้องการทราบรายละเอียด กรุณาติดต่อส่วนกลาง</span>
+                                    <span>หากต้องการทราบรายละเอียดเพิ่มเติม กรุณาติดต่อผู้ดูแลระบบ</span>
                                 </div>
                             @else
                                 <a href="{{ route('user.competitions.show', $comp->id) }}"
@@ -370,10 +370,10 @@
                                             bg-[#1a1a1a] text-gray-400 hover:bg-white/10 border border-white/5 hover:text-white @endif">
 
                                     @if (in_array($comp->dynamic_status, ['open', 'coming_soon']))
-                                        ดูรายละเอียด & สมัคร
+                                        ดูรายละเอียดและลงทะเบียน
                                         <i class="fas fa-arrow-right text-xs transition-transform duration-200 group-hover/btn:translate-x-1"></i>
                                     @else
-                                        ดูรายละเอียดงานแข่ง
+                                        ดูรายละเอียดการแข่งขัน
                                     @endif
                                 </a>
                             @endif
@@ -389,8 +389,8 @@
                         <i class="fas fa-folder-open text-3xl text-gray-600"></i>
                     </div>
                     <h3 class="text-lg font-normal text-white mb-1">
-                        ยังไม่มีรายการแข่งขันเปิดรับสมัคร</h3>
-                    <p class="text-sm font-normal text-gray-500">รอติดตามการประกาศเร็วๆ นี้นะครับ!
+                        ยังไม่มีรายการแข่งขันในขณะนี้</h3>
+                    <p class="text-sm font-normal text-gray-500">โปรดติดตามการประกาศกำหนดการในลำดับถัดไป
                     </p>
                 </div>
             @endforelse
@@ -406,12 +406,12 @@
                     <i class="fas fa-search text-xl text-gray-500"></i>
                 </div>
                 <h3 class="text-base font-normal text-white mb-1">
-                    ไม่พบการแข่งขันที่ตรงกับตัวกรอง</h3>
-                <p class="text-sm text-gray-500 mb-5 font-normal">ลองเปลี่ยนคำค้นหา หรือเลือกสถานะอื่นดูนะครับ
+                    ไม่พบรายการแข่งขันที่ตรงกับเงื่อนไขการค้นหา</h3>
+                <p class="text-sm text-gray-500 mb-5 font-normal">กรุณาปรับเปลี่ยนคำค้นหา หรือเลือกสถานะอื่นเพื่อลองใหม่อีกครั้ง
                 </p>
                 <button @click="search = ''; filterStatus = 'all'"
                     class="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 text-sm font-normal rounded-xl transition-all focus:outline-none">
-                    <i class="fas fa-redo text-xs"></i> ล้างตัวกรองทั้งหมด
+                    <i class="fas fa-redo text-xs"></i> ล้างเงื่อนไขการค้นหา
                 </button>
             </div>
         @endif

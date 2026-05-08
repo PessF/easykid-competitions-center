@@ -5,9 +5,9 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use Illuminate\Auth\Events\Verified;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request; // 🚀 เปลี่ยนมาใช้ Request ปกติ
+use Illuminate\Http\Request; 
 use Illuminate\Support\Facades\Auth;
-use App\Models\User; // 🚀 เรียกใช้ Model User
+use App\Models\User; 
 
 class VerifyEmailController extends Controller
 {
@@ -35,7 +35,6 @@ class VerifyEmailController extends Controller
         return $this->redirectBasedOnProfile($user);
     }
 
-    // ฟังก์ชันช่วยพาไปยังหน้าที่ถูกต้อง
     private function redirectBasedOnProfile($user): RedirectResponse
     {
         if (!$user->has_setup_profile) {

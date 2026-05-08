@@ -2,7 +2,7 @@
     <div class="w-full max-w-[420px]">
         <div class="bg-[#121212] p-8 sm:p-10 rounded-2xl shadow-2xl border border-white/5">
             
-            <h2 class="text-xl font-medium text-center text-white mb-8 tracking-tight">ตั้งรหัสผ่านใหม่</h2>
+            <h2 class="text-xl font-medium text-center text-white mb-8 tracking-tight">การตั้งค่ารหัสผ่านใหม่</h2>
 
             <form method="POST" action="{{ route('password.store') }}" class="space-y-6">
                 @csrf
@@ -10,13 +10,13 @@
                 <input type="hidden" name="token" value="{{ $request->route('token') }}">
 
                 <div>
-                    <input id="email" type="email" name="email" :value="old('email', $request->email)" placeholder="อีเมลของคุณ" required autofocus autocomplete="username"
+                    <input id="email" type="email" name="email" :value="old('email', $request->email)" placeholder="ที่อยู่อีเมลของท่าน" required autofocus autocomplete="username"
                         class="w-full px-5 py-3.5 rounded-xl border border-white/10 bg-[#0a0a0a] text-base font-light focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all text-white placeholder-gray-600">
                     <x-input-error :messages="$errors->get('email')" class="mt-2 ml-1 text-xs" />
                 </div>
 
                 <div class="relative" x-data="{ show: false }">
-                    <input id="password" :type="show ? 'text' : 'password'" name="password" placeholder="รหัสผ่านใหม่" required autocomplete="new-password"
+                    <input id="password" :type="show ? 'text' : 'password'" name="password" placeholder="กำหนดรหัสผ่านใหม่" required autocomplete="new-password"
                         class="w-full px-5 py-3.5 rounded-xl border border-white/10 bg-[#0a0a0a] text-base font-light focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all text-white placeholder-gray-600">
                     
                     <button type="button" @click="show = !show" class="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-500 hover:text-white transition-colors">
@@ -32,7 +32,7 @@
                 </div>
 
                 <div class="relative" x-data="{ showConfirm: false }">
-                    <input id="password_confirmation" :type="showConfirm ? 'text' : 'password'" name="password_confirmation" placeholder="ยืนยันรหัสผ่านใหม่" required autocomplete="new-password"
+                    <input id="password_confirmation" :type="showConfirm ? 'text' : 'password'" name="password_confirmation" placeholder="ยืนยันรหัสผ่านใหม่อีกครั้ง" required autocomplete="new-password"
                         class="w-full px-5 py-3.5 rounded-xl border border-white/10 bg-[#0a0a0a] text-base font-light focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all text-white placeholder-gray-600">
                     
                     <button type="button" @click="showConfirm = !showConfirm" class="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-500 hover:text-white transition-colors">
@@ -48,7 +48,7 @@
                 </div>
 
                 <button class="w-full bg-white text-black py-3.5 rounded-xl font-medium text-base tracking-wide transition-all hover:bg-gray-200 active:scale-[0.99] shadow-lg">
-                    {{ __('บันทึกรหัสผ่านใหม่') }}
+                    {{ __('ยืนยันการเปลี่ยนรหัสผ่าน') }}
                 </button>
             </form>
         </div>
