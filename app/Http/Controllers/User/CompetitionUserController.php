@@ -207,6 +207,16 @@ class CompetitionUserController extends Controller
             'payment_slip.max' => 'ขนาดไฟล์รูปภาพต้องไม่เกิน 5MB',
         ]);
 
+        if ($request->is_tax_invoice_requested) {
+        $request->validate([
+            'tax_payer_name' => 'required|string|max:255',
+            'tax_id' => 'required|string|size:13',
+            'tax_payer_branch' => 'required|string|max:100',
+            'tax_payer_address' => 'required|string',
+            'tax_payer_email' => 'required|email', // 🚀 ตรวจสอบรูปแบบอีเมล
+        ]);
+    }
+
         $registrations = Registration::with(['competitionClass:id,entry_fee', 'competition:id,name'])
             ->whereIn('id', $request->registration_ids)
             ->where('user_id', auth()->id())
@@ -243,13 +253,20 @@ class CompetitionUserController extends Controller
             if (!$path) throw new \Exception('ไม่สามารถบันทึกไฟล์ลงเซิร์ฟเวอร์ได้');
 
             $transaction = PaymentTransaction::create([
-                'tx_no' => $txNo,
-                'user_id' => auth()->id(),
-                'competition_id' => $compId,
-                'total_amount' => $totalAmount,
-                'payment_slip_path' => $path,
-                'status' => 'waiting_verify'
-            ]);
+                    'tx_no' => $txNo,
+                    'user_id' => auth()->id(),
+                    'competition_id' => $compId,
+                    'total_amount' => $totalAmount,
+                    'payment_slip_path' => $path,
+                    'status' => 'waiting_verify',
+                    'is_tax_invoice_requested' => $request->has('is_tax_invoice_requested'),
+                    'tax_payer_name' => $request->tax_payer_name,
+                    'tax_id' => $request->tax_id,
+                    'tax_payer_branch' => $request->tax_payer_branch,
+                    'tax_payer_address' => $request->tax_payer_address,
+                    'tax_payer_phone' => $request->tax_payer_phone ?? auth()->user()->phone_number,
+                    'tax_payer_email' => $request->tax_payer_email ?? auth()->user()->email,
+                ]);
 
             Registration::whereIn('id', $registrations->pluck('id'))->update([
                 'payment_transaction_id' => $transaction->id,
@@ -276,7 +293,9 @@ class CompetitionUserController extends Controller
             return back()->with('success', "ส่งหลักฐานการชำระเงินเรียบร้อยแล้ว! รหัสบิล: {$txNo}");
 
         } catch (\Exception $e) {
-            Log::error("Payment Group Upload Error: " . $e->getMessage());
+
+        // dd($e->getMessage());
+        Log::error("Payment Group Upload Error: " . $e->getMessage());
             return back()->with('error', 'เกิดข้อผิดพลาดในการอัปโหลดไฟล์');
         }
     }

@@ -98,7 +98,7 @@ class AdminPaymentController extends Controller
                     Log::error('Mail Error (Approve): ' . $e->getMessage());
                 }
 
-                // ซิงค์ข้อมูลลง Google Sheet หลังจาก Approve สำเร็จ
+                // 🚀 ซิงค์ข้อมูลลง Google Sheet
                 $this->syncToGoogleSheet($transaction);
 
                 return redirect()->back()->with('success', "อนุมัติบิล {$txNo} เรียบร้อยแล้ว");
@@ -134,96 +134,140 @@ class AdminPaymentController extends Controller
     private function syncToGoogleSheet(PaymentTransaction $transaction)
     {
         $sheetService = new \App\Services\GoogleSheetService();
-        $folderId = env('GOOGLE_MASTER_FOLDER_ID');
+        $adminEmail = 'info@easykidsrobotics.com';
+        
+        $teamsFolderId = env('GOOGLE_DRIVE_TEAMS_FOLDER_ID');
+        $taxsFolderId  = env('GOOGLE_DRIVE_TAXES_FOLDER_ID');
 
-        if (!$folderId) {
-            Log::error('Google Sheet Config Error: ยังไม่ได้ตั้งค่า GOOGLE_MASTER_FOLDER_ID');
+        if (!$teamsFolderId && !$taxsFolderId) {
+            Log::error('Google Sheet Config Error: ยังไม่ได้ตั้งค่า Folder ID (TEAMS หรือ TAXS)');
             return;
         }
 
-        foreach ($transaction->registrations as $registration) {
-            try {
-                $fileName = $transaction->competition->name; 
-                
-                // 1. 🚀 โลจิก Sanitize ชื่อแท็บ (ห้ามมีอักขระพิเศษ และห้ามยาวเกิน 31 ตัว)
-                $rawTabName = $registration->competitionClass->name;
-                $cleanTabName = str_replace(['/', '*', ':', '?', '[', ']'], '-', $rawTabName);
-                $tabName = mb_substr($cleanTabName, 0, 31);
-                
-                $adminEmail = 'info@easykidsrobotics.com';
-                
-                // ดึงค่า Max Members เพื่อใช้ล็อกจำนวนคอลัมน์
-                $maxMembers = (int) ($registration->competitionClass->max_members ?? 2);
-                
-                // 2. 🚀 สร้าง Headers แบบ Fixed Schema ตาม Max Members
-                $headers = [
-                    'ประทับเวลา', 'อีเมลผู้ส่งสมัคร', 'รุ่นการแข่งขัน', 'ชื่อทีม (Team Name)', 'โรงเรียน / สถาบัน'
-                ];
+        // แยก Logic เป็น 2 ฟังก์ชันเพื่อความคลีน
+        if ($teamsFolderId) {
+            $this->syncTeamsData($transaction, $sheetService, $teamsFolderId, $adminEmail);
+        }
 
-                for ($i = 1; $i <= $maxMembers; $i++) {
-                    $headers[] = "คำนำหน้า (คนที่ $i)";
-                    $headers[] = "ชื่อ-นามสกุล (คนที่ $i) [TH]";
-                    $headers[] = "ชื่อ-นามสกุล (คนที่ $i) [EN]";
-                    $headers[] = "ไซส์เสื้อ (คนที่ $i)";
-                    $headers[] = "วัน/เดือน/ปีเกิด (คนที่ $i)";
-                }
+        if ($transaction->is_tax_invoice_requested && $taxsFolderId) {
+            $this->syncTaxInvoiceData($transaction, $sheetService, $taxsFolderId, $adminEmail);
+        }
+    }
 
-                $headers = array_merge($headers, [
-                    'ชื่อจริง (ผู้ส่งสมัคร)', 
-                    'นามสกุล (ผู้ส่งสมัคร)', 
-                    'เบอร์โทรศัพท์ (ผู้ส่งสมัคร)', 
-                    'วัน/เดือน/ปีเกิด (ผู้ส่งสมัคร)', 
-                    'ไซส์เสื้อ (ผู้ส่งสมัคร)',
-                    'หลักฐานการชำระเงิน (ลิงก์สลิป)', 
-                    'สถานะการตรวจสอบ'
-                ]);
+    private function syncTeamsData($transaction, $sheetService, $folderId, $adminEmail)
+{
+    foreach ($transaction->registrations as $registration) {
+        try {
+            $fileName = $transaction->competition->name; 
+            
+            // 🚀 ใช้ชื่อเต็ม แต่ยังต้องลบอักขระพิเศษที่ Google Sheets ห้ามใช้ในชื่อ Tab
+            $rawTabName = $registration->competitionClass->name;
+            $tabName = str_replace(['/', '*', ':', '?', '[', ']'], '-', $rawTabName);
+            
+            // หมายเหตุ: ถ้า $tabName ยาวเกิน 31 ตัวอักษร Google API จะพ่น Error 400 ทันที
+            
+            // ดึงค่า Max Members
+            $maxMembers = (int) ($registration->competitionClass->max_members ?? 2);
+            
+            // สร้าง Headers
+            $headers = [
+                'ประทับเวลา', 'อีเมลผู้ส่งสมัคร', 'รุ่นการแข่งขัน', 'ชื่อทีม (Team Name)', 'โรงเรียน / สถาบัน'
+            ];
 
-                // 3. 🚀 เตรียมข้อมูลแถว (Row Data)
-                $rowData = [
-                    Carbon::now('Asia/Bangkok')->format('d/m/Y H:i:s'), 
-                    $registration->user->email ?? '-', 
-                    $rawTabName, 
-                    $registration->team->name ?? '-', 
-                    $registration->team->school_name ?? '-', 
-                ];
-
-                // วนลูปตามสมาชิก โดยอิงจากจำนวนสมาชิกสูงสุด (เพื่อไม่ให้คอลัมน์เลื่อน)
-                $members = $registration->team->members ?? collect();
-                for ($i = 0; $i < $maxMembers; $i++) {
-                    $member = $members->get($i); 
-                    $rowData[] = $member ? ($member->prefix_th ?: '-') : '-';
-                    $rowData[] = $member ? (trim(($member->first_name_th ?? '') . ' ' . ($member->last_name_th ?? '')) ?: '-') : '-';
-                    $rowData[] = $member ? (trim(($member->first_name_en ?? '') . ' ' . ($member->last_name_en ?? '')) ?: '-') : '-';
-                    $rowData[] = $member ? ($member->shirt_size ?: '-') : '-';
-                    $rowData[] = ($member && !empty($member->birth_date)) ? Carbon::parse($member->birth_date)->format('d/m/Y') : '-';
-                }
-
-                // ข้อมูลผู้ส่งสมัคร (ใช้ Nullsafe ?-> และ ?? เพื่อความปลอดภัย)
-                $u = $transaction->user;
-                $rowData[] = $u ? ($u->first_name_th ?? $u->name ?? '-') : '-'; 
-                $rowData[] = $u?->last_name_th ?? '-'; 
-                $rowData[] = !empty($u?->phone_number) ? "'" . $u->phone_number : '-'; 
-                $rowData[] = !empty($u?->birthday) ? Carbon::parse($u->birthday)->format('d/m/Y') : '-'; 
-                $rowData[] = $u?->shirt_size ?? '-'; 
-
-                // ลิงก์สลิป (เรียกผ่าน route เพื่อความปลอดภัย)
-                $rowData[] = route('admin.payments.slip', $transaction->id); 
-                $rowData[] = 'อนุมัติการสมัครเรียบร้อย';
-
-                // ยิงข้อมูลไปที่ Service
-                $sheetId = $sheetService->processAutomation($rowData, $headers, $fileName, $tabName, $folderId, $adminEmail);
-
-                // บันทึก Sheet ID ลง Competition (ถ้ายังไม่มี)
-                if (empty($transaction->competition->google_sheet_id)) {
-                    $transaction->competition->update(['google_sheet_id' => $sheetId]);
-                }
-                
-                // หน่วงเวลาเล็กน้อยเพื่อเลี่ยง Rate Limit ของ Google API
-                usleep(500000); 
-
-            } catch (\Exception $e) {
-                Log::error("Google Sheet Automation Error (Regis ID: {$registration->id}): " . $e->getMessage());
+            for ($i = 1; $i <= $maxMembers; $i++) {
+                $headers[] = "คำนำหน้า (คนที่ $i)";
+                $headers[] = "ชื่อ-นามสกุล (คนที่ $i) [TH]";
+                $headers[] = "ชื่อ-นามสกุล (คนที่ $i) [EN]";
+                $headers[] = "ไซส์เสื้อ (คนที่ $i)";
+                $headers[] = "วัน/เดือน/ปีเกิด (คนที่ $i)";
             }
+
+            $headers = array_merge($headers, [
+                'ชื่อจริง (ผู้ส่งสมัคร)', 'นามสกุล (ผู้ส่งสมัคร)', 'เบอร์โทรศัพท์ (ผู้ส่งสมัคร)', 
+                'วัน/เดือน/ปีเกิด (ผู้ส่งสมัคร)', 'ไซส์เสื้อ (ผู้ส่งสมัคร)', 'หลักฐานการชำระเงิน (ลิงก์สลิป)', 'สถานะ'
+            ]);
+
+            // เตรียมข้อมูลแถว
+            $rowData = [
+                Carbon::now('Asia/Bangkok')->format('d/m/Y H:i:s'), 
+                $registration->user->email ?? '-', 
+                $rawTabName, 
+                $registration->team->name ?? '-', 
+                $registration->team->school_name ?? '-', 
+            ];
+
+            $members = $registration->team->members ?? collect();
+            for ($i = 0; $i < $maxMembers; $i++) {
+                $member = $members->get($i); 
+                $rowData[] = $member ? ($member->prefix_th ?: '-') : '-';
+                $rowData[] = $member ? (trim(($member->first_name_th ?? '') . ' ' . ($member->last_name_th ?? '')) ?: '-') : '-';
+                $rowData[] = $member ? (trim(($member->first_name_en ?? '') . ' ' . ($member->last_name_en ?? '')) ?: '-') : '-';
+                $rowData[] = $member ? ($member->shirt_size ?: '-') : '-';
+                $rowData[] = ($member && !empty($member->birth_date)) ? Carbon::parse($member->birth_date)->format('d/m/Y') : '-';
+            }
+
+            $u = $transaction->user;
+            $rowData[] = $u ? ($u->first_name_th ?? $u->name ?? '-') : '-'; 
+            $rowData[] = $u?->last_name_th ?? '-'; 
+            $rowData[] = !empty($u?->phone_number) ? "'" . $u->phone_number : '-'; 
+            $rowData[] = !empty($u?->birthday) ? Carbon::parse($u->birthday)->format('d/m/Y') : '-'; 
+            $rowData[] = $u?->shirt_size ?? '-'; 
+            $rowData[] = route('admin.payments.slip', $transaction->id); 
+            $rowData[] = 'อนุมัติเรียบร้อย';
+
+            // ยิงข้อมูล
+            $sheetId = $sheetService->processAutomation($rowData, $headers, $fileName, $tabName, $folderId, $adminEmail);
+
+            if (empty($transaction->competition->google_sheet_id)) {
+                $transaction->competition->update(['google_sheet_id' => $sheetId]);
+            }
+            
+            usleep(300000); 
+
+        } catch (\Exception $e) {
+            Log::error("Teams Sheet Automation Error (Regis ID: {$registration->id}): " . $e->getMessage());
+        }
+    }
+}
+    private function syncTaxInvoiceData($transaction, $sheetService, $folderId, $adminEmail)
+    {
+        try {
+            $itemDescriptions = [];
+            foreach ($transaction->registrations as $reg) {
+                $itemDescriptions[] = "- ทีม: {$reg->team->name} (รุ่น: {$reg->competitionClass->name})";
+            }
+            // 🚀 ใช้ PHP_EOL แทน \n เพื่อให้ขึ้นบรรทัดใหม่ใน Google Sheet ได้อย่างถูกต้อง
+            $descriptionText = implode(PHP_EOL, $itemDescriptions);
+
+            $taxHeaders = [
+                'วันที่อนุมัติ', 'เลขที่อ้างอิง', 'รายการแข่งขัน', 'ชื่อผู้เสียภาษี', 'เลขประจำตัว 13 หลัก', 
+                'สาขา', 'ที่อยู่จดทะเบียน', 'เบอร์โทรศัพท์', 'อีเมล', 'ยอดเงิน (บาท)', 'รายละเอียดที่สมัคร', 'อ้างอิงสลิป'
+            ];
+
+            $taxRowData = [
+                Carbon::now('Asia/Bangkok')->format('d/m/Y H:i:s'), 
+                $transaction->tx_no, 
+                $transaction->competition->name, 
+                $transaction->tax_payer_name, 
+                "'" . $transaction->tax_id, 
+                $transaction->tax_payer_branch, 
+                $transaction->tax_payer_address, 
+                "'" . $transaction->tax_payer_phone, 
+                $transaction->tax_payer_email, 
+                $transaction->total_amount, 
+                $descriptionText, 
+                route('admin.payments.slip', $transaction->id)
+            ];
+
+            $taxFileName = "Master_Tax_Invoices_" . Carbon::now()->format('Y');
+            $taxTabName = "Invoices_" . Carbon::now()->format('Y-m');
+            
+            $sheetService->processAutomation($taxRowData, $taxHeaders, $taxFileName, $taxTabName, $folderId, $adminEmail);
+            
+            usleep(300000); 
+
+        } catch (\Exception $e) {
+            Log::error("Tax Invoice Sheet Sync Error (TX NO: {$transaction->tx_no}): " . $e->getMessage());
         }
     }
 
