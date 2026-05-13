@@ -139,6 +139,10 @@ Route::middleware(['auth', 'admin_or_staff', 'revalidate'])->prefix('admin')->na
 
         // Competitions (งานแข่งขันหลักและรายการย่อย)
         Route::resource('competitions', CompetitionController::class);
+
+        Route::patch('/competitions/{competition}/classes/{class}/toggle-status', [CompetitionClassController::class, 'toggleStatus'])
+            ->name('competitions.classes.toggle-status');
+
         Route::resource('competitions.classes', CompetitionClassController::class)->except(['show']);
 
         // Payments (ตรวจบิลการเงิน Admin อนุมัติเท่านั้น)

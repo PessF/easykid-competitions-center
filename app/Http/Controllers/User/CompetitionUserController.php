@@ -37,12 +37,23 @@ class CompetitionUserController extends Controller
     {
         $competition = Competition::with(['classes' => function($query) {
                 $query->withCount(['registrations' => function($q) {
-                    // 🚀 1. นับโควต้าเฉพาะคนที่จ่ายเงินแล้ว หรือรอตรวจสอบสลิปเท่านั้น
+                    // นับเฉพาะคนที่จ่ายเงินแล้ว หรือรอตรวจสอบ (เพื่อกั๊กที่นั่งจริง)
                     $q->whereIn('status', ['waiting_verify', 'approved']);
                 }]);
             }])
             ->where('status', '!=', 'draft') 
             ->findOrFail($id);
+
+
+        $competition->classes->transform(function($cls) {
+        
+            $cls->available_slots = $cls->max_teams ? ($cls->max_teams - $cls->registrations_count) : null;
+            
+
+            $cls->is_active = (bool)$cls->is_active; 
+            
+            return $cls;
+        });
 
         $myTeams = auth()->user()->teams()
             ->select('id', 'user_id', 'name', 'school_name')

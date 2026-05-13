@@ -218,12 +218,12 @@
                                         selected: '{{ old('shirt_size', '') }}',
                                         options: [
                                             { value: '', label: 'โปรดระบุขนาด (ไม่บังคับ)' },
-                                            { value: 'S', label: 'S (รอบอก 34-36 นิ้ว)' },
-                                            { value: 'M', label: 'M (รอบอก 36-38 นิ้ว)' },
-                                            { value: 'L', label: 'L (รอบอก 38-40 นิ้ว)' },
-                                            { value: 'XL', label: 'XL (รอบอก 40-42 นิ้ว)' },
-                                            { value: '2XL', label: '2XL (รอบอก 42-44 นิ้ว)' },
-                                            { value: '3XL', label: '3XL (รอบอก 44-46 นิ้ว)' }
+                                            { value: 'S', label: '' },
+                                            { value: 'M', label: '' },
+                                            { value: 'L', label: '' },
+                                            { value: 'XL', label: '' },
+                                            { value: '2XL', label: '' },
+                                            { value: '3XL', label: '' }
                                         ],
                                         get selectedLabel() { return this.options.find(o => o.value === this.selected)?.label || 'โปรดระบุขนาด (ไม่บังคับ)'; }
                                     }" @click.outside="open = false" class="relative">

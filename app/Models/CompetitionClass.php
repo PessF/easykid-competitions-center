@@ -9,26 +9,27 @@ class CompetitionClass extends Model
 {
     use HasFactory;
 
-protected $fillable = [
-        'competition_id', 'name', 'entry_fee','min_members', 'max_teams','max_members',
+    protected $fillable = [
+        'competition_id', 'name', 'entry_fee', 'min_members', 'max_teams', 'max_members',
         'rules_url', 'game_type_name', 'robot_name', 'robot_weight',
-        'robot_image_url', 'allowed_categories'
+        'robot_image_url', 'allowed_categories', 
+        'is_active',
     ];
 
     protected $casts = [
         'allowed_categories' => 'array',
         'robot_weight' => 'decimal:2',
         'entry_fee' => 'decimal:2',
+        'is_active' => 'boolean',
     ];
 
-    // ความสัมพันธ์: รุ่นการแข่งขันนี้ "เป็นของ" งานแข่งหลักงานไหน (belongsTo)
     public function competition()
     {
         return $this->belongsTo(Competition::class);
     }
-	
-	public function registrations()
-{
-    return $this->hasMany(Registration::class, 'competition_class_id');
-}
+    
+    public function registrations()
+    {
+        return $this->hasMany(Registration::class, 'competition_class_id');
+    }
 }

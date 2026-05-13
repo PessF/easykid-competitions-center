@@ -27,7 +27,8 @@
                     <i class="fas fa-arrow-left text-base md:text-lg"></i>
                 </a>
                 <div>
-                    <div class="text-[9px] md:text-[10px] font-semibold text-blue-400 uppercase tracking-widest mb-0.5 md:mb-1 flex items-center gap-1.5">
+                    <div
+                        class="text-[9px] md:text-[10px] font-semibold text-blue-400 uppercase tracking-widest mb-0.5 md:mb-1 flex items-center gap-1.5">
                         <i class="fas fa-layer-group"></i> รายการย่อย (Classes)
                     </div>
                     <h1 class="text-lg md:text-2xl font-semibold text-white line-clamp-1 tracking-tight">
@@ -38,23 +39,89 @@
 
             <button @click="$dispatch('open-modal', 'add-class')"
                 class="w-full md:w-auto group px-4 py-2.5 md:px-6 md:py-3 bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white text-xs md:text-sm font-semibold rounded-xl transition-all shadow-md flex items-center justify-center gap-2">
-                <i class="fas fa-plus-circle text-sm md:text-base transition-transform duration-200 group-hover:rotate-90"></i>
+                <i
+                    class="fas fa-plus-circle text-sm md:text-base transition-transform duration-200 group-hover:rotate-90"></i>
                 เพิ่มรุ่นการแข่งขัน
             </button>
+        </div>
+
+        {{-- ===== SEARCH & FILTER ===== --}}
+        <div class="mb-6 md:mb-8 bg-[#121212] border border-white/5 rounded-xl md:rounded-2xl p-4 shadow-sm">
+            <form method="GET" action="{{ route('admin.competitions.classes.index', $competition->id) }}"
+                class="flex flex-col md:flex-row gap-3">
+
+                {{-- ค้นหาด้วยข้อความ --}}
+                <div class="flex-1 relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i class="fas fa-search text-gray-500 text-sm"></i>
+                    </div>
+                    <input type="text" name="search" value="{{ request('search') }}"
+                        placeholder="ค้นหาชื่อรุ่นการแข่งขัน..."
+                        class="w-full pl-9 pr-4 py-2.5 bg-[#0a0a0a] border border-white/10 rounded-lg text-sm text-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/50 outline-none transition-all placeholder-gray-600">
+                </div>
+
+                {{-- ตัวกรองประเภทเกม --}}
+                <div class="md:w-64 shrink-0">
+                    <select name="game_type"
+                        class="w-full px-4 py-2.5 bg-[#0a0a0a] border border-white/10 rounded-lg text-sm text-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/50 outline-none transition-all appearance-none cursor-pointer">
+                        <option value="">-- ทุกประเภทเกม --</option>
+                        @foreach ($gameTypes as $game)
+                            <option value="{{ $game->name }}"
+                                {{ request('game_type') == $game->name ? 'selected' : '' }}>
+                                {{ $game->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                {{-- ปุ่มค้นหา & ล้างค่า --}}
+                <div class="flex gap-2 shrink-0">
+                    <button type="submit"
+                        class="flex-1 md:flex-none px-6 py-2.5 bg-blue-600 hover:bg-blue-500 text-white text-sm font-semibold rounded-lg transition-colors flex items-center justify-center gap-2">
+                        ค้นหา
+                    </button>
+
+                    @if (request()->hasAny(['search', 'game_type']) && (request('search') != '' || request('game_type') != ''))
+                        <a href="{{ route('admin.competitions.classes.index', $competition->id) }}"
+                            class="px-4 py-2.5 bg-[#1a1a1a] hover:bg-white/10 text-gray-400 hover:text-white border border-white/10 text-sm font-semibold rounded-lg transition-colors flex items-center justify-center"
+                            title="ล้างการค้นหา">
+                            <i class="fas fa-undo"></i>
+                        </a>
+                    @endif
+                </div>
+            </form>
         </div>
 
         {{-- ===== GRID CARDS ===== --}}
         <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6">
             @forelse($classes as $class)
-                <div class="bg-[#121212] border border-white/5 rounded-xl md:rounded-2xl shadow-sm hover:shadow-[0_8px_30px_rgb(0,0,0,0.5)] hover:border-white/10 transition-all duration-300 p-4 md:p-6 flex flex-col group">
+                <div
+                    class="bg-[#121212] border border-white/5 rounded-xl md:rounded-2xl shadow-sm hover:shadow-[0_8px_30px_rgb(0,0,0,0.5)] hover:border-white/10 transition-all duration-300 p-4 md:p-6 flex flex-col group">
 
                     {{-- Card Header --}}
                     <div class="flex justify-between items-start mb-3 md:mb-5">
                         <div class="flex-1 pr-2 md:pr-4">
-                            <span class="inline-flex items-center px-2 py-1 md:px-3 md:py-1 bg-blue-500/10 text-blue-400 text-[10px] md:text-xs font-semibold rounded-md md:rounded-lg border border-blue-500/20 mb-2">
+                            <span
+                                class="inline-flex items-center px-2 py-1 md:px-3 md:py-1 bg-blue-500/10 text-blue-400 text-[10px] md:text-xs font-semibold rounded-md md:rounded-lg border border-blue-500/20 mb-2">
                                 <i class="fas fa-gamepad mr-1.5 opacity-70"></i> {{ $class->game_type_name }}
                             </span>
-                            <h3 class="text-base md:text-xl font-semibold text-white leading-snug line-clamp-2" title="{{ $class->name }}">
+
+                            {{-- โค้ดที่เพิ่มใหม่: Badge แสดงสถานะ เปิด/ปิด รับสมัคร --}}
+                            @if ($class->is_active)
+                                <span
+                                    class="inline-flex items-center px-2 py-1 md:px-3 md:py-1 bg-green-500/10 text-green-400 text-[10px] md:text-xs font-semibold rounded-md md:rounded-lg border border-green-500/20">
+                                    <i class="fas fa-check-circle mr-1.5 opacity-70"></i> เปิดรับสมัคร
+                                </span>
+                            @else
+                                <span
+                                    class="inline-flex items-center px-2 py-1 md:px-3 md:py-1 bg-red-500/10 text-red-400 text-[10px] md:text-xs font-semibold rounded-md md:rounded-lg border border-red-500/20">
+                                    <i class="fas fa-lock mr-1.5 opacity-70"></i> ปิดรับสมัคร
+                                </span>
+                            @endif
+
+
+                            <h3 class="text-base md:text-xl font-semibold text-white leading-snug line-clamp-2"
+                                title="{{ $class->name }}">
                                 {{ $class->name }}
                             </h3>
                         </div>
@@ -63,37 +130,53 @@
                     {{-- Age Categories Badge --}}
                     <div class="flex flex-wrap gap-1.5 md:gap-2 mb-4 md:mb-5">
                         @foreach ($class->allowed_categories as $cat)
-                            <span class="px-2 py-1 md:px-2.5 md:py-1.5 bg-[#1a1a1a] border border-white/5 text-gray-300 rounded-md md:rounded-lg text-[10px] md:text-xs font-medium flex items-center shadow-sm">
+                            <span
+                                class="px-2 py-1 md:px-2.5 md:py-1.5 bg-[#1a1a1a] border border-white/5 text-gray-300 rounded-md md:rounded-lg text-[10px] md:text-xs font-medium flex items-center shadow-sm">
                                 <i class="fas fa-user-graduate text-[9px] md:text-[10px] text-gray-500 mr-1.5"></i>
-                                {{ $cat['name'] }} <span class="text-gray-500 ml-1">({{ $cat['min_age'] }}-{{ $cat['max_age'] }} ปี)</span>
+                                {{ $cat['name'] }} <span
+                                    class="text-gray-500 ml-1">({{ $cat['min_age'] }}-{{ $cat['max_age'] }} ปี)</span>
                             </span>
                         @endforeach
                     </div>
 
-			{{-- Info Box --}}
-			<div class="space-y-2 md:space-y-3 text-xs md:text-sm text-gray-400 mb-4 md:mb-6 bg-[#0a0a0a] p-3 md:p-4 rounded-lg md:rounded-xl border border-white/5 flex-1">
+                    {{-- Info Box --}}
+                    <div
+                        class="space-y-2 md:space-y-3 text-xs md:text-sm text-gray-400 mb-4 md:mb-6 bg-[#0a0a0a] p-3 md:p-4 rounded-lg md:rounded-xl border border-white/5 flex-1">
 
-				<div class="flex justify-between items-center mt-1">
-					<div class="flex items-center">
-						<i class="fas fa-users w-4 md:w-5 text-center mr-1.5 md:mr-2 text-blue-500"></i>
-						<span>สมาชิก (คน/ทีม):</span>
-					</div>
-					<span class="font-semibold text-white">
-						{{ $class->min_members == $class->max_members ? $class->max_members : $class->min_members . '-' . $class->max_members }} คน
-					</span>
-				</div>
+                        <div class="flex justify-between items-center mt-1">
+                            <div class="flex items-center">
+                                <i class="fas fa-users w-4 md:w-5 text-center mr-1.5 md:mr-2 text-blue-500"></i>
+                                <span>สมาชิก (คน/ทีม):</span>
+                            </div>
+                            <span class="font-semibold text-white">
+                                {{ $class->min_members == $class->max_members ? $class->max_members : $class->min_members . '-' . $class->max_members }}
+                                คน
+                            </span>
+                        </div>
 
-				{{-- โค้ดที่เพิ่มเข้ามาใหม่: จำนวนทีมที่รับ --}}
-				<div class="flex justify-between items-center mt-1">
-					<div class="flex items-center">
-						<i class="fas fa-trophy w-4 md:w-5 text-center mr-1.5 md:mr-2 text-yellow-500"></i>
-						<span>จำนวนทีมที่รับ:</span>
-					</div>
-					<span class="font-semibold text-yellow-400">
-						{{ $class->max_teams ? number_format($class->max_teams) . ' ทีม' : 'ไม่จำกัด' }}
-					</span>
-				</div>
-			</div>
+                        <div class="flex justify-between items-center mt-1">
+                            <div class="flex items-center">
+                                <i class="fas fa-trophy w-4 md:w-5 text-center mr-1.5 md:mr-2 text-yellow-500"></i>
+                                <span>จำนวนทีมที่รับ:</span>
+                            </div>
+                            <span class="font-semibold text-yellow-400">
+                                {{ $class->max_teams ? number_format($class->max_teams) . ' ทีม' : 'ไม่จำกัด' }}
+                            </span>
+                        </div>
+
+                        {{-- โค้ดที่เพิ่มเข้ามาใหม่: ค่าสมัคร --}}
+                        <div class="flex justify-between items-center mt-1 pt-2 border-t border-white/5">
+                            <div class="flex items-center">
+                                <i class="fas fa-coins w-4 md:w-5 text-center mr-1.5 md:mr-2 text-green-500"></i>
+                                <span>ค่าสมัคร:</span>
+                            </div>
+                            <span
+                                class="font-semibold {{ $class->entry_fee > 0 ? 'text-green-400' : 'text-green-500' }}">
+                                {{ $class->entry_fee > 0 ? number_format($class->entry_fee) . ' บาท' : 'ฟรี' }}
+                            </span>
+                        </div>
+
+                    </div>
 
                     {{-- Footer Actions --}}
                     <div class="mt-auto flex flex-col gap-2 md:gap-3">
@@ -106,11 +189,12 @@
                             </a>
                         @endif
 
-                        <div class="grid grid-cols-2 gap-2 md:gap-3 pt-3 md:pt-4 border-t border-white/5">
-                            <button @click="editClass = {
+                        <div class="grid grid-cols-3 gap-2 md:gap-3 pt-3 md:pt-4 border-t border-white/5">
+                            <button
+                                @click="editClass = {
                                     id: '{{ $class->id }}', 
                                     name: {{ Js::from($class->name) }}, 
-                                    entry_fee: '{{ (float)$class->entry_fee }}',
+                                    entry_fee: '{{ (float) $class->entry_fee }}',
                                     min_members: '{{ $class->min_members ?? 1 }}',
                                     max_members: '{{ $class->max_members }}', 
                                     max_teams: '{{ $class->max_teams ?? '' }}', 
@@ -122,7 +206,23 @@
                                 <i class="fas fa-pen mr-1.5 md:mr-2 text-[10px] md:text-[11px]"></i> แก้ไข
                             </button>
 
-                            <button onclick="confirmDelete('{{ route('admin.competitions.classes.destroy', [$competition->id, $class->id]) }}', {{ Js::from($class->name) }})"
+
+                            <form
+                                action="{{ route('admin.competitions.classes.toggle-status', [$competition->id, $class->id]) }}"
+                                method="POST" class="w-full h-full m-0 p-0">
+                                @csrf
+                                @method('PATCH')
+                                <button type="submit"
+                                    class="w-full h-full py-2 md:py-2.5 rounded-lg md:rounded-xl text-[11px] md:text-sm font-semibold flex justify-center items-center transition-colors {{ $class->is_active ? 'text-orange-400 hover:text-orange-300 bg-orange-500/10 hover:bg-orange-500/20' : 'text-green-400 hover:text-green-300 bg-green-500/10 hover:bg-green-500/20' }}">
+                                    <i
+                                        class="fas {{ $class->is_active ? 'fa-lock' : 'fa-unlock' }} mr-1.5 md:mr-2 text-[10px] md:text-[11px]"></i>
+                                    {{ $class->is_active ? 'ปิดรับ' : 'เปิดรับ' }}
+                                </button>
+                            </form>
+
+
+                            <button
+                                onclick="confirmDelete('{{ route('admin.competitions.classes.destroy', [$competition->id, $class->id]) }}', {{ Js::from($class->name) }})"
                                 class="py-2 md:py-2.5 text-red-400 hover:text-red-300 bg-red-500/10 hover:bg-red-500/20 rounded-lg md:rounded-xl text-[11px] md:text-sm font-semibold flex justify-center items-center transition-colors">
                                 <i class="fas fa-trash-alt mr-1.5 md:mr-2 text-[10px] md:text-[11px]"></i> ลบ
                             </button>
@@ -130,10 +230,12 @@
                     </div>
                 </div>
             @empty
-                <div class="col-span-full py-16 md:py-24 flex flex-col items-center justify-center border border-dashed border-white/10 rounded-xl md:rounded-2xl bg-[#121212] px-4 text-center">
+                <div
+                    class="col-span-full py-16 md:py-24 flex flex-col items-center justify-center border border-dashed border-white/10 rounded-xl md:rounded-2xl bg-[#121212] px-4 text-center">
                     <i class="fas fa-layer-group text-3xl md:text-4xl text-gray-600 mb-3 md:mb-4"></i>
                     <p class="text-base md:text-lg font-semibold text-gray-300 mb-1">ยังไม่มีรุ่นการแข่งขันในงานนี้</p>
-                    <p class="text-xs md:text-sm font-normal text-gray-500 mb-4 md:mb-6">สร้างรายการแรกของคุณเพื่อเริ่มต้น</p>
+                    <p class="text-xs md:text-sm font-normal text-gray-500 mb-4 md:mb-6">
+                        สร้างรายการแรกของคุณเพื่อเริ่มต้น</p>
                 </div>
             @endforelse
         </div>
@@ -145,24 +247,33 @@
 
         {{-- ===== MODAL: ADD ===== --}}
         <x-modal name="add-class" focusable maxWidth="3xl">
-            <div class="bg-[#121212] flex flex-col h-[90vh] md:h-[85vh] overflow-hidden rounded-xl md:rounded-2xl border border-white/10">
-                <div class="px-4 py-4 md:px-6 md:py-5 border-b border-white/5 flex items-center justify-between bg-[#0a0a0a]">
+            <div
+                class="bg-[#121212] flex flex-col h-[90vh] md:h-[85vh] overflow-hidden rounded-xl md:rounded-2xl border border-white/10">
+                <div
+                    class="px-4 py-4 md:px-6 md:py-5 border-b border-white/5 flex items-center justify-between bg-[#0a0a0a]">
                     <h2 class="text-lg md:text-xl font-semibold text-white">เพิ่มรุ่นการแข่งขันใหม่</h2>
-                    <button @click="$dispatch('close-modal', 'add-class')" class="text-gray-500 hover:text-white transition-colors p-2"><i class="fas fa-times"></i></button>
+                    <button @click="$dispatch('close-modal', 'add-class')"
+                        class="text-gray-500 hover:text-white transition-colors p-2"><i
+                            class="fas fa-times"></i></button>
                 </div>
 
-                <form method="POST" action="{{ route('admin.competitions.classes.store', $competition->id) }}" enctype="multipart/form-data" class="flex flex-col flex-1 overflow-hidden">
+                <form method="POST" action="{{ route('admin.competitions.classes.store', $competition->id) }}"
+                    enctype="multipart/form-data" class="flex flex-col flex-1 overflow-hidden">
                     @csrf
                     <div class="p-4 md:p-6 lg:p-8 overflow-y-auto custom-scrollbar flex-1 space-y-4 md:space-y-6">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                             <div class="md:col-span-2 space-y-1.5 md:space-y-2">
-                                <label class="block text-xs md:text-sm font-semibold text-gray-300">ชื่อรุ่นการแข่งขัน <span class="text-red-500">*</span></label>
-                                <input type="text" name="name" required class="w-full px-3 py-2.5 md:px-4 md:py-3 text-sm border-white/10 bg-[#0f0f0f] text-white rounded-lg md:rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none placeholder-gray-600">
+                                <label class="block text-xs md:text-sm font-semibold text-gray-300">ชื่อรุ่นการแข่งขัน
+                                    <span class="text-red-500">*</span></label>
+                                <input type="text" name="name" required
+                                    class="w-full px-3 py-2.5 md:px-4 md:py-3 text-sm border-white/10 bg-[#0f0f0f] text-white rounded-lg md:rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none placeholder-gray-600">
                             </div>
 
                             <div class="space-y-1.5 md:space-y-2">
-                                <label class="block text-xs md:text-sm font-semibold text-gray-300">ประเภทเกมแข่งขัน <span class="text-red-500">*</span></label>
-                                <select name="game_type_name" required class="w-full px-3 py-2.5 md:px-4 md:py-3 text-sm bg-[#0f0f0f] border-white/10 rounded-lg md:rounded-xl text-white focus:ring-2 focus:ring-blue-500/20 outline-none">
+                                <label class="block text-xs md:text-sm font-semibold text-gray-300">ประเภทเกมแข่งขัน
+                                    <span class="text-red-500">*</span></label>
+                                <select name="game_type_name" required
+                                    class="w-full px-3 py-2.5 md:px-4 md:py-3 text-sm bg-[#0f0f0f] border-white/10 rounded-lg md:rounded-xl text-white focus:ring-2 focus:ring-blue-500/20 outline-none">
                                     <option value="">-- เลือกประเภท --</option>
                                     @foreach ($gameTypes as $game)
                                         <option value="{{ $game->name }}">{{ $game->name }}</option>
@@ -171,44 +282,68 @@
                             </div>
 
                             <div class="space-y-1.5 md:space-y-2">
-                                <label class="block text-xs md:text-sm font-semibold text-gray-300">พิกัดน้ำหนัก (Kg.)</label>
-                                <input type="number" step="0.01" name="robot_weight" x-model="newClass.robot_weight" placeholder="เช่น 1.5 (ว่าง=ไม่จำกัด)" class="w-full px-3 py-2.5 md:px-4 md:py-3 text-sm bg-[#0f0f0f] border-white/10 rounded-lg md:rounded-xl text-white focus:ring-2 focus:ring-blue-500/20 outline-none">
+                                <label class="block text-xs md:text-sm font-semibold text-gray-300">พิกัดน้ำหนัก
+                                    (Kg.)</label>
+                                <input type="number" step="0.01" name="robot_weight"
+                                    x-model="newClass.robot_weight" placeholder="เช่น 1.5 (ว่าง=ไม่จำกัด)"
+                                    class="w-full px-3 py-2.5 md:px-4 md:py-3 text-sm bg-[#0f0f0f] border-white/10 rounded-lg md:rounded-xl text-white focus:ring-2 focus:ring-blue-500/20 outline-none">
                             </div>
 
                             <div class="space-y-1.5 md:space-y-2">
-                                <label class="block text-xs md:text-sm font-semibold text-gray-300">ค่าสมัคร (บาท) <span class="text-red-500">*</span></label>
-                                <input type="number" name="entry_fee" value="0" min="0" required class="w-full px-3 py-2.5 md:px-4 md:py-3 text-sm border-white/10 bg-[#0f0f0f] text-white rounded-lg md:rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none">
+                                <label class="block text-xs md:text-sm font-semibold text-gray-300">ค่าสมัคร (บาท)
+                                    <span class="text-red-500">*</span></label>
+                                <input type="number" name="entry_fee" value="0" min="0" required
+                                    class="w-full px-3 py-2.5 md:px-4 md:py-3 text-sm border-white/10 bg-[#0f0f0f] text-white rounded-lg md:rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none">
                             </div>
 
                             <div class="space-y-1.5 md:space-y-2">
-                                <label class="block text-xs md:text-sm font-semibold text-gray-300">ไฟล์กติกา PDF</label>
-                                <input type="file" name="rule_pdf" accept="application/pdf" class="w-full text-xs md:text-sm text-gray-500 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:bg-[#1a1a1a] file:border-white/10 file:text-purple-400 hover:file:bg-white/5 cursor-pointer transition-colors border border-white/5 rounded-lg md:rounded-xl bg-[#0f0f0f]">
+                                <label class="block text-xs md:text-sm font-semibold text-gray-300">ไฟล์กติกา
+                                    PDF</label>
+                                <input type="file" name="rule_pdf" accept="application/pdf"
+                                    class="w-full text-xs md:text-sm text-gray-500 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:bg-[#1a1a1a] file:border-white/10 file:text-purple-400 hover:file:bg-white/5 cursor-pointer transition-colors border border-white/5 rounded-lg md:rounded-xl bg-[#0f0f0f]">
                             </div>
-                            
+
                             <div class="space-y-1.5 md:space-y-2">
-                                <label class="block text-xs md:text-sm font-semibold text-gray-300">จำนวนสมาชิก (คน/ทีม) <span class="text-red-500">*</span></label>
+                                <label class="block text-xs md:text-sm font-semibold text-gray-300">จำนวนสมาชิก
+                                    (คน/ทีม) <span class="text-red-500">*</span></label>
                                 <div class="flex items-center gap-2">
-                                    <input type="number" name="min_members" value="1" min="1" placeholder="ขั้นต่ำ" required class="w-full px-3 py-2.5 md:px-4 md:py-3 text-sm border-white/10 bg-[#0f0f0f] text-white rounded-lg md:rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none placeholder-gray-600">
+                                    <input type="number" name="min_members" value="1" min="1"
+                                        placeholder="ขั้นต่ำ" required
+                                        class="w-full px-3 py-2.5 md:px-4 md:py-3 text-sm border-white/10 bg-[#0f0f0f] text-white rounded-lg md:rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none placeholder-gray-600">
                                     <span class="text-gray-500 font-bold">-</span>
-                                    <input type="number" name="max_members" value="1" min="1" placeholder="สูงสุด" required class="w-full px-3 py-2.5 md:px-4 md:py-3 text-sm border-white/10 bg-[#0f0f0f] text-white rounded-lg md:rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none placeholder-gray-600">
+                                    <input type="number" name="max_members" value="1" min="1"
+                                        placeholder="สูงสุด" required
+                                        class="w-full px-3 py-2.5 md:px-4 md:py-3 text-sm border-white/10 bg-[#0f0f0f] text-white rounded-lg md:rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none placeholder-gray-600">
                                 </div>
                             </div>
 
                             <div class="space-y-1.5 md:space-y-2">
-                                <label class="block text-xs md:text-sm font-semibold text-gray-300">จำนวนทีมที่รับ</label>
-                                <input type="number" name="max_teams" min="1" placeholder="ไม่จำกัด" class="w-full px-3 py-2.5 md:px-4 md:py-3 text-sm border-white/10 bg-[#0f0f0f] text-white rounded-lg md:rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none placeholder-gray-600">
+                                <label
+                                    class="block text-xs md:text-sm font-semibold text-gray-300">จำนวนทีมที่รับ</label>
+                                <input type="number" name="max_teams" min="1" placeholder="ไม่จำกัด"
+                                    class="w-full px-3 py-2.5 md:px-4 md:py-3 text-sm border-white/10 bg-[#0f0f0f] text-white rounded-lg md:rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none placeholder-gray-600">
                             </div>
 
                             <div class="md:col-span-2 space-y-2 md:space-y-3 pt-2">
-                                <label class="block text-xs md:text-sm font-semibold text-gray-300">หมวดหมู่อายุที่ลงแข่งได้ <span class="text-red-500">*</span></label>
-                                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 md:gap-3" x-data="{ selectedAge: '' }">
+                                <label
+                                    class="block text-xs md:text-sm font-semibold text-gray-300">หมวดหมู่อายุที่ลงแข่งได้
+                                    <span class="text-red-500">*</span></label>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 md:gap-3"
+                                    x-data="{ selectedAge: '' }">
                                     @foreach ($categories as $category)
-                                        <label class="flex items-center p-2.5 md:p-3 border rounded-lg md:rounded-xl cursor-pointer hover:bg-white/5 transition-all"
-                                               :class="selectedAge === '{{ $category->name }}' ? 'border-blue-500 bg-blue-500/10' : 'border-white/5 bg-[#0a0a0a]'">
-                                            <input type="radio" name="allowed_category" value="{{ $category->name }}" required x-model="selectedAge" class="w-3.5 h-3.5 md:w-4 md:h-4 text-blue-600 bg-[#121212] border-white/10 mr-2 md:mr-3 focus:ring-blue-500">
+                                        <label
+                                            class="flex items-center p-2.5 md:p-3 border rounded-lg md:rounded-xl cursor-pointer hover:bg-white/5 transition-all"
+                                            :class="selectedAge === '{{ $category->name }}' ?
+                                                'border-blue-500 bg-blue-500/10' : 'border-white/5 bg-[#0a0a0a]'">
+                                            <input type="radio" name="allowed_category"
+                                                value="{{ $category->name }}" required x-model="selectedAge"
+                                                class="w-3.5 h-3.5 md:w-4 md:h-4 text-blue-600 bg-[#121212] border-white/10 mr-2 md:mr-3 focus:ring-blue-500">
                                             <div class="flex flex-col">
-                                                <span class="text-xs md:text-sm font-bold text-white">{{ $category->name }}</span>
-                                                <span class="text-[9px] md:text-[10px] text-gray-500">{{ $category->min_age }}-{{ $category->max_age }} ปี</span>
+                                                <span
+                                                    class="text-xs md:text-sm font-bold text-white">{{ $category->name }}</span>
+                                                <span
+                                                    class="text-[9px] md:text-[10px] text-gray-500">{{ $category->min_age }}-{{ $category->max_age }}
+                                                    ปี</span>
                                             </div>
                                         </label>
                                     @endforeach
@@ -216,9 +351,12 @@
                             </div>
                         </div>
                     </div>
-                    <div class="px-4 py-3 md:px-6 md:py-4 bg-[#0a0a0a] border-t border-white/5 flex flex-col-reverse sm:flex-row justify-end gap-2 md:gap-3 shrink-0">
-                        <button type="button" @click="$dispatch('close-modal', 'add-class')" class="w-full sm:w-auto px-4 py-2 md:px-6 md:py-2.5 bg-[#1a1a1a] hover:bg-white/5 border border-white/10 rounded-lg md:rounded-xl text-sm font-semibold text-gray-300 transition-colors">ยกเลิก</button>
-                        <button type="submit" class="w-full sm:w-auto px-4 py-2 md:px-8 md:py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg md:rounded-xl text-sm font-semibold shadow-md transition-colors">บันทึกข้อมูล</button>
+                    <div
+                        class="px-4 py-3 md:px-6 md:py-4 bg-[#0a0a0a] border-t border-white/5 flex flex-col-reverse sm:flex-row justify-end gap-2 md:gap-3 shrink-0">
+                        <button type="button" @click="$dispatch('close-modal', 'add-class')"
+                            class="w-full sm:w-auto px-4 py-2 md:px-6 md:py-2.5 bg-[#1a1a1a] hover:bg-white/5 border border-white/10 rounded-lg md:rounded-xl text-sm font-semibold text-gray-300 transition-colors">ยกเลิก</button>
+                        <button type="submit"
+                            class="w-full sm:w-auto px-4 py-2 md:px-8 md:py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg md:rounded-xl text-sm font-semibold shadow-md transition-colors">บันทึกข้อมูล</button>
                     </div>
                 </form>
             </div>
@@ -226,24 +364,34 @@
 
         {{-- ===== MODAL: EDIT ===== --}}
         <x-modal name="edit-class" focusable maxWidth="3xl">
-            <div class="bg-[#121212] flex flex-col h-[90vh] md:h-[85vh] overflow-hidden rounded-xl md:rounded-2xl border border-white/10">
-                <div class="px-4 py-4 md:px-6 md:py-5 border-b border-white/5 flex items-center justify-between bg-[#0a0a0a] shrink-0">
+            <div
+                class="bg-[#121212] flex flex-col h-[90vh] md:h-[85vh] overflow-hidden rounded-xl md:rounded-2xl border border-white/10">
+                <div
+                    class="px-4 py-4 md:px-6 md:py-5 border-b border-white/5 flex items-center justify-between bg-[#0a0a0a] shrink-0">
                     <h2 class="text-lg md:text-xl font-semibold text-white">แก้ไขรุ่นการแข่งขัน</h2>
-                    <button @click="$dispatch('close-modal', 'edit-class')" class="text-gray-500 hover:text-white transition-colors p-2"><i class="fas fa-times"></i></button>
+                    <button @click="$dispatch('close-modal', 'edit-class')"
+                        class="text-gray-500 hover:text-white transition-colors p-2"><i
+                            class="fas fa-times"></i></button>
                 </div>
 
-                <form method="POST" :action="`{{ url('/admin/competitions/' . $competition->id . '/classes') }}/${editClass.id}`" enctype="multipart/form-data" class="flex flex-col flex-1 overflow-hidden">
+                <form method="POST"
+                    :action="`{{ url('/admin/competitions/' . $competition->id . '/classes') }}/${editClass.id}`"
+                    enctype="multipart/form-data" class="flex flex-col flex-1 overflow-hidden">
                     @csrf @method('PUT')
                     <div class="p-4 md:p-6 lg:p-8 overflow-y-auto custom-scrollbar flex-1 space-y-4 md:space-y-6">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                             <div class="md:col-span-2 space-y-1.5 md:space-y-2">
-                                <label class="block text-xs md:text-sm font-semibold text-gray-300">ชื่อรุ่นการแข่งขัน <span class="text-red-500">*</span></label>
-                                <input type="text" name="name" x-model="editClass.name" required class="w-full px-3 py-2.5 md:px-4 md:py-3 text-sm border-white/10 bg-[#0f0f0f] text-white rounded-lg md:rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none">
+                                <label class="block text-xs md:text-sm font-semibold text-gray-300">ชื่อรุ่นการแข่งขัน
+                                    <span class="text-red-500">*</span></label>
+                                <input type="text" name="name" x-model="editClass.name" required
+                                    class="w-full px-3 py-2.5 md:px-4 md:py-3 text-sm border-white/10 bg-[#0f0f0f] text-white rounded-lg md:rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none">
                             </div>
 
                             <div class="space-y-1.5 md:space-y-2">
-                                <label class="block text-xs md:text-sm font-semibold text-gray-300">ประเภทเกมแข่งขัน <span class="text-red-500">*</span></label>
-                                <select x-model="editClass.game_type_name" name="game_type_name" required class="w-full px-3 py-2.5 md:px-4 md:py-3 text-sm bg-[#0f0f0f] border-white/10 rounded-lg md:rounded-xl text-white focus:ring-2 focus:ring-blue-500/20 outline-none">
+                                <label class="block text-xs md:text-sm font-semibold text-gray-300">ประเภทเกมแข่งขัน
+                                    <span class="text-red-500">*</span></label>
+                                <select x-model="editClass.game_type_name" name="game_type_name" required
+                                    class="w-full px-3 py-2.5 md:px-4 md:py-3 text-sm bg-[#0f0f0f] border-white/10 rounded-lg md:rounded-xl text-white focus:ring-2 focus:ring-blue-500/20 outline-none">
                                     @foreach ($gameTypes as $game)
                                         <option value="{{ $game->name }}">{{ $game->name }}</option>
                                     @endforeach
@@ -251,44 +399,69 @@
                             </div>
 
                             <div class="space-y-1.5 md:space-y-2">
-                                <label class="block text-xs md:text-sm font-semibold text-gray-300">พิกัดน้ำหนัก (Kg.)</label>
-                                <input type="number" step="0.01" name="robot_weight" x-model="editClass.robot_weight" placeholder="เช่น 1.5" class="w-full px-3 py-2.5 md:px-4 md:py-3 text-sm bg-[#0f0f0f] border-white/10 rounded-lg md:rounded-xl text-blue-400 font-semibold focus:ring-2 focus:ring-blue-500/20 outline-none">
+                                <label class="block text-xs md:text-sm font-semibold text-gray-300">พิกัดน้ำหนัก
+                                    (Kg.)</label>
+                                <input type="number" step="0.01" name="robot_weight"
+                                    x-model="editClass.robot_weight" placeholder="เช่น 1.5"
+                                    class="w-full px-3 py-2.5 md:px-4 md:py-3 text-sm bg-[#0f0f0f] border-white/10 rounded-lg md:rounded-xl text-blue-400 font-semibold focus:ring-2 focus:ring-blue-500/20 outline-none">
                             </div>
 
                             <div class="space-y-1.5 md:space-y-2">
-                                <label class="block text-xs md:text-sm font-semibold text-gray-300">ค่าสมัคร (บาท) <span class="text-red-500">*</span></label>
-                                <input type="number" name="entry_fee" x-model="editClass.entry_fee" min="0" required class="w-full px-3 py-2.5 md:px-4 md:py-3 text-sm border-white/10 bg-[#0f0f0f] text-white rounded-lg md:rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none">
+                                <label class="block text-xs md:text-sm font-semibold text-gray-300">ค่าสมัคร (บาท)
+                                    <span class="text-red-500">*</span></label>
+                                <input type="number" name="entry_fee" x-model="editClass.entry_fee" min="0"
+                                    required
+                                    class="w-full px-3 py-2.5 md:px-4 md:py-3 text-sm border-white/10 bg-[#0f0f0f] text-white rounded-lg md:rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none">
                             </div>
 
                             <div class="space-y-1.5 md:space-y-2">
-                                <label class="block text-xs md:text-sm font-semibold text-gray-300">อัปเดตกติกา PDF</label>
-                                <input type="file" name="rule_pdf" accept="application/pdf" class="w-full text-xs md:text-sm text-gray-500 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:bg-[#1a1a1a] file:border-white/10 file:text-purple-400 hover:file:bg-white/5 cursor-pointer transition-colors border border-white/5 rounded-lg md:rounded-xl bg-[#0f0f0f]">
+                                <label class="block text-xs md:text-sm font-semibold text-gray-300">อัปเดตกติกา
+                                    PDF</label>
+                                <input type="file" name="rule_pdf" accept="application/pdf"
+                                    class="w-full text-xs md:text-sm text-gray-500 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:bg-[#1a1a1a] file:border-white/10 file:text-purple-400 hover:file:bg-white/5 cursor-pointer transition-colors border border-white/5 rounded-lg md:rounded-xl bg-[#0f0f0f]">
                             </div>
-                            
+
                             <div class="space-y-1.5 md:space-y-2">
-                                <label class="block text-xs md:text-sm font-semibold text-gray-300">จำนวนสมาชิก (คน/ทีม) <span class="text-red-500">*</span></label>
+                                <label class="block text-xs md:text-sm font-semibold text-gray-300">จำนวนสมาชิก
+                                    (คน/ทีม) <span class="text-red-500">*</span></label>
                                 <div class="flex items-center gap-2">
-                                    <input type="number" name="min_members" x-model="editClass.min_members" min="1" placeholder="ขั้นต่ำ" required class="w-full px-3 py-2.5 md:px-4 md:py-3 text-sm border-white/10 bg-[#0f0f0f] text-white rounded-lg md:rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none">
+                                    <input type="number" name="min_members" x-model="editClass.min_members"
+                                        min="1" placeholder="ขั้นต่ำ" required
+                                        class="w-full px-3 py-2.5 md:px-4 md:py-3 text-sm border-white/10 bg-[#0f0f0f] text-white rounded-lg md:rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none">
                                     <span class="text-gray-500 font-bold">-</span>
-                                    <input type="number" name="max_members" x-model="editClass.max_members" min="1" placeholder="สูงสุด" required class="w-full px-3 py-2.5 md:px-4 md:py-3 text-sm border-white/10 bg-[#0f0f0f] text-white rounded-lg md:rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none">
+                                    <input type="number" name="max_members" x-model="editClass.max_members"
+                                        min="1" placeholder="สูงสุด" required
+                                        class="w-full px-3 py-2.5 md:px-4 md:py-3 text-sm border-white/10 bg-[#0f0f0f] text-white rounded-lg md:rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none">
                                 </div>
                             </div>
 
                             <div class="space-y-1.5 md:space-y-2">
-                                <label class="block text-xs md:text-sm font-semibold text-gray-300">จำนวนทีมที่รับ</label>
-                                <input type="number" name="max_teams" x-model="editClass.max_teams" min="1" placeholder="ไม่จำกัด" class="w-full px-3 py-2.5 md:px-4 md:py-3 text-sm border-white/10 bg-[#0f0f0f] text-white rounded-lg md:rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none placeholder-gray-600">
+                                <label
+                                    class="block text-xs md:text-sm font-semibold text-gray-300">จำนวนทีมที่รับ</label>
+                                <input type="number" name="max_teams" x-model="editClass.max_teams" min="1"
+                                    placeholder="ไม่จำกัด"
+                                    class="w-full px-3 py-2.5 md:px-4 md:py-3 text-sm border-white/10 bg-[#0f0f0f] text-white rounded-lg md:rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none placeholder-gray-600">
                             </div>
 
                             <div class="md:col-span-2 space-y-2 md:space-y-3 pt-2">
-                                <label class="block text-xs md:text-sm font-semibold text-gray-300">หมวดหมู่อายุ <span class="text-red-500">*</span></label>
+                                <label class="block text-xs md:text-sm font-semibold text-gray-300">หมวดหมู่อายุ <span
+                                        class="text-red-500">*</span></label>
                                 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 md:gap-3">
                                     @foreach ($categories as $category)
-                                        <label class="flex items-center p-2.5 md:p-3 border rounded-lg md:rounded-xl cursor-pointer hover:bg-white/5 transition-all"
-                                               :class="editClass.allowed_category === '{{ $category->name }}' ? 'border-blue-500 bg-blue-500/10' : 'border-white/5 bg-[#0a0a0a]'">
-                                            <input type="radio" name="allowed_category" value="{{ $category->name }}" required x-model="editClass.allowed_category" class="w-3.5 h-3.5 md:w-4 md:h-4 text-blue-600 bg-[#121212] border-white/10 mr-2 md:mr-3 focus:ring-blue-500">
+                                        <label
+                                            class="flex items-center p-2.5 md:p-3 border rounded-lg md:rounded-xl cursor-pointer hover:bg-white/5 transition-all"
+                                            :class="editClass.allowed_category === '{{ $category->name }}' ?
+                                                'border-blue-500 bg-blue-500/10' : 'border-white/5 bg-[#0a0a0a]'">
+                                            <input type="radio" name="allowed_category"
+                                                value="{{ $category->name }}" required
+                                                x-model="editClass.allowed_category"
+                                                class="w-3.5 h-3.5 md:w-4 md:h-4 text-blue-600 bg-[#121212] border-white/10 mr-2 md:mr-3 focus:ring-blue-500">
                                             <div class="flex flex-col">
-                                                <span class="text-xs md:text-sm font-bold text-white">{{ $category->name }}</span>
-                                                <span class="text-[9px] md:text-[10px] text-gray-500">{{ $category->min_age }}-{{ $category->max_age }} ปี</span>
+                                                <span
+                                                    class="text-xs md:text-sm font-bold text-white">{{ $category->name }}</span>
+                                                <span
+                                                    class="text-[9px] md:text-[10px] text-gray-500">{{ $category->min_age }}-{{ $category->max_age }}
+                                                    ปี</span>
                                             </div>
                                         </label>
                                     @endforeach
@@ -296,9 +469,12 @@
                             </div>
                         </div>
                     </div>
-                    <div class="px-4 py-3 md:px-6 md:py-4 bg-[#0a0a0a] border-t border-white/5 flex flex-col-reverse sm:flex-row justify-end gap-2 md:gap-3 shrink-0">
-                        <button type="button" @click="$dispatch('close-modal', 'edit-class')" class="w-full sm:w-auto px-4 py-2 md:px-6 md:py-2.5 bg-[#1a1a1a] hover:bg-white/5 border border-white/10 rounded-lg md:rounded-xl text-sm font-semibold text-gray-300 transition-colors">ยกเลิก</button>
-                        <button type="submit" class="w-full sm:w-auto px-4 py-2 md:px-8 md:py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg md:rounded-xl text-sm font-semibold shadow-md transition-colors">บันทึกการแก้ไข</button>
+                    <div
+                        class="px-4 py-3 md:px-6 md:py-4 bg-[#0a0a0a] border-t border-white/5 flex flex-col-reverse sm:flex-row justify-end gap-2 md:gap-3 shrink-0">
+                        <button type="button" @click="$dispatch('close-modal', 'edit-class')"
+                            class="w-full sm:w-auto px-4 py-2 md:px-6 md:py-2.5 bg-[#1a1a1a] hover:bg-white/5 border border-white/10 rounded-lg md:rounded-xl text-sm font-semibold text-gray-300 transition-colors">ยกเลิก</button>
+                        <button type="submit"
+                            class="w-full sm:w-auto px-4 py-2 md:px-8 md:py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg md:rounded-xl text-sm font-semibold shadow-md transition-colors">บันทึกการแก้ไข</button>
                     </div>
                 </form>
             </div>

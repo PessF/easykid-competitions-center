@@ -26,6 +26,7 @@
             return [
                 'id' => $c->id,
                 'name' => $c->name,
+                'is_active' => (bool)$c->is_active, // เพิ่มการส่งค่าสถานะเปิด/ปิด
                 'searchString' => strtolower($c->name),
                 'game_type' => $c->game_type_name,
                 'min_members' => $c->min_members ?? 1,
@@ -316,6 +317,13 @@
                                         class="text-[9px] sm:text-[10px] font-normal tracking-wide text-blue-400 bg-blue-500/10 border border-blue-500/20 px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-md"
                                         x-text="cls.game_type"></span>
 
+                                    {{-- 🚀 เพิ่มป้ายแจ้งเตือน "ปิดรับสมัครชั่วคราว" กรณี Admin สั่งปิด --}}
+                                    <template x-if="!cls.is_active">
+                                        <span class="text-[9px] sm:text-[10px] font-normal text-orange-400 bg-orange-500/10 border border-orange-500/20 px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-md">
+                                            <i class="fas fa-pause-circle mr-1"></i> ปิดรับสมัครชั่วคราว
+                                        </span>
+                                    </template>
+
                                     <template x-for="cat in cls.categories_details" :key="cat.name">
                                         <span
                                             class="text-[9px] sm:text-[10px] font-normal text-gray-400 bg-white/5 border border-white/10 px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-md">
@@ -344,23 +352,26 @@
                                             x-text="cls.min_members === cls.max_members ? `จำนวนสมาชิก ${cls.max_members} ท่าน/ทีม` : `จำนวนสมาชิก ${cls.min_members}-${cls.max_members} ท่าน/ทีม`"></span>
                                     </div>
                                     
-                                    {{-- 🚀 แสดงโควต้าที่เหลือ (รองรับแบบไม่จำกัด) --}}
+                                    {{-- 🚀 แสดงโควต้าที่เหลือ (รองรับสถานะปิดรับสมัคร) --}}
                                     <div class="flex items-center gap-1.5">
-                                        <i class="fas fa-ticket-alt opacity-60" :class="(cls.max_teams && cls.available_slots <= 0) ? 'text-red-400' : ''"></i>
+                                        <i class="fas fa-ticket-alt opacity-60" :class="(!cls.is_active || (cls.max_teams && cls.available_slots <= 0)) ? 'text-red-400' : ''"></i>
                                         
-                                        {{-- แบบไม่จำกัดโควต้า --}}
-                                        <template x-if="!cls.max_teams">
-                                            <span>รับจำนวน: <span class="text-emerald-400">ไม่จำกัด</span></span>
+                                        <template x-if="!cls.is_active">
+                                            <span class="text-orange-400 font-normal">ปิดรับสมัคร</span>
                                         </template>
 
-                                        {{-- แบบจำกัดโควต้าและยังเหลือ --}}
-                                        <template x-if="cls.max_teams && cls.available_slots > 0">
-                                            <span>เหลือ: <span class="text-emerald-400" x-text="cls.available_slots"></span> ที่นั่ง</span>
-                                        </template>
-
-                                        {{-- แบบเต็มแล้ว --}}
-                                        <template x-if="cls.max_teams && cls.available_slots <= 0">
-                                            <span class="text-red-400 font-normal">โควต้าเต็มแล้ว</span>
+                                        <template x-if="cls.is_active">
+                                            <span>
+                                                <template x-if="!cls.max_teams">
+                                                    <span>รับจำนวน: <span class="text-emerald-400">ไม่จำกัด</span></span>
+                                                </template>
+                                                <template x-if="cls.max_teams && cls.available_slots > 0">
+                                                    <span>เหลือ: <span class="text-emerald-400" x-text="cls.available_slots"></span> ที่นั่ง</span>
+                                                </template>
+                                                <template x-if="cls.max_teams && cls.available_slots <= 0">
+                                                    <span class="text-red-400 font-normal">โควต้าเต็มแล้ว</span>
+                                                </template>
+                                            </span>
                                         </template>
                                     </div>
                                 </div>
@@ -382,19 +393,31 @@
                                 {{-- Buttons (จัด Layout ใหม่ให้เรียงลงมาเสมอ เพื่อไม่ให้บีบกัน) --}}
                                 <div class="flex flex-col gap-2 w-full mt-2 sm:mt-0">
                                     @if ($competition->dynamic_status === 'open')
-                                        {{-- ปุ่มกดได้ปกติ กรณีที่นั่งยังไม่เต็ม หรือไม่ได้จำกัด max_teams --}}
-                                        <button x-show="!cls.max_teams || cls.available_slots > 0" 
-                                            @click="openRegisterModal(cls)"
-                                            class="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white text-md sm:text-sm font-normal rounded-xl transition-colors shadow-sm">
-                                            ลงทะเบียนแข่งขัน
-                                        </button>
+                                        {{-- 1. ปุ่มลงทะเบียนปกติ กรณีที่นั่งยังไม่เต็ม และแอดมินสั่งเปิด --}}
+                                        <template x-if="cls.is_active && (!cls.max_teams || cls.available_slots > 0)">
+                                            <button @click="openRegisterModal(cls)"
+                                                class="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white text-md sm:text-sm font-normal rounded-xl transition-colors shadow-sm">
+                                                ลงทะเบียนแข่งขัน
+                                            </button>
+                                        </template>
 
-                                        {{-- 🚀 ปุ่มที่โดน Disable กรณียอดโควต้าเต็มแล้ว (กดไม่ได้) --}}
-                                        <button x-show="cls.max_teams && cls.available_slots <= 0" disabled
-                                            class="w-full py-2.5 bg-[#1a1a1a] text-red-400/80 text-xs sm:text-sm font-normal rounded-xl cursor-not-allowed border border-red-500/30">
-                                            โควต้าเต็มแล้ว
-                                        </button>
+                                        {{-- 2. ปุ่มโดน Disable กรณียอดโควต้าเต็มแล้ว --}}
+                                        <template x-if="cls.is_active && cls.max_teams && cls.available_slots <= 0">
+                                            <button disabled
+                                                class="w-full py-2.5 bg-[#1a1a1a] text-red-400/80 text-xs sm:text-sm font-normal rounded-xl cursor-not-allowed border border-red-500/30">
+                                                โควต้าเต็มแล้ว
+                                            </button>
+                                        </template>
+
+                                        {{-- 3. 🚀 ปุ่มโดน Disable กรณีแอดมินสั่งปิดรุ่นนี้ --}}
+                                        <template x-if="!cls.is_active">
+                                            <button disabled
+                                                class="w-full py-2.5 bg-[#1a1a1a] text-orange-400/80 text-xs sm:text-sm font-normal rounded-xl cursor-not-allowed border border-orange-500/30">
+                                                ปิดรับสมัครชั่วคราว
+                                            </button>
+                                        </template>
                                     @else
+                                        {{-- 4. กรณีงานแข่งหลักปิดไปแล้ว --}}
                                         <button disabled
                                             class="w-full py-2.5 bg-[#0a0a0a] text-gray-600 text-xs sm:text-sm font-normal rounded-xl cursor-not-allowed border border-white/5">
                                             ปิดรับสมัคร

@@ -32,9 +32,25 @@ class CompetitionClassController extends Controller
         return trim(preg_replace('/[\\\\\/:\*\?"<>\|]/', '_', $name));
     }
 
-    public function index(Competition $competition)
+public function index(Request $request, Competition $competition) // อย่าลืมเติม Request $request เข้ามาในวงเล็บด้วยนะครับ
     {
-        $classes = $competition->classes()->latest()->paginate(20);
+        // 1. เริ่มสร้าง Query พื้นฐาน
+        $query = $competition->classes()->latest();
+
+        // 2. ถ้ามีการค้นหาด้วยข้อความ (ชื่อรุ่น)
+        if ($request->filled('search')) {
+            $query->where('name', 'like', '%' . $request->search . '%');
+        }
+
+        // 3. ถ้ามีการเลือกกรองประเภทเกม
+        if ($request->filled('game_type')) {
+            $query->where('game_type_name', $request->game_type);
+        }
+
+        // 4. ทำ Pagination และใช้ appends() เพื่อให้จำค่าค้นหาเวลาเปลี่ยนหน้า (Page 2, 3...)
+        $classes = $query->paginate(20)->appends($request->query());
+
+        // ดึงข้อมูลสำหรับ Dropdown ใน Modal และตัวกรอง
         $categories = Category::limit(100)->get();
         $gameTypes = GameType::limit(100)->get();
 
@@ -44,7 +60,7 @@ class CompetitionClassController extends Controller
     public function store(Request $request, Competition $competition)
     {
         if (empty($request->all()) && $request->server('CONTENT_LENGTH') > 0) {
-            return back()->withInput()->withErrors(['error' => 'ไฟล์มีขนาดใหญ่เกินไป (ระบบรองรับสูงสุด 50MB)']);
+            return back()->withInput()->withErrors(['error' => 'ไฟล์มีขนาดใหญ่เกินไป (ระบบรองรับสูงสุด 200MB)']);
         }
 
         $request->validate([
@@ -53,7 +69,7 @@ class CompetitionClassController extends Controller
             'min_members' => 'required|integer|min:1',
             'max_members' => 'required|integer|min:1|gte:min_members',
             'max_teams' => 'nullable|integer|min:1',
-            'rule_pdf' => 'nullable|mimes:pdf|max:51200',
+            'rule_pdf' => 'nullable|mimes:pdf|max:204800',
             'game_type_name' => 'required|string|max:255',
             'robot_weight' => 'nullable|numeric|min:0',
             'allowed_category' => 'required|string',
@@ -111,6 +127,7 @@ class CompetitionClassController extends Controller
             'max_members' => 'required|integer|min:1|gte:min_members',
             'game_type_name' => 'required|string|max:255',
             'allowed_category' => 'required|string', 
+            'rule_pdf' => 'nullable|mimes:pdf|max:204800',
         ]);
 
         try {
@@ -133,7 +150,6 @@ class CompetitionClassController extends Controller
             return redirect()->back()->with('success', 'อัปเดตข้อมูลเรียบร้อยแล้ว!');
 
         } catch (\Exception $e) {
-            // 🚀 เก็บ Log เช่นกัน และตอบกลับด้วยข้อความเรียบง่าย
             Log::error("Update CompetitionClass Error: " . $e->getMessage());
             return back()->withInput()->withErrors(['error' => 'ไม่สามารถแก้ไขข้อมูลได้ กรุณาลองใหม่อีกครั้ง']);
         }
@@ -162,5 +178,48 @@ class CompetitionClassController extends Controller
             'Content-Disposition' => 'inline; filename="rules.pdf"',
             'Cache-Control' => 'public, max-age=3600'
         ]);
+    }
+
+
+public function destroy(Competition $competition, CompetitionClass $class)
+    {
+        try {
+            if ($class->rules_url) {
+                // เช็คว่ามี Record อื่นในตารางที่ใช้ไฟล์นี้อยู่หรือไม่ (ไม่นับตัวมันเอง)
+                $isSharedFile = CompetitionClass::where('rules_url', $class->rules_url)
+                    ->where('id', '!=', $class->id)
+                    ->exists();
+
+                // ถ้าไม่มีใครใช้ไฟล์นี้แล้ว ถึงจะสั่งลบไฟล์จริงๆ
+                if (!$isSharedFile) {
+                    Storage::disk('google')->delete($class->rules_url);
+                }
+            }
+
+            // ลบข้อมูลรุ่นการแข่งขันออกจากฐานข้อมูลตามปกติ
+            $class->delete();
+
+            return redirect()->back()->with('success', 'ลบรุ่นการแข่งขันเรียบร้อยแล้ว!');
+
+        } catch (\Exception $e) {
+            Log::error("Delete CompetitionClass Error: " . $e->getMessage());
+            return back()->withErrors(['error' => 'ไม่สามารถลบข้อมูลได้ กรุณาลองใหม่อีกครั้ง']);
+        }
+    }
+
+
+    public function toggleStatus(Competition $competition, CompetitionClass $class)
+    {
+        try {
+            // สลับสถานะ (ถ้า true ให้เป็น false, ถ้า false ให้เป็น true)
+            $class->update(['is_active' => !$class->is_active]);
+
+            $statusMessage = $class->is_active ? 'เปิดรับสมัคร' : 'ปิดรับสมัคร';
+            return redirect()->back()->with('success', "เปลี่ยนสถานะเป็น {$statusMessage} เรียบร้อยแล้ว!");
+
+        } catch (\Exception $e) {
+            Log::error("Toggle Class Status Error: " . $e->getMessage());
+            return back()->withErrors(['error' => 'ไม่สามารถเปลี่ยนสถานะได้ กรุณาลองใหม่อีกครั้ง']);
+        }
     }
 }
