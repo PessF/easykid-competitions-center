@@ -194,36 +194,39 @@
                         </div>
 
                         {{-- Additional Info & Password --}}
-                        <div class="space-y-6 sm:space-y-8 pt-6 sm:pt-8 border-t border-white/5">
-                            {{-- Row 1: Birthday & Phone --}}
-                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
+                        <div class="space-y-8 sm:space-y-12 pt-8 sm:pt-10 border-t border-white/5">
+                            {{-- Row 1: Birthday, Phone, Shirt Size --}}
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-8">
                                 <div class="sm:col-span-1">
-                                    <label for="birthday" class="block font-medium text-xs text-gray-400 mb-1.5">{{ __('เดือน/วัน/ปีเกิด (คริสต์ศักราช) - ไม่บังคับ') }}</label>
+                                    <label for="birthday" class="block font-medium text-xs text-gray-400 mb-2">{{ __('เดือน/วัน/ปีเกิด (คริสต์ศักราช) - ไม่บังคับ') }}</label>
                                     <input name="birthday" id="birthday" type="date" value="{{ old('birthday') }}"
                                         class="block w-full rounded-xl border border-white/10 bg-[#0a0a0a] text-white text-sm px-3 sm:px-4 py-2.5 sm:py-3 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-colors [color-scheme:dark]" />
                                     <x-input-error :messages="$errors->get('birthday')" class="mt-1 text-red-400 text-xs" />
                                 </div>
+                                
                                 <div class="sm:col-span-1">
-                                    <label for="phone_number" class="block font-medium text-xs text-gray-400 mb-1.5">{{ __('หมายเลขโทรศัพท์ติดต่อ') }}</label>
+                                    <label for="phone_number" class="block font-medium text-xs text-gray-400 mb-2">{{ __('หมายเลขโทรศัพท์ติดต่อ') }}</label>
                                     <input id="phone_number" name="phone_number" type="text" 
                                         class="block w-full bg-[#0a0a0a] border-white/10 text-white rounded-xl text-sm px-3 sm:px-4 py-2.5 sm:py-3 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-colors placeholder-gray-600"
                                         placeholder="08XXXXXXXX" value="{{ old('phone_number') }}" />
                                     <x-input-error :messages="$errors->get('phone_number')" class="mt-1 text-red-400 text-xs" />
+                                </div> <!-- 💡 เพิ่ม Tag ปิด div ตรงนี้ที่หายไป -->
+
                                 <div class="sm:col-span-1 relative">
-                                    <label class="block font-medium text-xs text-gray-400 mb-1.5">{{ __('ขนาดเสื้อ (Shirt Size)') }}</label>
+                                    <label class="block font-medium text-xs text-gray-400 mb-2">{{ __('ขนาดเสื้อ (Shirt Size)') }}</label>
                                     
-                                    {{-- 🚀 Custom Dropdown: Shirt Size --}}
+                                    {{-- Custom Dropdown: Shirt Size --}}
                                     <div x-data="{ 
                                         open: false, 
                                         selected: '{{ old('shirt_size', '') }}',
                                         options: [
                                             { value: '', label: 'โปรดระบุขนาด (ไม่บังคับ)' },
-                                            { value: 'S', label: '' },
-                                            { value: 'M', label: '' },
-                                            { value: 'L', label: '' },
-                                            { value: 'XL', label: '' },
-                                            { value: '2XL', label: '' },
-                                            { value: '3XL', label: '' }
+                                            { value: 'S', label: 'S' },
+                                            { value: 'M', label: 'M' },
+                                            { value: 'L', label: 'L' },
+                                            { value: 'XL', label: 'XL' },
+                                            { value: '2XL', label: '2XL' },
+                                            { value: '3XL', label: '3XL' }
                                         ],
                                         get selectedLabel() { return this.options.find(o => o.value === this.selected)?.label || 'โปรดระบุขนาด (ไม่บังคับ)'; }
                                     }" @click.outside="open = false" class="relative">
@@ -252,15 +255,15 @@
 
                             {{-- Row 2: Password --}}
                             @if (is_null(auth()->user()->password))
-                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 animate-in slide-in-from-top-4 duration-700 p-5 sm:p-6 bg-[#0a0a0a] rounded-2xl border border-white/5">
-                                    <div class="sm:col-span-2">
-                                        <h3 class="text-xs font-normal text-yellow-500 uppercase tracking-[0.2em] flex items-center gap-2 mb-1.5">
-                                             {{ __('การตั้งค่ารหัสผ่านสำหรับการเข้าสู่ระบบในครั้งถัดไป') }}
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8 animate-in slide-in-from-top-4 duration-700 p-6 sm:p-8 bg-[#0a0a0a] rounded-2xl border border-white/5 mt-4">
+                                    <div class="sm:col-span-2 mb-2 sm:mb-0">
+                                        <h3 class="text-xs sm:text-sm font-normal text-yellow-500 uppercase tracking-[0.2em] flex items-center gap-2 mb-2">
+                                             <i class="fas fa-key"></i> {{ __('การตั้งค่ารหัสผ่านสำหรับการเข้าสู่ระบบในครั้งถัดไป') }}
                                         </h3>
-                                        <p class="text-[10px] sm:text-[11px] text-gray-500">กรุณากำหนดรหัสผ่านเพื่อให้ท่านสามารถเข้าสู่ระบบด้วยอีเมลในครั้งถัดไป</p>
+                                        <p class="text-xs text-gray-500 leading-relaxed">กรุณากำหนดรหัสผ่านเพื่อให้ท่านสามารถเข้าสู่ระบบด้วยอีเมลในครั้งถัดไป</p>
                                     </div>
                                     <div>
-                                        <label for="password" class="block font-medium text-xs text-gray-400 mb-1.5">{{ __('กำหนดรหัสผ่านใหม่') }}</label>
+                                        <label for="password" class="block font-medium text-xs text-gray-400 mb-2">{{ __('กำหนดรหัสผ่านใหม่') }}</label>
                                         <input id="password" name="password" type="password"
                                             class="block w-full bg-[#121212] border-white/10 text-white rounded-xl text-sm px-3 sm:px-4 py-2.5 sm:py-3 focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500 transition-colors placeholder-gray-600" 
                                             placeholder="ความยาวอย่างน้อย 8 ตัวอักษร"
@@ -268,7 +271,7 @@
                                         <x-input-error :messages="$errors->get('password')" class="mt-1 text-red-400 text-xs" />
                                     </div>
                                     <div>
-                                        <label for="password_confirmation" class="block font-medium text-xs text-gray-400 mb-1.5">{{ __('ยืนยันรหัสผ่านใหม่') }}</label>
+                                        <label for="password_confirmation" class="block font-medium text-xs text-gray-400 mb-2">{{ __('ยืนยันรหัสผ่านใหม่') }}</label>
                                         <input id="password_confirmation" name="password_confirmation" type="password" 
                                             class="block w-full bg-[#121212] border-white/10 text-white rounded-xl text-sm px-3 sm:px-4 py-2.5 sm:py-3 focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500 transition-colors placeholder-gray-600"
                                             placeholder="กรอกรหัสผ่านใหม่อีกครั้ง" 
@@ -277,9 +280,9 @@
                                     </div>
                                 </div>
                             @else
-                                <div class="p-4 sm:p-5 bg-blue-500/10 rounded-2xl border border-blue-500/20">
+                                <div class="p-5 bg-blue-500/10 rounded-2xl border border-blue-500/20 mt-4">
                                     <p class="text-xs sm:text-sm text-blue-400 flex items-center justify-center font-medium text-center">
-                                        <i class="fas fa-check-circle mr-1.5 sm:mr-2 shrink-0"></i>
+                                        <i class="fas fa-check-circle mr-2 shrink-0"></i>
                                         {{ __('บัญชีผู้ใช้งานของท่านได้ทำการตั้งค่ารหัสผ่านสำหรับการเข้าสู่ระบบเรียบร้อยแล้ว') }}
                                     </p>
                                 </div>
