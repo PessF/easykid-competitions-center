@@ -282,6 +282,7 @@
                                                         { 
                                                             teamName: {{ Js::from($reg->team->name ?? '-') }}, 
                                                             className: {{ Js::from($reg->competitionClass->name ?? '-') }}, 
+                                                            categoryName: {{ Js::from($reg->category_name ?? '') }}, 
                                                             regNo: '{{ $reg->regis_no }}',
                                                             fee: {{ $reg->competitionClass->entry_fee ?? 0 }}
                                                         }, @endforeach
@@ -351,7 +352,7 @@
                     <template x-if="modalData.slipUrl">
                         <div class="p-3 text-center bg-black/20">
                             <a :href="modalData.slipUrl" target="_blank"
-                                class="text-[11px] lg:text-sm text-blue-400 hover:text-blue-300 transition-colors">
+                                class="text-[11px] lg:text-sm text-blue-400 hover:text-blue-300 transition-colors font-normal">
                                 <i class="fas fa-external-link-alt mr-1"></i> เปิดดูรูปขนาดเต็ม
                             </a>
                         </div>
@@ -367,12 +368,12 @@
                         <div class="min-w-0">
                             <div class="flex items-center gap-3 mb-1.5">
                                 <span
-                                    class="px-2 py-0.5 rounded text-[10px] lg:text-xs font-mono bg-blue-500/20 text-blue-400 border border-blue-500/20"
+                                    class="px-2 py-0.5 rounded text-[10px] lg:text-xs font-mono bg-blue-500/20 text-blue-400 border border-blue-500/20 font-normal"
                                     x-text="modalData.txNo"></span>
                                 <span class="text-[11px] lg:text-sm text-gray-400 font-normal"
                                     x-text="'โอนโดย: ' + modalData.userName"></span>
                             </div>
-                            <h2 class="text-base lg:text-lg font-medium text-white truncate"
+                            <h2 class="text-base lg:text-lg font-normal text-white truncate"
                                 x-text="modalData.compName"></h2>
                         </div>
                         <button @click="closeModal()"
@@ -402,37 +403,37 @@
                                     <div class="flex flex-col gap-1">
                                         <span
                                             class="text-gray-500 text-[10px] lg:text-md uppercase">ชื่อผู้เสียภาษี</span>
-                                        <span class="text-white font-medium lg:text-lg"
+                                        <span class="text-white font-normal lg:text-lg"
                                             x-text="modalData.taxName"></span>
                                     </div>
                                     <div class="grid grid-cols-2 gap-4">
                                         <div class="flex flex-col gap-1">
                                             <span
                                                 class="text-gray-500 text-[10px] lg:text- uppercase">เลขประจำตัว</span>
-                                            <span class="text-blue-300 font-mono lg:text-lg"
+                                            <span class="text-blue-300 font-mono lg:text-lg font-normal"
                                                 x-text="modalData.taxId"></span>
                                         </div>
                                         <div class="flex flex-col gap-1">
                                             <span class="text-gray-500 text-[10px] lg:text-xs uppercase">สาขา</span>
-                                            <span class="text-white font-medium lg:text-lg"
+                                            <span class="text-white font-normal lg:text-lg"
                                                 x-text="modalData.taxBranch"></span>
                                         </div>
                                     </div>
                                     <div class="flex flex-col gap-1">
                                         <span
                                             class="text-gray-500 text-[10px] lg:text-xs uppercase">ที่อยู่จดทะเบียน</span>
-                                        <span class="text-white leading-relaxed" x-text="modalData.taxAddress"></span>
+                                        <span class="text-white leading-relaxed font-normal" x-text="modalData.taxAddress"></span>
                                     </div>
                                     <div class="grid grid-cols-2 gap-4">
                                         <div class="flex flex-col gap-1">
                                             <span
                                                 class="text-gray-500 text-[10px] lg:text-xs uppercase">เบอร์โทรติดต่อ</span>
-                                            <span class="text-white lg:text-lg" x-text="modalData.taxPhone"></span>
+                                            <span class="text-white lg:text-lg font-normal" x-text="modalData.taxPhone"></span>
                                         </div>
                                         <div class="flex flex-col gap-1">
                                             <span
                                                 class="text-gray-500 text-[10px] lg:text-xs uppercase">อีเมลรับเอกสาร</span>
-                                            <span class="text-white truncate lg:text-lg"
+                                            <span class="text-white truncate lg:text-lg font-normal"
                                                 x-text="modalData.taxEmail"></span>
                                         </div>
                                     </div>
@@ -450,17 +451,21 @@
                                 <template x-for="team in modalData.teamList">
                                     <div
                                         class="p-4 bg-[#1a1a1a] rounded-xl border border-white/5 flex justify-between items-center group transition-colors hover:border-white/10">
-                                        <div class="min-w-0">
-                                            <p class="font-medium text-white lg:text-lg truncate"
+                                        <div class="min-w-0 flex-1">
+                                            <p class="font-normal text-white lg:text-lg"
                                                 x-text="team.teamName"></p>
-                                            <p class="text-[10px] lg:text-sm text-gray-500 truncate mt-0.5"
-                                                x-text="team.className"></p>
+                                            <p class="text-[10px] lg:text-sm text-gray-500 mt-0.5 font-normal">
+                                                <template x-if="team.categoryName">
+                                                    <span x-text="team.categoryName + ' • '" class="text-blue-400 font-normal"></span>
+                                                </template>
+                                                <span x-text="team.className"></span>
+                                            </p>
                                         </div>
-                                        <div class="text-right ml-4">
+                                        <div class="text-right ml-4 shrink-0">
                                             <span
-                                                class="text-xs lg:text-base font-medium text-gray-300 whitespace-nowrap"
+                                                class="text-xs lg:text-base font-normal text-gray-300 whitespace-nowrap"
                                                 x-text="team.fee == 0 ? 'ฟรี' : new Intl.NumberFormat('th-TH').format(team.fee) + ' ฿'"></span>
-                                            <p class="text-[9px] lg:text-[11px] text-gray-600 font-mono mt-1"
+                                            <p class="text-[9px] lg:text-[11px] text-gray-600 font-mono mt-1 font-normal"
                                                 x-text="team.regNo"></p>
                                         </div>
                                     </div>
@@ -479,14 +484,14 @@
                                 <div class="space-y-4">
                                     <input type="text" name="reason" x-model="modalData.rejectReasonInput"
                                         placeholder="ระบุเหตุผลกรณีต้องปฏิเสธบิลนี้..."
-                                        class="w-full text-sm lg:text-base rounded-xl border border-white/10 bg-[#0a0a0a] text-white focus:border-red-500 outline-none px-4 py-3.5 transition-all">
+                                        class="w-full text-sm lg:text-base rounded-xl border border-white/10 bg-[#0a0a0a] text-white focus:border-red-500 outline-none px-4 py-3.5 transition-all font-normal">
                                     <div class="flex gap-3 font-normal">
                                         <button type="button" @click.prevent="confirmAction('reject')"
-                                            class="flex-1 py-3 lg:py-4 bg-red-600/90 hover:bg-red-500 text-white rounded-xl text-sm lg:text-base font-medium transition-all shadow-lg active:scale-95">
+                                            class="flex-1 py-3 lg:py-4 bg-red-600/90 hover:bg-red-500 text-white rounded-xl text-sm lg:text-base font-normal transition-all shadow-lg active:scale-95">
                                             <i class="fas fa-times mr-2"></i> ปฏิเสธ
                                         </button>
                                         <button type="button" @click.prevent="confirmAction('approve')"
-                                            class="flex-[1.8] py-3 lg:py-4 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-sm lg:text-base font-medium transition-all shadow-lg active:scale-95">
+                                            class="flex-[1.8] py-3 lg:py-4 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-sm lg:text-base font-normal transition-all shadow-lg active:scale-95">
                                             <i class="fas fa-check mr-2"></i> อนุมัติการชำระเงิน
                                         </button>
                                     </div>
@@ -495,7 +500,7 @@
 
                             <template x-if="modalData.status === 'approved'">
                                 <div
-                                    class="p-4 lg:p-5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-center text-sm lg:text-lg text-emerald-500 font-medium">
+                                    class="p-4 lg:p-5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-center text-sm lg:text-lg text-emerald-500 font-normal">
                                     <i class="fas fa-check-circle mr-2 text-xl"></i>
                                     บิลนี้ได้รับการอนุมัติเรียบร้อยแล้ว
                                 </div>
@@ -506,7 +511,7 @@
                                     <div class="text-red-500 font-normal lg:text-lg flex items-center gap-2 mb-1">
                                         <i class="fas fa-times-circle text-xl"></i> ปฏิเสธแล้ว
                                     </div>
-                                    <div class="text-xs lg:text-base text-gray-400"
+                                    <div class="text-xs lg:text-base text-gray-400 font-normal"
                                         x-text="'สาเหตุ: ' + (modalData.rejectReason || 'ไม่ได้ระบุเหตุผล')"></div>
                                 </div>
                             </template>

@@ -161,7 +161,9 @@ class AdminPaymentController extends Controller
             $fileName = $transaction->competition->name; 
             
             // 🚀 ใช้ชื่อเต็ม แต่ยังต้องลบอักขระพิเศษที่ Google Sheets ห้ามใช้ในชื่อ Tab
-            $rawTabName = $registration->competitionClass->name;
+            $rawTabName = $registration->category_name 
+                ? $registration->category_name . ' - ' . $registration->competitionClass->name 
+                : $registration->competitionClass->name;
             $tabName = str_replace(['/', '*', ':', '?', '[', ']'], '-', $rawTabName);
             
             // หมายเหตุ: ถ้า $tabName ยาวเกิน 31 ตัวอักษร Google API จะพ่น Error 400 ทันที
@@ -234,7 +236,8 @@ class AdminPaymentController extends Controller
         try {
             $itemDescriptions = [];
             foreach ($transaction->registrations as $reg) {
-                $itemDescriptions[] = "- ทีม: {$reg->team->name} (รุ่น: {$reg->competitionClass->name})";
+                $categoryInfo = $reg->category_name ? "หมวดหมู่: {$reg->category_name} - " : "";
+                $itemDescriptions[] = "- ทีม: {$reg->team->name} (รุ่น: {$categoryInfo}{$reg->competitionClass->name})";
             }
             // 🚀 ใช้ PHP_EOL แทน \n เพื่อให้ขึ้นบรรทัดใหม่ใน Google Sheet ได้อย่างถูกต้อง
             $descriptionText = implode(PHP_EOL, $itemDescriptions);

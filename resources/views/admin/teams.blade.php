@@ -181,8 +181,13 @@
 
                                 {{-- งานแข่ง / รุ่น --}}
                                 <td class="px-6 py-4">
-                                    <div class="text-white font-normal line-clamp-1">{{ $reg->competition->name ?? '-' }}</div>
-                                    <div class="text-xs text-blue-400 font-normal mt-1">{{ $reg->competitionClass->name ?? '-' }}</div>
+                                    <div class="text-white font-normal">{{ $reg->competition->name ?? '-' }}</div>
+                                    <div class="text-xs text-blue-400 font-normal mt-1">
+                                        @if($reg->category_name)
+                                            <span>{{ $reg->category_name }} &bull; </span>
+                                        @endif
+                                        {{ $reg->competitionClass->name ?? '-' }}
+                                    </div>
                                 </td>
 
                                 {{-- ผู้ส่งสมัคร --}}
@@ -279,7 +284,12 @@
                                                             </div>
                                                             <div>
                                                                 <p class="text-[11px] font-normal text-gray-400 uppercase tracking-wider mb-1">รุ่นการแข่งขัน</p>
-                                                                <p class="text-blue-400 text-sm font-normal">{{ $reg->competitionClass->name ?? '-' }}</p>
+                                                                <p class="text-blue-400 text-sm font-normal">
+                                                                    @if($reg->category_name)
+                                                                        {{ $reg->category_name }} &bull; 
+                                                                    @endif
+                                                                    {{ $reg->competitionClass->name ?? '-' }}
+                                                                </p>
                                                             </div>
                                                             <div class="grid grid-cols-2 gap-4 pt-1">
                                                                 <div>

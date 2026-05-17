@@ -199,8 +199,13 @@
                                     <div class="flex flex-wrap items-center gap-x-3 sm:gap-x-5 gap-y-1.5 sm:gap-y-2 text-[10px] sm:text-xs font-normal transition-colors duration-300"
                                         :class="selectedItems.includes({{ $regis->id }}) ?
                                             'text-blue-400/70' : 'text-gray-500'">
-                                        <span class="flex items-center gap-1 sm:gap-1.5"><i
-                                                class="fas fa-robot opacity-60"></i>{{ $regis->competitionClass->name }}</span>
+                                        <span class="flex items-center gap-1 sm:gap-1.5">
+                                            <i class="fas fa-robot opacity-60"></i>
+                                            @if($regis->category_name)
+                                                {{ $regis->category_name }} &bull; 
+                                            @endif
+                                            {{ $regis->competitionClass->name }}
+                                        </span>
                                         <span class="flex items-center gap-1 sm:gap-1.5"><i
                                                 class="fas fa-users opacity-60"></i>{{ $regis->team->name }}</span>
                                         <span class="flex items-center gap-1 sm:gap-1.5 hidden sm:flex"><i
@@ -279,7 +284,7 @@
                     </div>
                 @endforeach
 
-                <div x-show="filterStatus !== 'all' && document.querySelectorAll('[x-show][style*=\'display: none\']').length === {{ $registrations->count() }}"
+                <div x-show="filterStatus !== 'all' && document.querySelectorAll('[x-show][style*='display: none']').length === {{ $registrations->count() }}"
                     style="display:none"
                     class="py-12 sm:py-16 text-center bg-[#121212] rounded-2xl">
                     <i class="far fa-folder-open text-2xl sm:text-3xl text-gray-700 mb-2 sm:mb-3"></i>

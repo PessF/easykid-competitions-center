@@ -15,6 +15,7 @@ class Registration extends Model
             'team_id', 
             'competition_id', 
             'competition_class_id', 
+            'category_name',
             'payment_transaction_id', 
             'status', 
             'checked_in_at',
@@ -29,6 +30,10 @@ class Registration extends Model
 
     public function competition() {
         return $this->belongsTo(Competition::class);
+    }
+
+    public function category() {
+        return $this->belongsTo(Category::class);
     }
 
     public function competitionClass() {

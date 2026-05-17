@@ -44,8 +44,12 @@
                     </div>
                     <div class="flex justify-between items-start gap-4">
                         <span class="text-gray-500 shrink-0">รุ่นการแข่งขัน</span>
-                        <span
-                            class="font-normal text-gray-200 text-right">{{ $registration->competitionClass->name }}</span>
+                        <span class="font-normal text-gray-200 text-right">
+                            @if($registration->category_name)
+                                {{ $registration->category_name }} &bull; 
+                            @endif
+                            {{ $registration->competitionClass->name }}
+                        </span>
                     </div>
                     <div class="flex justify-between items-start gap-4">
                         <span class="text-gray-500 shrink-0">สถาบันการศึกษา</span>
